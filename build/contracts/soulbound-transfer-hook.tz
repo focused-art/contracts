@@ -1,0 +1,68 @@
+{ parameter
+    (or (pair %make_soulbound (address %address) (nat %token_id))
+        (list %transfer_hook
+           (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))) ;
+  storage
+    (pair (big_map %metadata string bytes)
+          (big_map %soulbound_tokens (pair (address %address) (nat %token_id)) unit)) ;
+  code { UNPAIR ;
+         PUSH string "FA_DONT_SEND_TEZ" ;
+         PUSH mutez 0 ;
+         AMOUNT ;
+         COMPARE ;
+         EQ ;
+         IF { DROP } { FAILWITH } ;
+         IF_LEFT
+           { SWAP ;
+             PUSH string "FA_NOT_FA2_OWNER" ;
+             SENDER ;
+             DUP 4 ;
+             CAR ;
+             SWAP ;
+             VIEW "is_owner" bool ;
+             IF_NONE { PUSH bool False } {} ;
+             IF { DROP } { FAILWITH } ;
+             DUP 2 ;
+             CAR ;
+             CONTRACT %add_transfer_hook address ;
+             IF_NONE
+               { PUSH string "FA_ADD_TRANSFER_HOOK_ENTRYPOINT_UNDEFINED" ; FAILWITH }
+               { PUSH mutez 0 ; SELF_ADDRESS ; TRANSFER_TOKENS } ;
+             DUP 2 ;
+             DIG 2 ;
+             CDR ;
+             UNIT ;
+             DIG 4 ;
+             SWAP ;
+             SOME ;
+             SWAP ;
+             UPDATE ;
+             UPDATE 2 ;
+             NIL operation ;
+             DIG 2 ;
+             CONS }
+           { ITER { CDR ;
+                    ITER { GET 3 ;
+                           SENDER ;
+                           PAIR ;
+                           PUSH bool False ;
+                           DUP 3 ;
+                           CDR ;
+                           DIG 2 ;
+                           GET ;
+                           IF_NONE { PUSH bool False } { DROP ; PUSH bool True } ;
+                           COMPARE ;
+                           EQ ;
+                           IF {} { PUSH string "FA_SOULBOUND_TOKEN_TRANSFER_DENIED" ; FAILWITH } } } ;
+             NIL operation } ;
+         PAIR } ;
+  view "is_soulbound"
+       (pair (address %address) (nat %token_id))
+       bool
+       { UNPAIR ;
+         SWAP ;
+         CDR ;
+         SWAP ;
+         GET ;
+         IF_NONE { PUSH bool False } { DROP ; PUSH bool True } } }
+
