@@ -1,0 +1,28 @@
+(***)
+(* Entrpoints *)
+(***)
+
+#include "entrypoints/add-creator.ligo"
+#include "entrypoints/add-metadata-manager.ligo"
+#include "entrypoints/add-minter.ligo"
+#include "entrypoints/add-royalties-manager.ligo"
+#include "entrypoints/add-transfer-hook.ligo"
+#include "entrypoints/burn.ligo"
+#include "entrypoints/confirm-ownership.ligo"
+#include "entrypoints/create.ligo"
+#include "entrypoints/internal-transfer-hook.ligo"
+#include "entrypoints/mint.ligo"
+#include "entrypoints/remove-creator.ligo"
+#include "entrypoints/remove-metadata-manager.ligo"
+#include "entrypoints/remove-minter.ligo"
+#include "entrypoints/remove-royalties-manager.ligo"
+#include "entrypoints/remove-transfer-hook.ligo"
+#include "entrypoints/renounce-creator.ligo"
+#include "entrypoints/renounce-metadata-manager.ligo"
+#include "entrypoints/renounce-minter.ligo"
+#include "entrypoints/renounce-ownership.ligo"
+#include "entrypoints/renounce-royalties-manager.ligo"
+#include "entrypoints/transfer-ownership.ligo"
+#include "entrypoints/update-default-royalties.ligo"
+#include "entrypoints/update-metadata.ligo"
+#include "entrypoints/update-royalties.ligo"

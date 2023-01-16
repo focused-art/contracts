@@ -1,0 +1,11 @@
+{
+  "name": "focused-art-contracts",
+  "version": "1.0.0",
+  "description": "focused.art smart contracts",
+  "scripts": {
+    "ligo": "docker run --rm -v \"$PWD\":\"$PWD\" -w \"$PWD\" ligolang/ligo:next",
+    "compile:fa2-plus": "pnpm --silent ligo -- compile contract src/main/fa2-plus.ligo -e fa2_plus_main > ./build/contracts/fa2-plus.tz",
+  },
+  "author": "mycodecrafting",
+  "license": "MIT"
+}
