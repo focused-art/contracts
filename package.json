@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "description": "focused.art smart contracts",
   "scripts": {
-    "ligo": "docker run --rm -v \"$PWD\":\"$PWD\" -w \"$PWD\" ligolang/ligo:next",
+    "clean": "rm -rf ./build && mkdir -p ./build/contracts",
+    "ligo": "docker run --rm -v \"$PWD\":\"$PWD\" -w \"$PWD\" ligolang/ligo:0.59.0",
+    "compile": "pnpm clean && pnpm compile:fa2-plus && pnpm compile:swap-recipe-mint",
     "compile:fa2-plus": "pnpm --silent ligo -- compile contract src/main/fa2-plus.ligo -e fa2_plus_main > ./build/contracts/fa2-plus.tz",
+    "compile:swap-recipe-mint": "pnpm --silent ligo -- compile contract src/main/swap-recipe-mint.ligo -e main > ./build/contracts/swap-recipe-mint.tz"
   },
   "author": "mycodecrafting",
   "license": "MIT"
