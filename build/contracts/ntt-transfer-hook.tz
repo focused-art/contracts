@@ -1,10 +1,10 @@
 { parameter
-    (or (pair %make_soulbound (address %address) (nat %token_id))
+    (or (pair %make_ntt (address %address) (nat %token_id))
         (list %transfer_hook
            (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))) ;
   storage
     (pair (big_map %metadata string bytes)
-          (big_map %soulbound_tokens (pair (address %address) (nat %token_id)) unit)) ;
+          (big_map %ntt_tokens (pair (address %address) (nat %token_id)) unit)) ;
   code { UNPAIR ;
          PUSH string "FA_DONT_SEND_TEZ" ;
          PUSH mutez 0 ;
@@ -53,10 +53,10 @@
                            IF_NONE { PUSH bool False } { DROP ; PUSH bool True } ;
                            COMPARE ;
                            EQ ;
-                           IF {} { PUSH string "FA_SOULBOUND_TOKEN_TRANSFER_DENIED" ; FAILWITH } } } ;
+                           IF {} { PUSH string "FA_NTT_TOKEN_TRANSFER_DENIED" ; FAILWITH } } } ;
              NIL operation } ;
          PAIR } ;
-  view "is_soulbound"
+  view "is_ntt"
        (pair (address %address) (nat %token_id))
        bool
        { UNPAIR ;

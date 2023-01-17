@@ -6,7 +6,7 @@ function transfer_hook (const transfers : transfer_params; const s : storage) : 
         address = Tezos.get_sender();
         token_id = transfer.token_id;
       ];
-      assert_with_error(is_soulbound(token, s) = False, "FA_SOULBOUND_TOKEN_TRANSFER_DENIED");
+      assert_with_error(is_ntt(token, s) = False, "FA_NTT_TOKEN_TRANSFER_DENIED");
     };
   };
 } with ((nil : list (operation)), s);

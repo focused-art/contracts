@@ -3,4 +3,4 @@
 (***)
 
 #include "entrypoints/transfer-hook.ligo"
-#include "entrypoints/make-soulbound.ligo"
+#include "entrypoints/make-ntt.ligo"

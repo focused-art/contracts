@@ -5,10 +5,10 @@
   "scripts": {
     "clean": "rm -rf ./build && mkdir -p ./build/contracts",
     "ligo": "docker run --rm -v \"$PWD\":\"$PWD\" -w \"$PWD\" ligolang/ligo:0.59.0",
-    "compile": "pnpm clean && pnpm compile:fa2-plus && pnpm compile:swap-recipe-mint",
+    "compile": "pnpm clean && pnpm compile:fa2-plus && pnpm compile:swap-recipe-mint && pnpm compile:ntt-transfer-hook",
     "compile:fa2-plus": "pnpm --silent ligo -- compile contract src/main/fa2-plus.ligo -e fa2_plus_main > ./build/contracts/fa2-plus.tz",
     "compile:swap-recipe-mint": "pnpm --silent ligo -- compile contract src/main/swap-recipe-mint.ligo -e main > ./build/contracts/swap-recipe-mint.tz",
-    "compile:soulbound-transfer-hook": "pnpm --silent ligo -- compile contract src/main/soulbound-transfer-hook.ligo -e main > ./build/contracts/soulbound-transfer-hook.tz"
+    "compile:ntt-transfer-hook": "pnpm --silent ligo -- compile contract src/main/ntt-transfer-hook.ligo -e main > ./build/contracts/ntt-transfer-hook.tz"
   },
   "author": "mycodecrafting",
   "license": "MIT"

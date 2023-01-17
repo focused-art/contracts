@@ -2,7 +2,7 @@ type storage is
   [@layout:comb]
   record [
     metadata            : big_map (string, bytes);
-    soulbound_tokens    : big_map (fa2, unit);
+    ntt_tokens          : big_map (fa2, unit);
   ]
 
 (* define return for readability *)
@@ -16,5 +16,5 @@ const noops: list (operation) = nil;
 (***)
 
 type entry_action is
-  | Make_soulbound of fa2
+  | Make_ntt of fa2
   | Transfer_hook of transfer_params
