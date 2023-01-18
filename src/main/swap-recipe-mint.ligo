@@ -4,10 +4,11 @@
 (*      Built by Codecrafting <♥> Labs      *)
 (*                                          *)
 
+#include "../partials/common/types.ligo"
 #include "../partials/utils/fa2.ligo"
 #include "../partials/utils/nat.ligo"
 #include "../partials/utils/tez.ligo"
-
+#include "../partials/common/payments.ligo"
 #include "../partials/swap-recipe-mint/types.ligo"
 #include "../partials/swap-recipe-mint/helpers.ligo"
 #include "../partials/swap-recipe-mint/views.ligo"

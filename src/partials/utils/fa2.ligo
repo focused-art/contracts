@@ -1,5 +1,3 @@
-const c_NULL_ADDRESS : address = ("tz1Ke2h7sDdakHJQh8WX4Z372du1KChsksyU" : address);
-
 type token_id is nat
 
 type fa2 is

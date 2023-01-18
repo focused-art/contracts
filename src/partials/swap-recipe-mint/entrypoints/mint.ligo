@@ -53,33 +53,9 @@ function mint (const swap_id : swap_id; const mint_amount : nat; const recipient
     operations := fa2_transfer(transfer.token, Tezos.get_sender(), recipient, transfer.amount * mint_amount) # operations;
   };
 
-  (* Swap has a price *)
+  (* Swap has a price, pay out royalties and recipients *)
   if swap.price > 0mutez then {
-
-    (* Pay royalties *)
-    var tezRemaining : tez := Tezos.get_amount();
-    const royalty_shares : royalty_shares = get_royalty_shares(swap.token, tez_to_nat(tezRemaining));
-
-    for receiver -> share in map royalty_shares {
-      if share > 0n and tezRemaining > 0mutez then {
-        const shareTez : tez = nat_to_tez(share);
-        operations := tez_transfer(receiver, shareTez) # operations;
-        tezRemaining := Option.unopt(tezRemaining - shareTez);
-      };
-    };
-
-    (* Transfer remaining tez to recipients *)
-    if tezRemaining > 0mutez then {
-      const tezRemainingAfterRoyalties : tez = tezRemaining;
-      for recipient -> pct in map swap.recipients {
-        const tezAmount : tez = tez_min(tezRemaining, tezRemainingAfterRoyalties * pct / 10_000n);
-        if (tezAmount > 0mutez) then {
-          operations := tez_transfer(recipient, tezAmount) # operations;
-          tezRemaining := Option.unopt(tezRemaining - tezAmount);
-        };
-      };
-    }
-
+    operations := pay_royalties_and_recipients(swap.token, swap.recipients, Tezos.get_amount(), operations);
   };
 
   (* Updates storage *)

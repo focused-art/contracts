@@ -7,9 +7,6 @@ type wallet_record is
     block_minted              : nat;
   ]
 
-type recipient is address
-type recipients is map (recipient, nat)
-
 type ingredient is
   [@layout:comb]
   record [
@@ -54,9 +51,6 @@ type storage is
 
 (* define return for readability *)
 type return is list (operation) * storage
-
-(* define noop for readability *)
-const noops: list (operation) = nil;
 
 (***)
 (* Entrpoint params *)
