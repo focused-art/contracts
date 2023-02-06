@@ -3,13 +3,34 @@
   "version": "1.0.0",
   "description": "focused.art smart contracts",
   "scripts": {
-    "clean": "rm -rf ./build && mkdir -p ./build/contracts",
-    "ligo": "docker run --rm -v \"$PWD\":\"$PWD\" -w \"$PWD\" ligolang/ligo:0.59.0",
+    "clean": "rm -rf ./build/contracts && mkdir -p ./build/contracts",
+    "ligo": "docker run --rm -v \"$PWD\":\"$PWD\" -w \"$PWD\" ligolang/ligo:0.60.0",
     "compile": "pnpm clean && pnpm compile:fa2-plus && pnpm compile:swap-recipe-mint && pnpm compile:ntt-transfer-hook",
-    "compile:fa2-plus": "pnpm --silent ligo -- compile contract src/main/fa2-plus.ligo -e fa2_plus_main > ./build/contracts/fa2-plus.tz",
-    "compile:swap-recipe-mint": "pnpm --silent ligo -- compile contract src/main/swap-recipe-mint.ligo -e main > ./build/contracts/swap-recipe-mint.tz",
-    "compile:ntt-transfer-hook": "pnpm --silent ligo -- compile contract src/main/ntt-transfer-hook.ligo -e main > ./build/contracts/ntt-transfer-hook.tz"
+    "compile:fa2": "pnpm --silent ligo -- compile contract src/main/fa2.ligo -e fa2_main --file-constants ./build/constants/all.json > ./build/contracts/fa2.tz",
+    "compile:fa2:using-consts": "pnpm --silent ligo -- compile contract src/main/fa2-using-constants.ligo -e fa2_main_using_constants --file-constants ./build/constants/all.json > ./build/contracts/fa2-using-constants.tz",
+    "compile:fa2-plus": "pnpm --silent ligo -- compile contract src/main/fa2-plus.ligo -e fa2_plus_main --file-constants ./build/constants/all.json > ./build/contracts/fa2-plus.tz",
+    "compile:fa2-plus:using-consts": "pnpm --silent ligo -- compile contract src/main/fa2-plus-using-constants.ligo -e fa2_plus_main_using_constants --file-constants ./build/constants/all.json > ./build/contracts/fa2-plus-using-constants.tz",
+
+    "compile:swap-recipe-mint": "pnpm --silent ligo -- compile contract src/main/swap-recipe-mint.ligo -e main --file-constants ./build/constants/all.json > ./build/contracts/swap-recipe-mint.tz",
+    "compile:ntt-transfer-hook": "pnpm --silent ligo -- compile contract src/main/ntt-transfer-hook.ligo -e main > ./build/contracts/ntt-transfer-hook.tz",
+
+    "compile:const:fa2:json": "pnpm --silent ligo -- compile expression --michelson-format json --init-file src/main/fa2.ligo pascaligo $(echo $CONST | tr '-' '_') > ./build/constants/fa2/${CONST}.json",
+    "compile:const:fa2:raw": "pnpm --silent ligo -- compile constant --init-file src/main/fa2.ligo pascaligo $(echo $CONST | tr '-' '_')",
+    "compile:const:fa2-plus:json": "pnpm --silent ligo -- compile expression --michelson-format json --init-file src/main/fa2-plus.ligo pascaligo $(echo $CONST | tr '-' '_') > ./build/constants/fa2-plus/${CONST}.json",
+    "compile:const:fa2-plus:raw": "pnpm --silent ligo -- compile constant --init-file src/main/fa2-plus.ligo pascaligo $(echo $CONST | tr '-' '_')",
+
+    "testnet:deploy-constant": "pnpm exec dotenv -e .env.testnet node scripts/deploy-constant.js",
+    "mainnet:deploy-constant": "pnpm exec dotenv -e .env node scripts/deploy-constant.js",
+
+    "testnet:originate:fa2-plus": "pnpm exec dotenv -e .env.testnet node scripts/originate-fa2-plus.js"
   },
   "author": "mycodecrafting",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@ledgerhq/hw-transport-node-hid": "^6.27.10",
+    "@taquito/ledger-signer": "^15.1.0",
+    "@taquito/signer": "^15.1.0",
+    "@taquito/taquito": "^15.1.0",
+    "dotenv-cli": "^7.0.0"
+  }
 }
