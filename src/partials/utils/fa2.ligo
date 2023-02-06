@@ -49,17 +49,8 @@ type calc_royalties_params is
     royalties                 : royalties;
   ]
 
-function calc_royalties (const params : calc_royalties_params) : royalty_shares is {
-  var response : royalty_shares := map [];
-  if params.royalties.total_shares > 0n then {
-    var sum_shares : nat := 0n;
-    for receiver -> share in map params.royalties.shares {
-      sum_shares := sum_shares + share;
-      response[receiver] := params.price * share / params.royalties.total_shares;
-    };
-    assert_with_error(sum_shares <= params.royalties.total_shares, "INVALID_SHARE_VALUES");
-  };
-} with response
+function calc_royalties (const p : calc_royalties_params) : royalty_shares is
+  ((Tezos.constant("exprusMimuj6aZKSJddswy8dLNchL8KFEDCNZD7v1K4ys2kjXAgHQJ") : calc_royalties_params -> royalty_shares))(p)
 
 function get_royalty_shares (const token : fa2; const price : nat) : royalty_shares is {
   const royalties : royalties = Option.unopt((Tezos.call_view("get_royalties", token.token_id, token.address) : option(royalties)));
