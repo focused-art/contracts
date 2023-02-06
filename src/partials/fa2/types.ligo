@@ -4,8 +4,6 @@ type token_id is [@annot:token_id] nat
 type owner is address
 type operator is address
 
-#if FA2__ROYALTIES
-(* on chain royalties *)
 type royalty_shares is map (address, nat)
 
 type royalties is
@@ -14,24 +12,23 @@ type royalties is
     total_shares              : nat;
     shares                    : royalty_shares;
   ]
-#endif
 
 type token_metadata is
+  [@layout:comb]
   record [
     token_id            : token_id;
     token_info          : map (string, bytes);
   ]
 
 type token_storage is
+  [@layout:comb]
   record [
     next_token_id             : nat;
     token_total_supply        : big_map (token_id, nat);
     ledger                    : big_map (owner * token_id, nat);
     operators                 : big_map (owner * (operator * token_id), unit);
     token_metadata            : big_map (token_id, token_metadata);
-#if FA2__ROYALTIES
     royalties                 : big_map (token_id, royalties);
-#endif
   ]
 
 type transfer_destination is
@@ -100,3 +97,6 @@ type token_action is
   | Balance_of              of balance_params
   | Update_operators        of update_operator_params
   | Assert_balances         of assert_balance_params
+
+(* define return type for readability *)
+type token_return is list (operation) * token_storage
