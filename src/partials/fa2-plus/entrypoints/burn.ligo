@@ -9,4 +9,7 @@ function iterate_burn (var s : storage; const input : mint_burn_tx) : storage is
 } with s
 
 function burn (const params : mint_burn_params; var s : storage) : return is
-  (noOperations, List.fold(iterate_burn, params, s))
+  (noops, List.fold(iterate_burn, params, s))
+
+function burn_as_constant (const params : mint_burn_params; var s : storage) : return is
+  ((Tezos.constant("exprv5QuqVpfpHxDySZirNyDXW5xu7sWjjkawFCG1ADfkSQSH9UBnK") : mint_burn_params * storage -> return))(params, s)
