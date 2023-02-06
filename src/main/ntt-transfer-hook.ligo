@@ -4,8 +4,8 @@
 (*      Built by Codecrafting <♥> Labs      *)
 (*                                          *)
 
+#include "../partials/common/types.ligo"
 #include "../partials/utils/fa2.ligo"
-
 #include "../partials/ntt-transfer-hook/types.ligo"
 #include "../partials/ntt-transfer-hook/views.ligo"
 #include "../partials/ntt-transfer-hook/entrypoints.ligo"
