@@ -424,48 +424,7 @@
                       IF_NONE { PUSH string "option is None" ; FAILWITH } {} ;
                       SWAP ;
                       PAIR ;
-                      EMPTY_MAP address nat ;
-                      PUSH nat 0 ;
-                      DUP 3 ;
-                      CDR ;
-                      CAR ;
-                      COMPARE ;
-                      GT ;
-                      IF { PUSH nat 0 ;
-                           DUP 3 ;
-                           CDR ;
-                           CDR ;
-                           ITER { UNPAIR ;
-                                  DUP 2 ;
-                                  DIG 3 ;
-                                  ADD ;
-                                  DUG 2 ;
-                                  DIG 3 ;
-                                  DUP 5 ;
-                                  CDR ;
-                                  CAR ;
-                                  DIG 3 ;
-                                  DUP 6 ;
-                                  CAR ;
-                                  MUL ;
-                                  EDIV ;
-                                  IF_NONE { PUSH string "DIV by 0" ; FAILWITH } {} ;
-                                  CAR ;
-                                  DIG 2 ;
-                                  SWAP ;
-                                  SOME ;
-                                  SWAP ;
-                                  UPDATE ;
-                                  SWAP } ;
-                           PUSH string "INVALID_SHARE_VALUES" ;
-                           DIG 3 ;
-                           CDR ;
-                           CAR ;
-                           DIG 2 ;
-                           COMPARE ;
-                           LE ;
-                           IF { DROP } { FAILWITH } }
-                         { SWAP ; DROP } ;
+                      constant "exprusMimuj6aZKSJddswy8dLNchL8KFEDCNZD7v1K4ys2kjXAgHQJ" ;
                       PUSH mutez 0 ;
                       SWAP ;
                       ITER { UNPAIR ;
@@ -694,5 +653,41 @@
          GET ;
          IF_NONE
            { DROP ; PUSH bool False }
-           { SWAP ; CDR ; SWAP ; CAR ; COMPARE ; EQ } } }
+           { SWAP ; CDR ; SWAP ; CAR ; COMPARE ; EQ } } ;
+  view "get_swap_price"
+       nat
+       mutez
+       { UNPAIR ;
+         SWAP ;
+         GET 3 ;
+         SWAP ;
+         GET ;
+         IF_NONE { PUSH string "FA_INVALID_SWAP_ID" ; FAILWITH } { GET 9 } } ;
+  view "get_swap_start_time"
+       nat
+       timestamp
+       { UNPAIR ;
+         SWAP ;
+         GET 3 ;
+         SWAP ;
+         GET ;
+         IF_NONE { PUSH string "FA_INVALID_SWAP_ID" ; FAILWITH } { GET 15 } } ;
+  view "get_swap_duration"
+       nat
+       int
+       { UNPAIR ;
+         SWAP ;
+         GET 3 ;
+         SWAP ;
+         GET ;
+         IF_NONE { PUSH string "FA_INVALID_SWAP_ID" ; FAILWITH } { GET 17 } } ;
+  view "get_swap_minted"
+       nat
+       nat
+       { UNPAIR ;
+         SWAP ;
+         GET 3 ;
+         SWAP ;
+         GET ;
+         IF_NONE { PUSH string "FA_INVALID_SWAP_ID" ; FAILWITH } { GET 13 } } }
 
