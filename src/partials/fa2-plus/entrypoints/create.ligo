@@ -10,7 +10,15 @@ function create (const input : create_params; var s : storage) : return is {
   s.assets.token_total_supply[input.token_metadata.token_id] := 0n;
   s.assets.next_token_id := nat_max(s.assets.next_token_id, input.token_metadata.token_id + 1n);
 
-} with (noops, s)
+  (* initialize operations *)
+  var operations : list (operation) := nil;
+
+  (* send any create hooks *)
+  for hook in set s.hooks.create {
+    operations := Tezos.transaction (input, 0tz, get_create_hook(hook)) # operations;
+  };
+
+} with (operations, s)
 
 function create_as_constant (const params : create_params; var s : storage) : return is
   ((Tezos.constant("exprvR7VMpqK6qZMxuZV7YjA213BwAQftcHw9dxTmZKBy8MZH3ijma") : create_params * storage -> return))(params, s)

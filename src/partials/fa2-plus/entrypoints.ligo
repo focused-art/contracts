@@ -13,3 +13,4 @@
 #include "entrypoints/update-royalties.ligo"
 #include "entrypoints/update-roles.ligo"
 #include "entrypoints/renounce-roles.ligo"
+#include "entrypoints/update-hooks.ligo"

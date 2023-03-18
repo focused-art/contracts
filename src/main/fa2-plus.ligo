@@ -29,6 +29,7 @@ function fa2_plus_main (const action : entry_action; var s : storage) : return i
     } with (res.0, s)
   | Transfer_ownership(params) -> transfer_ownership(params, s)
   | Update_roles(params) -> update_roles(params, s)
+  | Update_hooks(params) -> update_hooks(params, s)
   | Renounce_roles(params) -> renounce_roles(params, s)
   | Create(params) -> create(params, s)
   | Mint(params) -> mint(params, s)

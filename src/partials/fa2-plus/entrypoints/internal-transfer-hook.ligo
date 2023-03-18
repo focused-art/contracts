@@ -5,7 +5,9 @@ function internal_transfer_hook (const input : transfer_params; const s : storag
 
   (* initialize operations *)
   var operations : list (operation) := nil;
-  for hook in set s.roles.transfer_hook {
+
+  (* send any transfer hooks *)
+  for hook in set s.hooks.transfer {
     operations := Tezos.transaction (input, 0tz, get_transfer_hook(hook)) # operations;
   };
 

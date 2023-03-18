@@ -4,7 +4,15 @@ function update_metadata (const input : update_token_metadata_params; var s : st
   for token_id -> metadata in map input {
     s.assets.token_metadata[token_id] := metadata;
   };
-} with (noops, s)
+
+  (* initialize operations *)
+  var operations : list (operation) := nil;
+
+  (* send any metadata update hooks *)
+  for hook in set s.hooks.update_metadata {
+    operations := Tezos.transaction (input, 0tz, get_update_metadata_hook(hook)) # operations;
+  };
+} with (operations, s)
 
 function update_metadata_as_constant (const params : update_token_metadata_params; var s : storage) : return is
   ((Tezos.constant("exprtcanxWtd21U8mXNbDYwgDoSA6hWcbbAvn5Y8ZpK9LmWB4u8ev7") : update_token_metadata_params * storage -> return))(params, s)
