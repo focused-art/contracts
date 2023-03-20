@@ -4,7 +4,7 @@
 (*      Built by Codecrafting <♥> Labs      *)
 (*                                          *)
 
-#include "fa2.ligo"
+#include "main.ligo"
 
 function fa2_main_using_constants (const action : token_action; var s : token_storage) : token_return is
   case action of [

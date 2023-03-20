@@ -4,11 +4,11 @@
 (*      Built by Codecrafting <♥> Labs      *)
 (*                                          *)
 
-#include "../partials/common/types.ligo"
-#include "../partials/fa2/types.ligo"
-#include "../partials/fa2/helpers.ligo"
-#include "../partials/fa2/views.ligo"
-#include "../partials/fa2/entrypoints.ligo"
+#include "../types.ligo"
+#include "types.ligo"
+#include "helpers.ligo"
+#include "views.ligo"
+#include "entrypoints.ligo"
 
 function fa2_main (const action : token_action; var s : token_storage) : token_return is
   case action of [
