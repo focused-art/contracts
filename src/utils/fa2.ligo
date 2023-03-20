@@ -1,5 +1,5 @@
 #include "../common/fa2/types.ligo"
-#include "../partials/fa2-plus/types.ligo"
+#include "../core-protocol/fa2/types.ligo"
 
 type fa2 is
   [@layout:comb]
