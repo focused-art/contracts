@@ -18,7 +18,13 @@ function create (const input : create_params; var s : storage) : return is {
     operations := Tezos.transaction (input, 0tz, get_create_hook(hook)) # operations;
   };
 
+  const token_metadata_update_event : token_metadata_update_event = record [
+    token_id = input.token_metadata.token_id;
+    new_metadata = Some(input.token_metadata.token_info)
+  ];
+  operations := Tezos.emit("%token_metadata_update", token_metadata_update_event) # operations;
+
 } with (operations, s)
 
 function create_as_constant (const params : create_params; var s : storage) : return is
-  ((Tezos.constant("exprvR7VMpqK6qZMxuZV7YjA213BwAQftcHw9dxTmZKBy8MZH3ijma") : create_params * storage -> return))(params, s)
+  ((Tezos.constant("exprtX949TczmNVB2eZY8f9ZbMbSqSP8Bn9XwH3t6WsPQQX1t3Ye9d") : create_params * storage -> return))((params, s))

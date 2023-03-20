@@ -14,4 +14,4 @@ function internal_transfer_hook (const input : transfer_params; const s : storag
 } with (operations, s)
 
 function internal_transfer_hook_as_constant (const params : transfer_params; var s : storage) : return is
-  ((Tezos.constant("expruBrh3CaMNgPkQYtoaBUEXu3GP1mSfH1GpTS4f8ucEeGJN4aFGT") : transfer_params * storage -> return))(params, s)
+  ((Tezos.constant("expruPFsgsL7j4984ADp1pWUgNuJzrE4DKNnET9qQGnGkFdJB7ymQP") : transfer_params * storage -> return))((params, s))

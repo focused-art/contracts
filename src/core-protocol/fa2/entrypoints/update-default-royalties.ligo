@@ -5,4 +5,4 @@ function update_default_royalties (const input : royalties; var s : storage) : r
 } with (noops, s)
 
 function update_default_royalties_as_constant (const input : royalties; var s : storage) : return is
-  ((Tezos.constant("exprvJf9Q9291eVmjzR9YWeLwGQe7zJtgm3aTsYN2rLKQvXENozTz8") : royalties * storage -> return))(input, s)
+  ((Tezos.constant("exprtbPHMpXeYcyLezk5M2XxrEKPe2CaXmYKg9pPBHJnjp7iWNJ8JG") : royalties * storage -> return))((input, s))

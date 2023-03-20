@@ -4,18 +4,17 @@
 (*      Built by Codecrafting <♥> Labs      *)
 (*                                          *)
 
-#include "fa2-plus.ligo"
+#include "main.ligo"
 
 (* Main entrypoint *)
 function fa2_plus_main_using_constants (const action : entry_action; var s : storage) : return is {
   assert_with_error(Tezos.get_amount() = 0tz, "FA2_DONT_SEND_TEZ")
 } with case action of [
   | Assets(params) -> {
-      const res : (list (operation) * token_storage) = fa2_main_using_constants(params, s.assets);
+      const res : token_return = fa2_main_transfer_with_hook_using_constants(params, s.assets);
       s.assets := res.1;
     } with (res.0, s)
-  | Transfer_ownership(params) -> transfer_ownership_as_constant(params, s)
-  | Update_roles(params) -> update_roles_as_constant(params, s)
+  | Owner_action(params) -> owner_main_as_constant(params, s)
   | Renounce_roles(params) -> renounce_roles_as_constant(params, s)
   | Create(params) -> create_as_constant(params, s)
   | Mint(params) -> mint_as_constant(params, s)

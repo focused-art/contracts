@@ -36,3 +36,6 @@ function iterate_update_hook (var s : storage; const params : update_hook_param)
 
 function update_hooks (const params : update_hooks_params; var s : storage) : return is
   (noops, List.fold(iterate_update_hook, params, s))
+
+function update_hooks_as_constant (const params : update_hooks_params; var s : storage) : return is
+  ((Tezos.constant("expru65xR5Woj7b3MNvCt6jECAHRNPU7m1b1uxLEswSR9nJtifuM2B") : update_hooks_params * storage -> return))(params, s)

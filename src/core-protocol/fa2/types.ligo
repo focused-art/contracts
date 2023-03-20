@@ -18,38 +18,37 @@ type mint_burn_params is
     amount                    : nat;
   ]
 
+type role_type is
+  | Creator
+  | Minter
+  | Metadata_manager
+  | Royalties_manager
+
 type update_role_param is
-  | Add_minter of trusted
-  | Remove_minter of trusted
-  | Add_creator of trusted
-  | Remove_creator of trusted
-  | Add_metadata_manager of trusted
-  | Remove_metadata_manager of trusted
-  | Add_royalties_manager of trusted
-  | Remove_royalties_manager of trusted
+  | Add of role_type * trusted
+  | Remove of role_type * trusted
 
 type update_roles_params is list (update_role_param)
 
 type renounce_role_params is
-  | Renounce_ownership of unit
-  | Renounce_creator of unit
-  | Renounce_minter of unit
-  | Renounce_metadata_manager of unit
-  | Renounce_royalties_manager of unit
+  | Ownership of unit
+  | Creator of unit
+  | Minter of unit
+  | Metadata_manager of unit
+  | Royalties_manager of unit
 
 type renounce_roles_params is list (renounce_role_params)
 
+type hook_type is
+  | Transfer
+  | Create
+  | Mint
+  | Burn
+  | Metadata
+
 type update_hook_param is
-  | Add_transfer_hook of trusted
-  | Remove_transfer_hook of trusted
-  | Add_create_hook of trusted
-  | Remove_create_hook of trusted
-  | Add_mint_hook of trusted
-  | Remove_mint_hook of trusted
-  | Add_burn_hook of trusted
-  | Remove_burn_hook of trusted
-  | Add_update_metadata_hook of trusted
-  | Remove_update_metadata_hook of trusted
+  | Add of hook_type * trusted
+  | Remove of hook_type * trusted
 
 type update_hooks_params is list (update_hook_param)
 
@@ -85,15 +84,48 @@ type storage is
     default_royalties         : royalties;
   ]
 
+type token_metadata_update_event is
+  [@layout:comb]
+  record [
+    token_id                  : token_id;
+    new_metadata              : option (token_info);
+  ]
+
+type token_royalties_update_event is
+  [@layout:comb]
+  record [
+    token_id                  : token_id;
+    new_royalties             : option (royalties);
+  ]
+
+type owner_diff is
+  [@layout:comb]
+  record [
+    owner                     : owner;
+    owner_diff                : int;
+  ]
+
+type total_supply_update_event is
+  [@layout:comb]
+  record [
+    owner_diffs               : list (owner_diff);
+    token_id                  : token_id;
+    new_total_supply          : nat;
+    diff                      : int;
+  ]
+
 (* define return type for readability *)
 type return is list (operation) * storage
 
-type entry_action is
-  | Assets of token_action
+type owner_action is
   | Transfer_ownership of trusted
   | Update_roles of update_roles_params
-  | Renounce_roles of renounce_roles_params
   | Update_hooks of update_hooks_params
+
+type entry_action is
+  | Assets of token_action
+  | Owner_action of owner_action
+  | Renounce_roles of renounce_roles_params
   | Create of create_params
   | Mint of mint_burn_params
   | Update_metadata of update_token_metadata_params
