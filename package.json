@@ -3,16 +3,27 @@
   "version": "1.0.0",
   "description": "focused.art smart contracts",
   "scripts": {
-    "clean": "rm -rf ./build/contracts && mkdir -p ./build/contracts",
+    "clean": "rm -rf ./build/contracts && mkdir -p ./build/contracts && mkdir -p ./build/contracts/core-protocol/hooks && mkdir -p ./build/contracts/common",
     "ligo": "docker run --rm -v \"$PWD\":\"$PWD\" -w \"$PWD\" ligolang/ligo:0.60.0",
-    "compile": "pnpm clean && pnpm compile:fa2-plus && pnpm compile:swap-recipe-mint && pnpm compile:ntt-transfer-hook",
-    "compile:fa2": "pnpm --silent ligo -- compile contract src/main/fa2.ligo -e fa2_main --file-constants ./build/constants/all.json > ./build/contracts/fa2.tz",
-    "compile:fa2:using-consts": "pnpm --silent ligo -- compile contract src/main/fa2-using-constants.ligo -e fa2_main_using_constants --file-constants ./build/constants/all.json > ./build/contracts/fa2-using-constants.tz",
-    "compile:fa2-plus": "pnpm --silent ligo -- compile contract src/main/fa2-plus.ligo -e fa2_plus_main --file-constants ./build/constants/all.json > ./build/contracts/fa2-plus.tz",
-    "compile:fa2-plus:using-consts": "pnpm --silent ligo -- compile contract src/main/fa2-plus-using-constants.ligo -e fa2_plus_main_using_constants --file-constants ./build/constants/all.json > ./build/contracts/fa2-plus-using-constants.tz",
+
+    "compile:clean": "pnpm clean && pnpm compile:all",
+    "compile:all": "pnpm compile:common:fa2:all && pnpm compile:core:fa2:all && pnpm compile:core:hook:all",
+
+    "compile:common:fa2:all": "pnpm compile:common:fa2 && pnpm compile:common:fa2:using-consts && pnpm compile:common:fa2:transfer-hook && pnpm compile:common:fa2:transfer-hook:using-consts",
+    "compile:common:fa2": "pnpm --silent ligo -- compile contract src/common/fa2/main.ligo -e fa2_main --file-constants ./build/constants/all.json > ./build/contracts/common/fa2.tz",
+    "compile:common:fa2:using-consts": "pnpm --silent ligo -- compile contract src/common/fa2/main-using-constants.ligo -e fa2_main_using_constants --file-constants ./build/constants/all.json > ./build/contracts/common/fa2-using-constants.tz",
+    "compile:common:fa2:transfer-hook": "pnpm --silent ligo -- compile contract src/common/fa2/main.ligo -e fa2_main_transfer_with_hook --file-constants ./build/constants/all.json > ./build/contracts/common/fa2-transfer-hook.tz",
+    "compile:common:fa2:transfer-hook:using-consts": "pnpm --silent ligo -- compile contract src/common/fa2/main-using-constants.ligo -e fa2_main_transfer_with_hook_using_constants --file-constants ./build/constants/all.json > ./build/contracts/common/fa2-transfer-hook-using-constants.tz",
+
+    "compile:core:fa2:all": "pnpm compile:core:fa2 && pnpm compile:core:fa2:using-consts",
+    "compile:core:fa2": "pnpm --silent ligo -- compile contract src/core-protocol/fa2/main.ligo -e fa2_plus_main --file-constants ./build/constants/all.json > ./build/contracts/core-protocol/fa2.tz",
+    "compile:core:fa2:using-consts": "pnpm --silent ligo -- compile contract src/core-protocol/fa2/main-using-constants.ligo -e fa2_plus_main_using_constants --file-constants ./build/constants/all.json > ./build/contracts/core-protocol/fa2-using-constants.tz",
 
     "compile:swap-recipe-mint": "pnpm --silent ligo -- compile contract src/main/swap-recipe-mint.ligo -e main --file-constants ./build/constants/all.json > ./build/contracts/swap-recipe-mint.tz",
-    "compile:ntt-transfer-hook": "pnpm --silent ligo -- compile contract src/main/ntt-transfer-hook.ligo -e main > ./build/contracts/ntt-transfer-hook.tz",
+
+    "compile:core:hook:all": "pnpm compile:core:hook:ntt && pnpm compile:core:hook:cement-metadata",
+    "compile:core:hook:ntt": "pnpm --silent ligo -- compile contract src/core-protocol/hooks/ntt/main.ligo -e main > ./build/contracts/core-protocol/hooks/ntt.tz",
+    "compile:core:hook:cement-metadata": "pnpm --silent ligo -- compile contract src/core-protocol/hooks/cement-metadata/main.ligo -e main > ./build/contracts/core-protocol/hooks/cement-metadata.tz",
 
     "compile:const:fa2:json": "pnpm --silent ligo -- compile expression --michelson-format json --init-file src/main/fa2.ligo pascaligo $(echo $CONST | tr '-' '_') > ./build/constants/fa2/${CONST}.json",
     "compile:const:fa2:raw": "pnpm --silent ligo -- compile constant --init-file src/main/fa2.ligo pascaligo $(echo $CONST | tr '-' '_')",
