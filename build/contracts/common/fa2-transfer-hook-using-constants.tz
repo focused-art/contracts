@@ -1,0 +1,74 @@
+{ parameter
+    (or (or (list %assert_balances (pair (address %owner) (nat %token_id) (nat %balance)))
+            (pair %balance_of
+               (list %requests (pair (address %owner) (nat %token_id)))
+               (contract %callback
+                  (list (pair (pair %request (address %owner) (nat %token_id)) (nat %balance))))))
+        (or (list %transfer
+               (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))
+            (list %update_operators
+               (or (pair %add_operator (address %owner) (address %operator) (nat %token_id))
+                   (pair %remove_operator (address %owner) (address %operator) (nat %token_id)))))) ;
+  storage
+    (pair (nat %next_token_id)
+          (big_map %token_total_supply nat nat)
+          (big_map %ledger (pair address nat) nat)
+          (big_map %operators (pair address address nat) unit)
+          (big_map %token_metadata nat (pair (nat %token_id) (map %token_info string bytes)))
+          (big_map %royalties nat (pair (nat %total_shares) (map %shares address nat)))) ;
+  code { UNPAIR ;
+         IF_LEFT
+           { IF_LEFT
+               { PAIR ; constant "exprv1W3deX8DGQTE1kScuwH9EkBEhhPSgtC6vuNuSJNFFsFFCXjHv" }
+               { PAIR ; constant "exprukzUFbkRrZjG8YF4zbrwWbr3cYubfqsWsDDSqzL9pBsGqy7QHJ" } }
+           { IF_LEFT
+               { PAIR ; constant "exprurWrrDJ7XUviRYk4uTyAVW74BMnfKADEHyWxkkoyfnhcGWG366" }
+               { PAIR ; constant "exprtdBxWxRb5ni1wGhB9VvPe13W4e5LFDcKkcAgXyxeWwTaQDgPRE" } } } ;
+  view "get_balance"
+       (pair (address %owner) (nat %token_id))
+       nat
+       { UNPAIR ;
+         SWAP ;
+         GET 5 ;
+         DUP 2 ;
+         CDR ;
+         DIG 2 ;
+         CAR ;
+         PAIR ;
+         GET ;
+         IF_NONE { PUSH nat 0 } {} } ;
+  view "total_supply"
+       nat
+       nat
+       { UNPAIR ; SWAP ; GET 3 ; SWAP ; GET ; IF_NONE { PUSH nat 0 } {} } ;
+  view "is_operator"
+       (pair (address %owner) (address %operator) (nat %token_id))
+       bool
+       { UNPAIR ;
+         DUP ;
+         GET 3 ;
+         DUP 2 ;
+         CAR ;
+         DIG 3 ;
+         GET 7 ;
+         DIG 3 ;
+         GET 4 ;
+         DUP 4 ;
+         PAIR ;
+         DUP 3 ;
+         PAIR ;
+         MEM ;
+         DUG 2 ;
+         COMPARE ;
+         EQ ;
+         OR } ;
+  view "get_royalties"
+       nat
+       (pair (nat %total_shares) (map %shares address nat))
+       { UNPAIR ;
+         SWAP ;
+         GET 10 ;
+         SWAP ;
+         GET ;
+         IF_NONE { EMPTY_MAP address nat ; PUSH nat 0 ; PAIR } {} } }
+

@@ -1,0 +1,68 @@
+{ parameter
+    (or (pair %cement_metadata (address %address) (nat %token_id))
+        (map %update_metadata_hook
+           nat
+           (pair (nat %token_id) (map %token_info string bytes)))) ;
+  storage
+    (pair (big_map %metadata string bytes)
+          (big_map %cemented_tokens (pair (address %address) (nat %token_id)) unit)) ;
+  code { NIL operation ;
+         SWAP ;
+         UNPAIR ;
+         PUSH string "FA_DONT_SEND_TEZ" ;
+         PUSH mutez 0 ;
+         AMOUNT ;
+         COMPARE ;
+         EQ ;
+         IF { DROP } { FAILWITH } ;
+         IF_LEFT
+           { SWAP ;
+             PUSH string "FA_NOT_FA2_METADATA_MANAGER" ;
+             SENDER ;
+             DUP 4 ;
+             CAR ;
+             SWAP ;
+             VIEW "is_metadata_manager" bool ;
+             IF_NONE { PUSH bool False } {} ;
+             IF { DROP } { FAILWITH } ;
+             PUSH string "FA_NOT_FA2_UPDATE_METADATA_HOOK" ;
+             SELF_ADDRESS ;
+             DUP 4 ;
+             CAR ;
+             SWAP ;
+             VIEW "is_metadata_update_hook" bool ;
+             IF_NONE { PUSH bool False } {} ;
+             IF { DROP } { FAILWITH } ;
+             DUP ;
+             CDR ;
+             UNIT ;
+             DIG 3 ;
+             SWAP ;
+             SOME ;
+             SWAP ;
+             UPDATE ;
+             UPDATE 2 }
+           { ITER { CAR ;
+                    SENDER ;
+                    PAIR ;
+                    PUSH bool False ;
+                    DUP 3 ;
+                    CDR ;
+                    DIG 2 ;
+                    GET ;
+                    IF_NONE { PUSH bool False } { DROP ; PUSH bool True } ;
+                    COMPARE ;
+                    EQ ;
+                    IF {} { PUSH string "FA_TOKEN_METADATA_UPDATE_DENIED" ; FAILWITH } } } ;
+         SWAP ;
+         PAIR } ;
+  view "is_cemented"
+       (pair (address %address) (nat %token_id))
+       bool
+       { UNPAIR ;
+         SWAP ;
+         CDR ;
+         SWAP ;
+         GET ;
+         IF_NONE { PUSH bool False } { DROP ; PUSH bool True } } }
+

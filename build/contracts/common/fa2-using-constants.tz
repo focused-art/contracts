@@ -19,11 +19,11 @@
   code { UNPAIR ;
          IF_LEFT
            { IF_LEFT
-               { PAIR ; constant "exprvRgGuJMvLwq8Md7T9yNjd7mHQFMeeJZYWAqNijVWdMapMZfsiT" }
-               { PAIR ; constant "exprv7Poi6dBzxoHe5SBiHXynjG2onFGABGf2o1UzjFVRjAuCY1V8P" } }
+               { PAIR ; constant "exprv1W3deX8DGQTE1kScuwH9EkBEhhPSgtC6vuNuSJNFFsFFCXjHv" }
+               { PAIR ; constant "exprukzUFbkRrZjG8YF4zbrwWbr3cYubfqsWsDDSqzL9pBsGqy7QHJ" } }
            { IF_LEFT
-               { PAIR ; constant "exprtnG1aeWRoYSqN8V5XP4BQiHndpSjWgCr1XkbFbXHriESy2cfTP" }
-               { PAIR ; constant "expruEJ9gH42pz4WzGajmtA4UZrR7Kk9fVJbg3GAcMSQQxDyG98yr7" } } } ;
+               { PAIR ; constant "exprtmSbRhT6JR681qvH4znr4fGLbxv9vfkxfZgnCentVHJqGL3t15" }
+               { PAIR ; constant "exprtdBxWxRb5ni1wGhB9VvPe13W4e5LFDcKkcAgXyxeWwTaQDgPRE" } } } ;
   view "get_balance"
        (pair (address %owner) (nat %token_id))
        nat
