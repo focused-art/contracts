@@ -13,11 +13,13 @@ type royalties is
     shares                    : royalty_shares;
   ]
 
+type token_info is map (string, bytes)
+
 type token_metadata is
   [@layout:comb]
   record [
     token_id            : token_id;
-    token_info          : map (string, bytes);
+    token_info          : token_info;
   ]
 
 type token_storage is
@@ -42,7 +44,7 @@ type transfer_destination is
 type transfer_param is
   [@layout:comb]
   record [
-    from_                     : address;
+    from_                     : owner;
     txs                       : list (transfer_destination);
   ]
 
@@ -91,6 +93,33 @@ type assert_balance_param is
   ]
 
 type assert_balance_params is list (assert_balance_param)
+
+type operator_update_event is
+  [@layout:comb]
+  record [
+    owner                     : owner;
+    operator                  : operator;
+    token_id                  : token_id;
+    is_operator               : bool;
+  ]
+
+type transfer_event is
+  [@layout:comb]
+  record [
+    from_                     : owner;
+    to_                       : address;
+    token_id                  : token_id;
+    amount                    : nat;
+  ]
+
+type balance_update_event is
+  [@layout:comb]
+  record [
+    owner                     : owner;
+    token_id                  : token_id;
+    new_balance               : nat;
+    diff                      : int;
+  ]
 
 type token_action is
   | Transfer                of transfer_params
