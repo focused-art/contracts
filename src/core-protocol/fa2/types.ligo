@@ -108,7 +108,7 @@ type owner_diff is
 type total_supply_update_event is
   [@layout:comb]
   record [
-    owner_diffs               : list (owner_diff);
+    [@annot:] owner_diffs     : list (owner_diff);
     token_id                  : token_id;
     new_total_supply          : nat;
     diff                      : int;

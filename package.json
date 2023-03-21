@@ -4,7 +4,7 @@
   "description": "focused.art smart contracts",
   "scripts": {
     "clean": "rm -rf ./build/contracts && mkdir -p ./build/contracts && mkdir -p ./build/contracts/core-protocol/hooks && mkdir -p ./build/contracts/common",
-    "ligo": "docker run --rm -v \"$PWD\":\"$PWD\" -w \"$PWD\" ligolang/ligo:0.60.0",
+    "ligo": "docker run --rm -v \"$PWD\":\"$PWD\" -w \"$PWD\" ligolang/ligo:0.58.0",
 
     "compile:clean": "pnpm clean && pnpm compile:all",
     "compile:all": "pnpm compile:common:fa2:all && pnpm compile:core:fa2:all && pnpm compile:core:hook:all",

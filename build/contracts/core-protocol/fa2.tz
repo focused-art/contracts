@@ -390,7 +390,7 @@
                          CONS ;
                          PAIR 4 ;
                          EMIT %total_supply_update
-                           (pair (list %owner_diffs (pair (address %owner) (int %owner_diff)))
+                           (pair (list (pair (address %owner) (int %owner_diff)))
                                  (nat %token_id)
                                  (nat %new_total_supply)
                                  (int %diff)) ;
@@ -685,7 +685,7 @@
                          CONS ;
                          PAIR 4 ;
                          EMIT %total_supply_update
-                           (pair (list %owner_diffs (pair (address %owner) (int %owner_diff)))
+                           (pair (list (pair (address %owner) (int %owner_diff)))
                                  (nat %token_id)
                                  (nat %new_total_supply)
                                  (int %diff)) ;
