@@ -5,6 +5,7 @@ type create_params is
   record [
     token_metadata            : token_metadata;
     royalties                 : royalties;
+    max_supply                : nat;
   ]
 
 type update_royalties_params is map (token_id, royalties)
@@ -81,6 +82,7 @@ type storage is
     roles                     : permissions;
     hooks                     : hooks;
     assets                    : token_storage;
+    token_max_supply          : big_map (token_id, nat);
     default_royalties         : royalties;
   ]
 

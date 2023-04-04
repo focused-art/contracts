@@ -55,6 +55,13 @@ function get_total_supply (const token_id : token_id; const s : storage) : nat i
   internal_get_token_total_supply(token_id, s.assets)
 
 [@view]
+function get_max_supply (const token_id : token_id; const s : storage) : nat is
+  case s.token_max_supply[token_id] of [
+    Some(max_supply) -> max_supply
+  | None -> 0n
+  ]
+
+[@view]
 function is_operator (const params : operator_param; const s : storage) : bool is
   internal_is_operator(params.owner, params.operator, params.token_id, s.assets)
 

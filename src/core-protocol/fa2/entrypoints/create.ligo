@@ -9,6 +9,7 @@ function create (const input : create_params; var s : storage) : return is {
   s.assets.royalties[input.token_metadata.token_id] := input.royalties;
   s.assets.token_total_supply[input.token_metadata.token_id] := 0n;
   s.assets.next_token_id := nat_max(s.assets.next_token_id, input.token_metadata.token_id + 1n);
+  s.token_max_supply[input.token_metadata.token_id] := input.max_supply;
 
   (* initialize operations *)
   var operations : list (operation) := nil;

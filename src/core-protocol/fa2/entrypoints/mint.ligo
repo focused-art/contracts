@@ -9,6 +9,10 @@ function mint (const input : mint_burn_params; var s : storage) : return is {
   const new_total_supply : nat = internal_get_token_total_supply(input.token_id, s.assets) + input.amount;
   s.assets.token_total_supply[input.token_id] := new_total_supply;
 
+  (* Cannot exceed mint caps *)
+  const max_supply : nat = get_max_supply(input.token_id, s);
+  assert_with_error(new_total_supply <= max_supply, "FA2_MAX_SUPPLY_EXCEEDED");
+
   (* initialize operations *)
   var operations : list (operation) := nil;
 
