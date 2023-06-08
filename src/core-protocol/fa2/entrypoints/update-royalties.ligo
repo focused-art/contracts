@@ -6,7 +6,7 @@ function update_royalties (const input : update_royalties_params; var s : storag
   var operations : list (operation) := nil;
 
   for token_id -> royalties in map input {
-    s.assets.royalties[token_id] := royalties;
+    s.royalties[token_id] := royalties;
 
     const token_royalties_update_event : token_royalties_update_event = record [
       token_id = token_id;
@@ -15,6 +15,3 @@ function update_royalties (const input : update_royalties_params; var s : storag
     operations := Tezos.emit("%token_royalties_update", token_royalties_update_event) # operations;
   };
 } with (operations, s)
-
-function update_royalties_as_constant (const params : update_royalties_params; var s : storage) : return is
-  ((Tezos.constant("exprtjiLL4je9bkP1bLMoPQQtxxBXXBirWzKo6qYufyVkrHXdeEPRt") : update_royalties_params * storage -> return))((params, s))

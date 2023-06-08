@@ -1,17 +1,17 @@
-lockfileVersion: 5.3
+lockfileVersion: 5.4
 
 specifiers:
   '@ledgerhq/hw-transport-node-hid': ^6.27.10
-  '@taquito/ledger-signer': ^15.1.0
-  '@taquito/signer': ^15.1.0
-  '@taquito/taquito': ^15.1.0
+  '@taquito/ledger-signer': ^16.2.0
+  '@taquito/signer': ^16.2.0
+  '@taquito/taquito': ^16.2.0
   dotenv-cli: ^7.0.0
 
 dependencies:
   '@ledgerhq/hw-transport-node-hid': 6.27.10
-  '@taquito/ledger-signer': 15.1.0
-  '@taquito/signer': 15.1.0
-  '@taquito/taquito': 15.1.0
+  '@taquito/ledger-signer': 16.2.0
+  '@taquito/signer': 16.2.0
+  '@taquito/taquito': 16.2.0
   dotenv-cli: 7.0.0
 
 packages:
@@ -185,68 +185,76 @@ packages:
       '@stablelib/wipe': 1.0.1
     dev: false
 
-  /@taquito/http-utils/15.1.0:
-    resolution: {integrity: sha512-Uug5hN0XvMlFFN+rxSMW+Y9Z8pw5uqHRDZC83eLOBSijbpMo+ScG/2nKkC8MUUrqLaLeHru1HD4kT5DHc1fI+A==}
-    engines: {node: '>=6.0.0'}
+  /@taquito/core/16.2.0:
+    resolution: {integrity: sha512-N1r7zVjpcT8MGtE9Kcel7OgEOrj4cvS7VPWJYKMuUltILBcUmViRcBHiK9qGV6pMdujnihKkupCI6S1LJXPoLg==}
+    engines: {node: '>=16'}
+    dev: false
+
+  /@taquito/http-utils/16.2.0:
+    resolution: {integrity: sha512-3iPP6/zk+U3wFYhFp2/xFj81uZCJhe7unrTgwHS4KbhCTAZ584ux7ViVvy5WlT1WTgI1a+pAi0JH9aEiAqEXbg==}
+    engines: {node: '>=16'}
     dependencies:
-      '@vespaiach/axios-fetch-adapter': github.com/ecadlabs/axios-fetch-adapter/05cf8ba547aae387933939850231e8abaf323efe_axios@0.26.1
       axios: 0.26.1
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@taquito/ledger-signer/15.1.0:
-    resolution: {integrity: sha512-7AV2KQQSX4a2LzpVST0SNIB+3G6gJJ5uyyO1RGCP21G3fsO1maPnBrJFAAiZdysMRs5biVm8iHFpGB78QmE9xw==}
-    engines: {node: '>=6.0.0'}
+  /@taquito/ledger-signer/16.2.0:
+    resolution: {integrity: sha512-ce+8tlOmvBOAE+FDBDcaTFQinR8XjkUlWX4Vi+BPVpEgnm46oIgoZj3xz/J7HJHZQLEoiFwBMa5e4iT/qoxEAA==}
+    engines: {node: '>=16'}
     dependencies:
       '@ledgerhq/hw-transport': 6.27.10
       '@stablelib/blake2b': 1.0.1
-      '@taquito/taquito': 15.1.0
-      '@taquito/utils': 15.1.0
+      '@taquito/taquito': 16.2.0
+      '@taquito/utils': 16.2.0
       buffer: 6.0.3
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@taquito/local-forging/15.1.0:
-    resolution: {integrity: sha512-ib/2RqtxQQC9SjyTB9T5OSc5yUx9GUSdMOA4dmtiiFcN2+AG+aw7ixn6Hjt9Td8ZIOPt9H6HkyTypKrX7+cENw==}
-    engines: {node: '>=6.0.0'}
+  /@taquito/local-forging/16.2.0:
+    resolution: {integrity: sha512-rYyRKudADi4U64XV1Viy63haNICEJ0vm/sMUBul7sixRF+wqmo4Adqt3a1oF4J9lQxc03Jx554SwaS5yF/cvZA==}
+    engines: {node: '>=16'}
     dependencies:
-      '@taquito/utils': 15.1.0
+      '@taquito/core': 16.2.0
+      '@taquito/utils': 16.2.0
       bignumber.js: 9.1.1
     dev: false
 
-  /@taquito/michel-codec/15.1.0:
-    resolution: {integrity: sha512-wKucIhs7vhaq5H+YSF2f6Qu9+g+QiEL6MPc5ROpxBrXJTeKSwBOEIpfqcKfkfMuecJyHZJW3glNfkpAVTCgkxg==}
-    engines: {node: '>=6.0.0'}
+  /@taquito/michel-codec/16.2.0:
+    resolution: {integrity: sha512-az477DkyqJkOmLex/QMWYhtpDnxZ1YpNykUYuuZppWYpdVUA0nHkLGMc5QcekeX3pLCFjf6r0AgOwcAwe3QnLA==}
+    engines: {node: '>=16'}
+    dependencies:
+      '@taquito/core': 16.2.0
     dev: false
 
-  /@taquito/michelson-encoder/15.1.0:
-    resolution: {integrity: sha512-uQMEu3g+8WcYb5ZV6+XGvoWJhKoNxU0F2RqodLJB7UxQ1rI/OMa+VlxSLMt4niIxpKXqnO9j4tD7Y4mPC3ufaA==}
-    engines: {node: '>=6.0.0'}
+  /@taquito/michelson-encoder/16.2.0:
+    resolution: {integrity: sha512-Rt2Slod+7TAqIyPQM5U1/YEoB6thATlbthF4SegsO/kL1i/IClrCOhDKMI8DQ0ZfGnH4nW7bqGJ+eU1TPNVwAg==}
+    engines: {node: '>=16'}
     dependencies:
-      '@taquito/rpc': 15.1.0
-      '@taquito/utils': 15.1.0
+      '@taquito/rpc': 16.2.0
+      '@taquito/utils': 16.2.0
       bignumber.js: 9.1.1
       fast-json-stable-stringify: 2.1.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@taquito/rpc/15.1.0:
-    resolution: {integrity: sha512-OeQA8QwT+s6IUmLaF5yeWruPYzWi/DVCA3kl+AaQ8IFfCMzmAW/MszbbNkJSzHpY2p4jPBwdRNxg3qeJdL482A==}
-    engines: {node: '>=6.0.0'}
+  /@taquito/rpc/16.2.0:
+    resolution: {integrity: sha512-nxcMJbAN53Cq7EJP2Cw/AnUcC2HADZiAbzOvnAIjcC8qmgr+f1Z1IuqfbrHv9CAf+SpEmWa1yMXoNCmixbxfbg==}
+    engines: {node: '>=16'}
     dependencies:
-      '@taquito/http-utils': 15.1.0
-      '@taquito/utils': 15.1.0
+      '@taquito/core': 16.2.0
+      '@taquito/http-utils': 16.2.0
+      '@taquito/utils': 16.2.0
       bignumber.js: 9.1.1
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@taquito/signer/15.1.0:
-    resolution: {integrity: sha512-VP7hS8cYQ6cMerVkbD5X3AqpoIXvh72xNuv3++R4reEjdl+E3VWs1CZZGnJj6yzlFV21SrdGKSILx8Rl3Ql4DA==}
-    engines: {node: '>=6.0.0'}
+  /@taquito/signer/16.2.0:
+    resolution: {integrity: sha512-j0X6LueI5HOknD44hkzOjoG0aRZ86yYtYZt/Q1fiRsh/GobLf8jK2YcHu23QPb4u0V/Ci1jYVvED6IbgxHMacA==}
+    engines: {node: '>=16'}
     dependencies:
       '@stablelib/blake2b': 1.0.1
       '@stablelib/ed25519': 1.0.3
@@ -254,8 +262,8 @@ packages:
       '@stablelib/nacl': 1.0.4
       '@stablelib/pbkdf2': 1.0.1
       '@stablelib/sha512': 1.0.1
-      '@taquito/taquito': 15.1.0
-      '@taquito/utils': 15.1.0
+      '@taquito/taquito': 16.2.0
+      '@taquito/utils': 16.2.0
       '@types/bn.js': 5.1.1
       bip39: 3.0.4
       elliptic: 6.5.4
@@ -265,29 +273,31 @@ packages:
       - debug
     dev: false
 
-  /@taquito/taquito/15.1.0:
-    resolution: {integrity: sha512-2AXWeNoXsmMOSkJVXtXjOlJkS+hKXITaSybMA6nJuS1YWY4e7iAr678Y6UgVEHRJxeGohX4R4Ww12Ymr3Sfedg==}
-    engines: {node: '>=6.0.0'}
+  /@taquito/taquito/16.2.0:
+    resolution: {integrity: sha512-nkenSPUcOrivbeg1uxmUu9BIweVjjVchywH3NfZWajZ3W9sOiIe+IwLGJ2H5FPD2LZrt0X9zpFEaLlyDDZEVUQ==}
+    engines: {node: '>=16'}
     requiresBuild: true
     dependencies:
-      '@taquito/http-utils': 15.1.0
-      '@taquito/local-forging': 15.1.0
-      '@taquito/michel-codec': 15.1.0
-      '@taquito/michelson-encoder': 15.1.0
-      '@taquito/rpc': 15.1.0
-      '@taquito/utils': 15.1.0
+      '@taquito/core': 16.2.0
+      '@taquito/http-utils': 16.2.0
+      '@taquito/local-forging': 16.2.0
+      '@taquito/michel-codec': 16.2.0
+      '@taquito/michelson-encoder': 16.2.0
+      '@taquito/rpc': 16.2.0
+      '@taquito/utils': 16.2.0
       bignumber.js: 9.1.1
       rxjs: 6.6.7
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@taquito/utils/15.1.0:
-    resolution: {integrity: sha512-lqVThoFMmOKPg9jyREr4A63cpeckf5esCwOyOAW3sm+yCxD9s5khnBPtH8s52cRVnChFdwk/eqmADka9gat5hw==}
-    engines: {node: '>=6.0.0'}
+  /@taquito/utils/16.2.0:
+    resolution: {integrity: sha512-Oa9oV0wwBHpgcVHTfINwXGcUlS1EVjCyBR9ntTVvYu6AqdktdS3N+6PPX+MaMt8eXT2bnEfXPWJKjA9I+yYljA==}
+    engines: {node: '>=16'}
     dependencies:
       '@stablelib/blake2b': 1.0.1
       '@stablelib/ed25519': 1.0.3
+      '@taquito/core': 16.2.0
       '@types/bs58check': 2.1.0
       bignumber.js: 9.1.1
       blakejs: 1.2.1
@@ -852,15 +862,4 @@ packages:
 
   /yallist/4.0.0:
     resolution: {integrity: sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==}
-    dev: false
-
-  github.com/ecadlabs/axios-fetch-adapter/05cf8ba547aae387933939850231e8abaf323efe_axios@0.26.1:
-    resolution: {tarball: https://codeload.github.com/ecadlabs/axios-fetch-adapter/tar.gz/05cf8ba547aae387933939850231e8abaf323efe}
-    id: github.com/ecadlabs/axios-fetch-adapter/05cf8ba547aae387933939850231e8abaf323efe
-    name: '@vespaiach/axios-fetch-adapter'
-    version: 0.3.1
-    peerDependencies:
-      axios: '>=0.26.0'
-    dependencies:
-      axios: 0.26.1
     dev: false

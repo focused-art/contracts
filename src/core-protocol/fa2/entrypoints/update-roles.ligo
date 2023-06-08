@@ -15,7 +15,4 @@ function update_roles (const params : update_roles_params; var s : storage) : re
       ]
     ];
   };
-} with (noops, s)
-
-function update_roles_as_constant (const params : update_roles_params; var s : storage) : return is
-  ((Tezos.constant("exprus2LJ5JotvVak8gKSDUq99jmZmxbwRNg9E4imWSnQTo9eKbZDn") : update_roles_params * storage -> return))((params, s))
+} with (nil, s)

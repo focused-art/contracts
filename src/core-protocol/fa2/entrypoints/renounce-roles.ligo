@@ -23,7 +23,4 @@ function renounce_roles (const params : renounce_roles_params; var s : storage) 
       }
     ]
   };
-} with (noops, s)
-
-function renounce_roles_as_constant (const params : renounce_roles_params; var s : storage) : return is
-  ((Tezos.constant("exprupxkPauK8NneohZ5N8VmD18vZpANCF6XaY3SioQaBNh7TT9F6z") : renounce_roles_params * storage -> return))((params, s))
+} with (nil, s)

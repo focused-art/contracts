@@ -1,4 +1,4 @@
-function balance_of (const balance_params : balance_params; const s : token_storage) : token_return is {
+function balance_of (const balance_params : balance_params; const s : storage) : return is {
 
   var accumulated_response : list (balance_of_response) := nil;
 
@@ -16,6 +16,3 @@ function balance_of (const balance_params : balance_params; const s : token_stor
   };
 
 } with (list [ Tezos.transaction(accumulated_response, 0tz, balance_params.callback) ], s)
-
-function balance_of_as_constant (const params : balance_params; const s : token_storage) : token_return is
-  ((Tezos.constant("exprukzUFbkRrZjG8YF4zbrwWbr3cYubfqsWsDDSqzL9pBsGqy7QHJ") : balance_params * token_storage -> token_return))((params, s))

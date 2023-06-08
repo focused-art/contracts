@@ -1,9 +1,10 @@
-function update_operators (const params : update_operator_params; var s : token_storage) : token_return is {
+function update_operators (const params : update_operator_params; var s : storage) : return is {
   (* initialize operations *)
   var operations : list (operation) := nil;
 
   for update_operator_param in list params {
     case update_operator_param of [
+
     | Add_operator(param) -> {
       validate_token_id(param.token_id, s);
       validate_owner(param.owner);
@@ -17,6 +18,7 @@ function update_operators (const params : update_operator_params; var s : token_
       ];
       operations := Tezos.emit("%operator_update", operator_update_event) # operations;
     }
+
     | Remove_operator(param) -> {
       validate_token_id(param.token_id, s);
       validate_owner(param.owner);
@@ -33,6 +35,3 @@ function update_operators (const params : update_operator_params; var s : token_
     ];
   };
 } with (operations, s)
-
-function update_operators_as_constant (const params : update_operator_params; var s : token_storage) : token_return is
-  ((Tezos.constant("exprtdBxWxRb5ni1wGhB9VvPe13W4e5LFDcKkcAgXyxeWwTaQDgPRE") : update_operator_params * token_storage -> token_return))((params, s))

@@ -37,7 +37,4 @@ function update_hooks (const params : update_hooks_params; var s : storage) : re
       ]
     ];
   };
-} with (noops, s)
-
-function update_hooks_as_constant (const params : update_hooks_params; var s : storage) : return is
-  ((Tezos.constant("exprttCguv4TKwQS93vpQvmQKp5RDdZigsRSPz4BU9unYrqZMq7ZuW") : update_hooks_params * storage -> return))((params, s))
+} with (nil, s)

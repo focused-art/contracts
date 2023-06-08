@@ -1,16 +1,16 @@
 (* Burn some tokens *)
 function burn (const input : mint_burn_params; var s : storage) : return is {
-  validate_operator(input.owner, Tezos.get_sender(), input.token_id, s.assets);
-  validate_token_id(input.token_id, s.assets);
+  validate_operator(input.owner, Tezos.get_sender(), input.token_id, s);
+  validate_token_id(input.token_id, s);
 
-  const owner_bal : nat = internal_get_balance_of(input.owner, input.token_id, s.assets);
+  const owner_bal : nat = internal_get_balance_of(input.owner, input.token_id, s);
   assert_with_error(owner_bal >= input.amount, "FA2_INSUFFICIENT_BALANCE");
 
   const new_owner_bal : nat = abs(owner_bal - input.amount);
-  s.assets.ledger[(input.owner, input.token_id)] := new_owner_bal;
+  s.ledger[(input.owner, input.token_id)] := new_owner_bal;
 
-  const new_total_supply : nat = abs(internal_get_token_total_supply(input.token_id, s.assets) - input.amount);
-  s.assets.token_total_supply[input.token_id] := new_total_supply;
+  const new_total_supply : nat = abs(internal_get_token_total_supply(input.token_id, s) - input.amount);
+  s.token_total_supply[input.token_id] := new_total_supply;
 
   (* initialize operations *)
   var operations : list (operation) := nil;
@@ -41,6 +41,3 @@ function burn (const input : mint_burn_params; var s : storage) : return is {
   operations := Tezos.emit("%balance_update", balance_update_event) # operations;
 
 } with (operations, s)
-
-function burn_as_constant (const params : mint_burn_params; var s : storage) : return is
-  ((Tezos.constant("expruAr9Y5qyfc9mLRtauKwNTe96NkzqjUGrNzpAHECjaHcjZRrc5b") : mint_burn_params * storage -> return))((params, s))

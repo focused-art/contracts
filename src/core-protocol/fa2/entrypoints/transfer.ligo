@@ -1,4 +1,4 @@
-function transfer (const params : transfer_params; var s : token_storage) : token_return is {
+function transfer (const params : transfer_params; var s : storage) : return is {
 
   var balance_updates : map(owner * token_id, nat) := map [];
 
@@ -64,21 +64,11 @@ function transfer (const params : transfer_params; var s : token_storage) : toke
 
 } with (operations, s)
 
-function transfer_with_hook (const params : transfer_params; var s : token_storage) : token_return is {
-  var res : token_return := transfer(params, s);
+function transfer_with_hook (const params : transfer_params; var s : storage) : return is {
+  var res : return := transfer(params, s);
 
-  const transfer_hook_entrypoint : contract (transfer_params) =
-    case (Tezos.get_entrypoint_opt("%internal_transfer_hook", Tezos.get_self_address()) : option(contract(transfer_params))) of [
-      None -> failwith ("FA2_INTERNAL_TRANSFER_HOOK_UNDEFINED")
-    | Some(entrypoint) -> entrypoint
-    ];
-  const hook_operation : operation = Tezos.transaction (params, 0tz, transfer_hook_entrypoint);
-  res.0 := hook_operation # res.0;
-
+  (* send any transfer hooks *)
+  for hook in set s.hooks.transfer {
+    res.0 := Tezos.transaction (params, 0tz, get_transfer_hook(hook)) # res.0;
+  };
 } with (res.0, res.1)
-
-function transfer_as_constant (const params : transfer_params; var s : token_storage) : token_return is
-  ((Tezos.constant("exprtmSbRhT6JR681qvH4znr4fGLbxv9vfkxfZgnCentVHJqGL3t15") : transfer_params * token_storage -> token_return))((params, s))
-
-function transfer_with_hook_as_constant (const params : transfer_params; var s : token_storage) : token_return is
-  ((Tezos.constant("exprurWrrDJ7XUviRYk4uTyAVW74BMnfKADEHyWxkkoyfnhcGWG366") : transfer_params * token_storage -> token_return))((params, s))

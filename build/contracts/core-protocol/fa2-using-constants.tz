@@ -1,49 +1,50 @@
 { parameter
-    (or (or (or (or (or %assets
-                       (or (list %assert_balances (pair (address %owner) (nat %token_id) (nat %balance)))
-                           (pair %balance_of
-                              (list %requests (pair (address %owner) (nat %token_id)))
-                              (contract %callback
-                                 (list (pair (pair %request (address %owner) (nat %token_id)) (nat %balance))))))
-                       (or (list %transfer
-                              (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))
-                           (list %update_operators
-                              (or (pair %add_operator (address %owner) (address %operator) (nat %token_id))
-                                  (pair %remove_operator (address %owner) (address %operator) (nat %token_id))))))
-                    (pair %burn (address %owner) (nat %token_id) (nat %amount)))
-                (or (unit %confirm_ownership)
-                    (pair %create
-                       (pair %token_metadata (nat %token_id) (map %token_info string bytes))
-                       (pair %royalties (nat %total_shares) (map %shares address nat)))))
-            (or (or (list %internal_transfer_hook
-                       (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))
-                    (pair %mint (address %owner) (nat %token_id) (nat %amount)))
-                (or (or %owner_action
-                       (or (address %transfer_ownership)
-                           (list %update_hooks
-                              (or (pair %add
-                                     (or (or (or (unit %burn) (unit %create)) (or (unit %metadata) (unit %mint)))
-                                         (unit %transfer))
-                                     address)
-                                  (pair %remove
-                                     (or (or (or (unit %burn) (unit %create)) (or (unit %metadata) (unit %mint)))
-                                         (unit %transfer))
-                                     address))))
-                       (list %update_roles
-                          (or (pair %add
-                                 (or (or (unit %creator) (unit %metadata_manager))
-                                     (or (unit %minter) (unit %royalties_manager)))
-                                 address)
-                              (pair %remove
-                                 (or (or (unit %creator) (unit %metadata_manager))
-                                     (or (unit %minter) (unit %royalties_manager)))
-                                 address))))
-                    (list %renounce_roles
-                       (or (or (or (unit %creator) (unit %metadata_manager)) (or (unit %minter) (unit %ownership)))
-                           (unit %royalties_manager))))))
-        (or (or (pair %update_default_royalties (nat %total_shares) (map %shares address nat))
-                (map %update_metadata nat (pair (nat %token_id) (map %token_info string bytes))))
-            (map %update_royalties nat (pair (nat %total_shares) (map %shares address nat))))) ;
+    (or (or (or %fa2_core_action
+               (or (list %assert_balances (pair (address %owner) (nat %token_id) (nat %balance)))
+                   (pair %balance_of
+                      (list %requests (pair (address %owner) (nat %token_id)))
+                      (contract %callback
+                         (list (pair (pair %request (address %owner) (nat %token_id)) (nat %balance))))))
+               (or (list %transfer
+                      (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))
+                   (list %update_operators
+                      (or (pair %add_operator (address %owner) (address %operator) (nat %token_id))
+                          (pair %remove_operator (address %owner) (address %operator) (nat %token_id))))))
+            (or %fa2_plus_action
+               (or (pair %burn (address %owner) (nat %token_id) (nat %amount))
+                   (pair %create
+                      (pair %token_metadata (nat %token_id) (map %token_info string bytes))
+                      (pair %royalties (nat %total_shares) (map %shares address nat))
+                      (nat %max_supply)))
+               (pair %mint (address %owner) (nat %token_id) (nat %amount))))
+        (or (or %owner_action
+               (or (address %transfer_ownership) (map %update_contract_metadata string bytes))
+               (or (list %update_hooks
+                      (or (pair %add
+                             (or (or (or (unit %burn) (unit %create)) (or (unit %metadata) (unit %mint)))
+                                 (unit %transfer))
+                             address)
+                          (pair %remove
+                             (or (or (or (unit %burn) (unit %create)) (or (unit %metadata) (unit %mint)))
+                                 (unit %transfer))
+                             address)))
+                   (list %update_roles
+                      (or (pair %add
+                             (or (or (unit %creator) (unit %metadata_manager))
+                                 (or (unit %minter) (unit %royalties_manager)))
+                             address)
+                          (pair %remove
+                             (or (or (unit %creator) (unit %metadata_manager))
+                                 (or (unit %minter) (unit %royalties_manager)))
+                             address)))))
+            (or %privileged_action
+               (or (or (set %cement_metadata nat) (unit %confirm_ownership))
+                   (or (list %renounce_roles
+                          (or (or (or (unit %creator) (unit %metadata_manager)) (or (unit %minter) (unit %ownership)))
+                              (unit %royalties_manager)))
+                       (pair %update_default_royalties (nat %total_shares) (map %shares address nat))))
+               (or (map %update_metadata nat (pair (nat %token_id) (map %token_info string bytes)))
+                   (map %update_royalties nat (pair (nat %total_shares) (map %shares address nat))))))) ;
   storage
     (pair (big_map %metadata string bytes)
           (pair %roles
@@ -59,74 +60,29 @@
              (set %mint address)
              (set %burn address)
              (set %update_metadata address))
-          (pair %assets
-             (nat %next_token_id)
-             (big_map %token_total_supply nat nat)
-             (big_map %ledger (pair address nat) nat)
-             (big_map %operators (pair address address nat) unit)
-             (big_map %token_metadata nat (pair (nat %token_id) (map %token_info string bytes)))
-             (big_map %royalties nat (pair (nat %total_shares) (map %shares address nat))))
+          (nat %next_token_id)
+          (big_map %token_total_supply nat nat)
+          (big_map %ledger (pair address nat) nat)
+          (big_map %operators (pair address address nat) unit)
+          (big_map %token_metadata nat (pair (nat %token_id) (map %token_info string bytes)))
+          (big_map %royalties nat (pair (nat %total_shares) (map %shares address nat)))
+          (big_map %token_max_supply nat nat)
+          (big_map %cemented_tokens nat unit)
           (pair %default_royalties (nat %total_shares) (map %shares address nat))) ;
   code { UNPAIR ;
-         SWAP ;
          PUSH string "FA2_DONT_SEND_TEZ" ;
          PUSH mutez 0 ;
          AMOUNT ;
          COMPARE ;
          EQ ;
          IF { DROP } { FAILWITH } ;
-         SWAP ;
          IF_LEFT
            { IF_LEFT
-               { IF_LEFT
-                   { IF_LEFT
-                       { DUP 2 ;
-                         GET 7 ;
-                         SWAP ;
-                         IF_LEFT
-                           { IF_LEFT
-                               { PAIR ; constant "exprv1W3deX8DGQTE1kScuwH9EkBEhhPSgtC6vuNuSJNFFsFFCXjHv" }
-                               { PAIR ; constant "exprukzUFbkRrZjG8YF4zbrwWbr3cYubfqsWsDDSqzL9pBsGqy7QHJ" } }
-                           { IF_LEFT
-                               { PAIR ; constant "exprurWrrDJ7XUviRYk4uTyAVW74BMnfKADEHyWxkkoyfnhcGWG366" }
-                               { PAIR ; constant "exprtdBxWxRb5ni1wGhB9VvPe13W4e5LFDcKkcAgXyxeWwTaQDgPRE" } } ;
-                         SWAP ;
-                         DUP 2 ;
-                         CDR ;
-                         UPDATE 7 ;
-                         SWAP ;
-                         CAR ;
-                         PAIR }
-                       { PAIR ; constant "expruAr9Y5qyfc9mLRtauKwNTe96NkzqjUGrNzpAHECjaHcjZRrc5b" } }
-                   { IF_LEFT
-                       { DROP ; constant "expruVbPWAVhz2QqMhBFFfSzDXuf8dRYbi6Hwy1L3WhaERoykeXLEF" }
-                       { PAIR ; constant "exprtX949TczmNVB2eZY8f9ZbMbSqSP8Bn9XwH3t6WsPQQX1t3Ye9d" } } }
-               { IF_LEFT
-                   { IF_LEFT
-                       { PAIR ; constant "expruPFsgsL7j4984ADp1pWUgNuJzrE4DKNnET9qQGnGkFdJB7ymQP" }
-                       { PAIR ; constant "exprthvHuVPs3FMsg29eprbwf4Rsd4jbw9Ek4h2B7mPEnX8mT9qqnH" } }
-                   { IF_LEFT
-                       { PUSH string "FA2_INVALID_OWNER_ACCESS" ;
-                         DUP 3 ;
-                         SENDER ;
-                         SWAP ;
-                         GET 3 ;
-                         CAR ;
-                         SWAP ;
-                         COMPARE ;
-                         EQ ;
-                         IF { DROP } { FAILWITH } ;
-                         IF_LEFT
-                           { IF_LEFT
-                               { PAIR ; constant "exprtXVLya25NWhqzba8zpWvSPEBfhJm8dkPQSvYZtEbxjMTMDVyTB" }
-                               { PAIR ; constant "exprttCguv4TKwQS93vpQvmQKp5RDdZigsRSPz4BU9unYrqZMq7ZuW" } }
-                           { PAIR ; constant "exprus2LJ5JotvVak8gKSDUq99jmZmxbwRNg9E4imWSnQTo9eKbZDn" } }
-                       { PAIR ; constant "exprupxkPauK8NneohZ5N8VmD18vZpANCF6XaY3SioQaBNh7TT9F6z" } } } }
+               { PAIR ; constant "exprvMnRY77WUvhcQ9hh26a5SjpRQvtwMyvLTHQ33p5vPofUocTUKY" }
+               { PAIR ; constant "exprvByofuajxu9XbaRHkr5fzZbdZpPnX2VEZBtYX4RKyosxiWDe3V" } }
            { IF_LEFT
-               { IF_LEFT
-                   { PAIR ; constant "exprtbPHMpXeYcyLezk5M2XxrEKPe2CaXmYKg9pPBHJnjp7iWNJ8JG" }
-                   { PAIR ; constant "exprue8qMa4Ym4rNatE6eCaeJv16tkLQxwJAvHaLU7MKn9NTgBUdwA" } }
-               { PAIR ; constant "exprtjiLL4je9bkP1bLMoPQQtxxBXXBirWzKo6qYufyVkrHXdeEPRt" } } } ;
+               { PAIR ; constant "expruU5GvmZa1PfpPrwdXp4wECZBZ6TUUhYxuvJKBuWz3Bz5JtoVwL" }
+               { PAIR ; constant "expruBrVeSyayhN73xkkULj2a7PLpdS4th15zFt3p48oHDx8pkxvGx" } } } ;
   view "get_owner" unit address { CDR ; GET 3 ; CAR } ;
   view "is_owner"
        address
@@ -162,14 +118,22 @@
        address
        bool
        { UNPAIR ; SWAP ; GET 5 ; GET 8 ; SWAP ; MEM } ;
-  view "next_token_id" unit nat { CDR ; GET 7 ; CAR } ;
+  view "is_cemented"
+       nat
+       bool
+       { UNPAIR ;
+         SWAP ;
+         GET 21 ;
+         SWAP ;
+         GET ;
+         IF_NONE { PUSH bool False } { DROP ; PUSH bool True } } ;
+  view "next_token_id" unit nat { CDR ; GET 7 } ;
   view "get_balance"
        (pair (address %owner) (nat %token_id))
        nat
        { UNPAIR ;
          SWAP ;
-         GET 7 ;
-         GET 5 ;
+         GET 11 ;
          DUP 2 ;
          CDR ;
          DIG 2 ;
@@ -180,13 +144,11 @@
   view "get_total_supply"
        nat
        nat
-       { UNPAIR ;
-         SWAP ;
-         GET 7 ;
-         GET 3 ;
-         SWAP ;
-         GET ;
-         IF_NONE { PUSH nat 0 } {} } ;
+       { UNPAIR ; SWAP ; GET 9 ; SWAP ; GET ; IF_NONE { PUSH nat 0 } {} } ;
+  view "get_max_supply"
+       nat
+       nat
+       { UNPAIR ; SWAP ; GET 19 ; SWAP ; GET ; IF_NONE { PUSH nat 0 } {} } ;
   view "is_operator"
        (pair (address %owner) (address %operator) (nat %token_id))
        bool
@@ -196,8 +158,7 @@
          DUP 2 ;
          CAR ;
          DIG 3 ;
-         GET 7 ;
-         GET 7 ;
+         GET 13 ;
          DIG 3 ;
          GET 4 ;
          DUP 4 ;
@@ -214,20 +175,18 @@
        (map string bytes)
        { UNPAIR ;
          SWAP ;
-         GET 7 ;
-         GET 9 ;
+         GET 15 ;
          SWAP ;
          GET ;
          IF_NONE { EMPTY_MAP string bytes } { CDR } } ;
-  view "is_token" nat bool { UNPAIR ; SWAP ; GET 7 ; GET 3 ; SWAP ; MEM } ;
+  view "is_token" nat bool { UNPAIR ; SWAP ; GET 9 ; SWAP ; MEM } ;
   view "get_royalties"
        nat
        (pair (nat %total_shares) (map %shares address nat))
        { UNPAIR ;
          DUP 2 ;
-         GET 7 ;
-         GET 10 ;
+         GET 17 ;
          SWAP ;
          GET ;
-         IF_NONE { GET 8 } { SWAP ; DROP } } }
+         IF_NONE { GET 22 } { SWAP ; DROP } } }
 

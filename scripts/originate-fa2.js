@@ -24,7 +24,7 @@ const fs = require('fs');
 
   const pkh = await Tezos.signer.publicKeyHash();
 
-  const contractCode = fs.readFileSync(__dirname + `/../build/contracts/fa2-plus.tz`, 'utf8');
+  const contractCode = fs.readFileSync(__dirname + `/../build/contracts/core-protocol/fa2-using-constants.tz`, 'utf8');
   const initial_storage = {
     metadata: {
       "": Buffer.from("tezos-storage:content").toString("hex"),
@@ -43,16 +43,22 @@ const fs = require('fs');
       minter: [pkh],
       metadata_manager: [pkh],
       royalties_manager: [pkh],
-      transfer_hook: [],
     },
-    assets: {
-      next_token_id: 0,
-      token_total_supply: {},
-      ledger: {},
-      operators: {},
-      token_metadata: {},
-      royalties: {},
+    hooks: {
+      transfer: [],
+      create: [],
+      mint: [],
+      burn: [],
+      update_metadata: [],
     },
+    next_token_id: 0,
+    token_total_supply: {},
+    ledger: {},
+    operators: {},
+    token_metadata: {},
+    royalties: {},
+    token_max_supply: {},
+    cemented_tokens: {},
     default_royalties: {
       total_shares: 0,
       shares: [],
