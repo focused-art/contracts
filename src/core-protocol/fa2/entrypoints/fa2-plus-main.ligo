@@ -1,6 +1,6 @@
-#include "burn.ligo"
-#include "create.ligo"
-#include "mint.ligo"
+#include "fa2-plus/burn.ligo"
+#include "fa2-plus/create.ligo"
+#include "fa2-plus/mint.ligo"
 
 function fa2_plus_main (const action : fa2_plus_action; var s : storage) : return is
   case action of [

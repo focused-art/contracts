@@ -1,9 +1,9 @@
-#include "renounce-roles.ligo"
-#include "update-metadata.ligo"
-#include "cement-metadata.ligo"
-#include "confirm-ownership.ligo"
-#include "update-royalties.ligo"
-#include "update-default-royalties.ligo"
+#include "privileged/renounce-roles.ligo"
+#include "privileged/update-metadata.ligo"
+#include "privileged/cement-metadata.ligo"
+#include "privileged/confirm-ownership.ligo"
+#include "privileged/update-royalties.ligo"
+#include "privileged/update-default-royalties.ligo"
 
 function privileged_main (const action : privileged_action; var s : storage) : return is
   case action of [

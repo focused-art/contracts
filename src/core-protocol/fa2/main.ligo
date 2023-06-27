@@ -5,7 +5,7 @@
 (*                                          *)
 
 #include "../../common/types.ligo"
-#include "../../utils/nat.ligo"
+#include "../../common/utils/nat.ligo"
 #include "types.ligo"
 #include "helpers.ligo"
 #include "views.ligo"

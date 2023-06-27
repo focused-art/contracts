@@ -1,7 +1,7 @@
-#include "transfer.ligo"
-#include "update-operators.ligo"
-#include "assert-balances.ligo"
-#include "balance-of.ligo"
+#include "fa2-core/transfer.ligo"
+#include "fa2-core/update-operators.ligo"
+#include "fa2-core/assert-balances.ligo"
+#include "fa2-core/balance-of.ligo"
 
 function fa2_core_main (const action : fa2_core_action; var s : storage) : return is
   case action of [

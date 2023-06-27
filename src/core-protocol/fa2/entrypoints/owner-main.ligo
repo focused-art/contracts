@@ -1,7 +1,7 @@
-#include "transfer-ownership.ligo"
-#include "update-contract-metadata.ligo"
-#include "update-hooks.ligo"
-#include "update-roles.ligo"
+#include "owner/transfer-ownership.ligo"
+#include "owner/update-contract-metadata.ligo"
+#include "owner/update-hooks.ligo"
+#include "owner/update-roles.ligo"
 
 function owner_main (const action : owner_action; var s : storage) : return is {
   assert_with_error(is_owner(Tezos.get_sender(), s), "FA2_INVALID_OWNER_ACCESS");

@@ -1,8 +1,9 @@
 type token_id is [@annot:token_id] nat
+type token_ids is set (token_id)
 type owner is address
 type operator is address
-
 type royalty_shares is map (address, nat)
+type token_info is map (string, bytes)
 
 type royalties is
   [@layout:comb]
@@ -11,13 +12,11 @@ type royalties is
     shares                    : royalty_shares;
   ]
 
-type token_info is map (string, bytes)
-
 type token_metadata is
   [@layout:comb]
   record [
-    token_id            : token_id;
-    token_info          : token_info;
+    token_id                  : token_id;
+    token_info                : token_info;
   ]
 
 type transfer_destination is
@@ -65,8 +64,8 @@ type operator_param is
   ]
 
 type update_operator_param is
-  | Add_operator    of operator_param
-  | Remove_operator of operator_param
+  | Add_operator              of operator_param
+  | Remove_operator           of operator_param
 
 type transfer_params is list (transfer_param)
 type update_operator_params is list (update_operator_param)
@@ -80,36 +79,6 @@ type assert_balance_param is
   ]
 
 type assert_balance_params is list (assert_balance_param)
-
-type operator_update_event is
-  [@layout:comb]
-  record [
-    owner                     : owner;
-    operator                  : operator;
-    token_id                  : token_id;
-    is_operator               : bool;
-  ]
-
-type transfer_event is
-  [@layout:comb]
-  record [
-    from_                     : owner;
-    to_                       : address;
-    token_id                  : token_id;
-    amount                    : nat;
-  ]
-
-type balance_update_event is
-  [@layout:comb]
-  record [
-    owner                     : owner;
-    token_id                  : token_id;
-    new_balance               : nat;
-    diff                      : int;
-  ]
-
-type trusted is address
-type token_ids is set (token_id)
 
 type create_params is
   [@layout:comb]
@@ -137,17 +106,17 @@ type role_type is
   | Royalties_manager
 
 type update_role_param is
-  | Add of role_type * trusted
-  | Remove of role_type * trusted
+  | Add                       of role_type * trusted
+  | Remove                    of role_type * trusted
 
 type update_roles_params is list (update_role_param)
 
 type renounce_role_params is
-  | Ownership of unit
-  | Creator of unit
-  | Minter of unit
-  | Metadata_manager of unit
-  | Royalties_manager of unit
+  | Ownership                 of unit
+  | Creator                   of unit
+  | Minter                    of unit
+  | Metadata_manager          of unit
+  | Royalties_manager         of unit
 
 type renounce_roles_params is list (renounce_role_params)
 
@@ -159,8 +128,8 @@ type hook_type is
   | Metadata
 
 type update_hook_param is
-  | Add of hook_type * trusted
-  | Remove of hook_type * trusted
+  | Add                       of hook_type * trusted
+  | Remove                    of hook_type * trusted
 
 type update_hooks_params is list (update_hook_param)
 
@@ -203,6 +172,33 @@ type storage is
     default_royalties         : royalties;
   ]
 
+type operator_update_event is
+  [@layout:comb]
+  record [
+    owner                     : owner;
+    operator                  : operator;
+    token_id                  : token_id;
+    is_operator               : bool;
+  ]
+
+type transfer_event is
+  [@layout:comb]
+  record [
+    from_                     : owner;
+    to_                       : address;
+    token_id                  : token_id;
+    amount                    : nat;
+  ]
+
+type balance_update_event is
+  [@layout:comb]
+  record [
+    owner                     : owner;
+    token_id                  : token_id;
+    new_balance               : nat;
+    diff                      : int;
+  ]
+
 type token_metadata_update_event is
   [@layout:comb]
   record [
@@ -234,7 +230,7 @@ type total_supply_update_event is
   ]
 
 (* define return type for readability *)
-type return is list (operation) * storage
+type return is op_list * storage
 
 type owner_action is
   | Transfer_ownership        of trusted
