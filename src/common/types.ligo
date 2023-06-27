@@ -1,5 +1,7 @@
+type trusted is address
 type recipient is address
 type recipients is map (recipient, nat)
+type op_list is list (operation)
 
 (* define noop for readability *)
 const noops: list (operation) = nil;
