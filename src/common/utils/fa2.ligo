@@ -1,5 +1,4 @@
-#include "../common/fa2/types.ligo"
-#include "../core-protocol/fa2/types.ligo"
+#include "../../core-protocol/fa2/types.ligo"
 
 type fa2 is
   [@layout:comb]
@@ -16,7 +15,7 @@ type calc_royalties_params is
   ]
 
 function calc_royalties (const p : calc_royalties_params) : royalty_shares is
-  ((Tezos.constant("exprusMimuj6aZKSJddswy8dLNchL8KFEDCNZD7v1K4ys2kjXAgHQJ") : calc_royalties_params -> royalty_shares))(p)
+  ((Tezos.constant("expru2hTf7Qe5QVb7UWdLKVedax3Snw3NyewjDX3aQYUQfD9xCR6YY") : calc_royalties_params -> royalty_shares))(p)
 
 function get_royalty_shares (const token : fa2; const price : nat) : royalty_shares is {
   const royalties : royalties = Option.unopt((Tezos.call_view("get_royalties", token.token_id, token.address) : option(royalties)));
@@ -93,3 +92,6 @@ function fa2_burn (const token : fa2; const owner : address; const amount : nat)
       ], 0tz, entrypoint)
   | None -> fa2_transfer(token, owner, c_NULL_ADDRESS, amount)
   ]
+
+function fa2_freeze (const token : fa2; const owner : address; const amount : nat; const freeze_until : timestamp) : operation is
+  fa2_transfer(token, owner, c_NULL_ADDRESS, amount)
