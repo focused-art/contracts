@@ -4,12 +4,12 @@
 (*      Built by Codecrafting <♥> Labs      *)
 (*                                          *)
 
-#include "../../common/types.ligo"
-#include "../../common/utils/fa2.ligo"
-#include "../../common/utils/tez.ligo"
-#include "../../common/utils/nat.ligo"
-#include "../../common/utils/int.ligo"
-#include "../../common/payments.ligo"
+#include "../common/types.ligo"
+#include "../common/utils/fa2.ligo"
+#include "../common/utils/tez.ligo"
+#include "../common/utils/nat.ligo"
+#include "../common/utils/int.ligo"
+#include "../common/payments.ligo"
 
 #include "types.ligo"
 #include "helpers.ligo"

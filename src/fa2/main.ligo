@@ -4,8 +4,8 @@
 (*      Built by Codecrafting <♥> Labs      *)
 (*                                          *)
 
-#include "../../common/types.ligo"
-#include "../../common/utils/nat.ligo"
+#include "../common/types.ligo"
+#include "../common/utils/nat.ligo"
 #include "types.ligo"
 #include "helpers.ligo"
 #include "views.ligo"

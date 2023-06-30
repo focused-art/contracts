@@ -1,7 +1,7 @@
 const create_fa2 : create_fa2 =
 [%Michelson ( {| { UNPPAIIR ;
                   CREATE_CONTRACT
-#include "../../../../build/contracts/core-protocol/fa2.tz"
+#include "../../../build/contracts/fa2.tz"
         ;
           PAIR } |}
  : create_fa2)];

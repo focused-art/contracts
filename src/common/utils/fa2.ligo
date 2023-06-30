@@ -1,4 +1,4 @@
-#include "../../core-protocol/fa2/types.ligo"
+#include "../../fa2/types.ligo"
 
 type fa2 is
   [@layout:comb]
