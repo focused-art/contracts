@@ -3,29 +3,35 @@
   "version": "1.0.0",
   "description": "focused.art smart contracts",
   "scripts": {
-    "clean": "rm -rf ./build/contracts && mkdir -p ./build/contracts && mkdir -p ./build/contracts/core-protocol/hooks && mkdir -p ./build/contracts/common",
-    "ligo": "docker run --rm -v \"$PWD\":\"$PWD\" -w \"$PWD\" ligolang/ligo:0.60.0",
+    "clean": "rm -rf ./build/contracts && mkdir -p ./build/contracts && mkdir -p ./build/contracts/hooks",
+    "ligo": "docker run --rm -v \"$PWD\":\"$PWD\" -w \"$PWD\" ligolang/ligo:0.68.0",
+    "ligo:0.60.0": "docker run --rm -v \"$PWD\":\"$PWD\" -w \"$PWD\" ligolang/ligo:0.60.0",
+    "ligo:next": "docker run --rm -v \"$PWD\":\"$PWD\" -w \"$PWD\" ligolang/ligo:next",
 
     "compile:clean": "pnpm clean && pnpm compile:all",
-    "compile:all": "pnpm compile:common:fa2:all && pnpm compile:core:fa2:all && pnpm compile:core:hook:all",
+    "compile:all": "pnpm compile:fa2:all && pnpm compile:hook:all && pnpm compile:mint-recipe",
+    "compile:contract": "pnpm --silent ligo compile contract src/${CONTRACT}/main.ligo --deprecated -e main --file-constants ./build/constants/all.json > ./build/contracts/${CONTRACT}.tz",
+    "compile:contract:using-consts": "pnpm --silent ligo:0.60.0 compile contract src/${CONTRACT}/main-using-constants.ligo -e main_using_constants --file-constants ./build/constants/all.json > ./build/contracts/${CONTRACT}-using-constants.tz",
+    "compile:fa2:all": "pnpm compile:fa2 && pnpm compile:fa2-protocol && pnpm compile:fa2:using-consts && pnpm compile:fa2-protocol:using-consts",
+    "compile:fa2": "CONTRACT=fa2 pnpm compile:contract",
+    "compile:fa2-protocol": "CONTRACT=fa2-protocol pnpm compile:contract",
+    "compile:fa2:using-consts": "CONTRACT=fa2 pnpm compile:contract:using-consts",
+    "compile:fa2-protocol:using-consts": "CONTRACT=fa2-protocol pnpm compile:contract:using-consts",
+    "compile:mint-recipe": "CONTRACT=mint-recipe pnpm compile:contract",
+    "compile:hook:all": "pnpm compile:hook:ntt && pnpm compile:hook:cement-metadata",
+    "compile:hook:ntt": "CONTRACT=hooks/ntt pnpm compile:contract",
+    "compile:hook:cement-metadata": "CONTRACT=hooks/cement-metadata pnpm compile:contract",
 
-    "compile:core:fa2:all": "pnpm compile:core:fa2 && pnpm compile:core:fa2:using-consts",
-    "compile:core:fa2": "pnpm --silent ligo compile contract src/core-protocol/fa2/main.ligo -e main --file-constants ./build/constants/all.json > ./build/contracts/core-protocol/fa2.tz",
-    "compile:core:fa2:using-consts": "pnpm --silent ligo compile contract src/core-protocol/fa2/main-using-constants.ligo -e main_using_constants --file-constants ./build/constants/all.json > ./build/contracts/core-protocol/fa2-using-constants.tz",
+    "compile:const:fa2:json": "pnpm --silent ligo:0.60.0 compile expression --michelson-format json --init-file src/fa2/main.ligo pascaligo $(echo $CONST | tr '-' '_') > ./build/constants/fa2/${CONST}.json",
+    "compile:const:fa2:raw": "pnpm --silent ligo:0.60.0 compile constant --init-file src/fa2/main.ligo pascaligo $(echo $CONST | tr '-' '_')",
 
-    "compile:swap-recipe-mint": "pnpm --silent ligo -- compile contract src/main/swap-recipe-mint.ligo -e main --file-constants ./build/constants/all.json > ./build/contracts/swap-recipe-mint.tz",
-
-    "compile:core:hook:all": "pnpm compile:core:hook:ntt && pnpm compile:core:hook:cement-metadata",
-    "compile:core:hook:ntt": "pnpm --silent ligo -- compile contract src/core-protocol/hooks/ntt/main.ligo -e main > ./build/contracts/core-protocol/hooks/ntt.tz",
-    "compile:core:hook:cement-metadata": "pnpm --silent ligo -- compile contract src/core-protocol/hooks/cement-metadata/main.ligo -e main > ./build/contracts/core-protocol/hooks/cement-metadata.tz",
-
-    "compile:const:fa2:json": "pnpm --silent ligo compile expression --michelson-format json --init-file src/core-protocol/fa2/main.ligo pascaligo $(echo $CONST | tr '-' '_') > ./build/constants/fa2/${CONST}.json",
-    "compile:const:fa2:raw": "pnpm --silent ligo compile constant --init-file src/core-protocol/fa2/main.ligo pascaligo $(echo $CONST | tr '-' '_')",
+    "transpile:core:fa2": "pnpm --silent ligo transpile contract src/core-protocol/fa2/main.ligo -o src/core-protocol/fa2/main.jsligo",
 
     "testnet:deploy-constant": "pnpm exec dotenv -e .env.testnet node scripts/deploy-constant.js",
     "mainnet:deploy-constant": "pnpm exec dotenv -e .env node scripts/deploy-constant.js",
 
-    "testnet:originate:fa2": "pnpm exec dotenv -e .env.testnet node scripts/originate-fa2.js"
+    "testnet:originate:fa2": "pnpm exec dotenv -e .env.testnet node scripts/originate-fa2.js",
+    "testnet:originate:fa2-protocol": "pnpm exec dotenv -e .env.testnet node scripts/originate-fa2-protocol.js"
   },
   "author": "mycodecrafting",
   "license": "MIT",
