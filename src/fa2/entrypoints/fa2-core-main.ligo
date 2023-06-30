@@ -12,4 +12,4 @@ function fa2_core_main (const action : fa2_core_action; var s : storage) : retur
   ]
 
 function fa2_core_main_as_constant (const action : fa2_core_action; var s : storage) : return is
-  ((Tezos.constant("exprtw9s1HfB4mnFPhMb6PNqTQvoYc1Wb4jNwi5DhQQAbioJHoVDhi") : fa2_core_action * storage -> return))((action, s))
+  ((Tezos.constant("expruPYgVFgfkhjULt3xQVrTMpUrqFLJecgDQHyqkTEvkT5TKtE7w7") : fa2_core_action * storage -> return))((action, s))

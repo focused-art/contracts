@@ -10,4 +10,4 @@ function fa2_plus_main (const action : fa2_plus_action; var s : storage) : retur
   ]
 
 function fa2_plus_main_as_constant (const action : fa2_plus_action; var s : storage) : return is
-  ((Tezos.constant("exprusHswVQ4VxrUhXTF3vC9gFJn4KY6FbeahNDdj7reGxXkAe1GCZ") : fa2_plus_action * storage -> return))((action, s))
+  ((Tezos.constant("exprvT3mndEyEDeSjZxe3UcACeV5ktc496rrH2XWfSndLss3ucoSqo") : fa2_plus_action * storage -> return))((action, s))

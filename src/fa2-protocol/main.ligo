@@ -1,5 +1,5 @@
 (*                                          *)
-(*              FA2 Permissions             *)
+(*               FA2 Protocol               *)
 (*                                          *)
 (*      Built by Codecrafting <♥> Labs      *)
 (*                                          *)

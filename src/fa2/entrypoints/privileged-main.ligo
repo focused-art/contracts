@@ -12,4 +12,4 @@ function privileged_main (const action : privileged_action; var s : storage) : r
   ]
 
 function privileged_main_as_constant (const action : privileged_action; var s : storage) : return is
-  ((Tezos.constant("expruPzcrFU8rAzfMRT5UuVJj346sgEd3mc2K5Ywn9GZSzU1JT8U2f") : privileged_action * storage -> return))((action, s))
+  ((Tezos.constant("exprtux5Ky75KdBFA3kYxhBk7Njwd4vdTNJxq8NEKmZoY8JH1SERnM") : privileged_action * storage -> return))((action, s))
