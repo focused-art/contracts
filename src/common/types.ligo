@@ -1,3 +1,4 @@
+type contract_address is address
 type trusted is address
 type recipient is address
 type recipients is map (recipient, nat)
