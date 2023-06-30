@@ -1,0 +1,268 @@
+{ parameter
+    (or (or (or %fa2_core_action
+               (or (list %assert_balances (pair (address %owner) (nat %token_id) (nat %balance)))
+                   (pair %balance_of
+                      (list %requests (pair (address %owner) (nat %token_id)))
+                      (contract %callback
+                         (list (pair (pair %request (address %owner) (nat %token_id)) (nat %balance))))))
+               (or (list %transfer
+                      (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))
+                   (list %update_operators
+                      (or (pair %add_operator (address %owner) (address %operator) (nat %token_id))
+                          (pair %remove_operator (address %owner) (address %operator) (nat %token_id))))))
+            (or %fa2_plus_action
+               (or (pair %burn (address %owner) (nat %token_id) (nat %amount))
+                   (pair %create
+                      (pair %token_metadata (nat %token_id) (map %token_info string bytes))
+                      (pair %royalties (nat %total_shares) (map %shares address nat))
+                      (nat %max_supply)))
+               (pair %mint (address %owner) (nat %token_id) (nat %amount))))
+        (or %privileged_action
+           (or (map %update_contract_metadata string bytes)
+               (pair %update_default_royalties (nat %total_shares) (map %shares address nat)))
+           (or (map %update_metadata nat (pair (nat %token_id) (map %token_info string bytes)))
+               (map %update_royalties nat (pair (nat %total_shares) (map %shares address nat)))))) ;
+  storage
+    (pair (big_map %metadata string bytes)
+          (address %protocol)
+          (nat %next_token_id)
+          (big_map %token_total_supply nat nat)
+          (big_map %ledger (pair address nat) nat)
+          (big_map %operators (pair address address nat) unit)
+          (big_map %token_metadata nat (pair (nat %token_id) (map %token_info string bytes)))
+          (big_map %royalties nat (pair (nat %total_shares) (map %shares address nat)))
+          (big_map %token_max_supply nat nat)
+          (pair %default_royalties (nat %total_shares) (map %shares address nat))) ;
+  code { UNPAIR ;
+         PUSH string "FA2_DONT_SEND_TEZ" ;
+         PUSH mutez 0 ;
+         AMOUNT ;
+         COMPARE ;
+         EQ ;
+         IF { DROP } { FAILWITH } ;
+         IF_LEFT
+           { IF_LEFT
+               { PAIR ; constant "expruPYgVFgfkhjULt3xQVrTMpUrqFLJecgDQHyqkTEvkT5TKtE7w7" }
+               { PAIR ; constant "exprvT3mndEyEDeSjZxe3UcACeV5ktc496rrH2XWfSndLss3ucoSqo" } }
+           { PAIR ; constant "exprtux5Ky75KdBFA3kYxhBk7Njwd4vdTNJxq8NEKmZoY8JH1SERnM" } } ;
+  view "get_owner"
+       unit
+       address
+       { CDR ;
+         GET 3 ;
+         SELF_ADDRESS ;
+         VIEW "get_owner" address ;
+         IF_NONE { PUSH address "tz1Ke2h7sDdakHJQh8WX4Z372du1KChsksyU" } {} } ;
+  view "is_owner"
+       address
+       bool
+       { UNPAIR ;
+         SWAP ;
+         GET 3 ;
+         SWAP ;
+         SELF_ADDRESS ;
+         PAIR ;
+         VIEW "is_owner" bool ;
+         IF_NONE { PUSH bool False } {} } ;
+  view "is_creator"
+       address
+       bool
+       { UNPAIR ;
+         SWAP ;
+         GET 3 ;
+         SWAP ;
+         SELF_ADDRESS ;
+         PAIR ;
+         VIEW "is_creator" bool ;
+         IF_NONE { PUSH bool False } {} } ;
+  view "is_minter"
+       address
+       bool
+       { UNPAIR ;
+         SWAP ;
+         GET 3 ;
+         SWAP ;
+         SELF_ADDRESS ;
+         PAIR ;
+         VIEW "is_minter" bool ;
+         IF_NONE { PUSH bool False } {} } ;
+  view "is_metadata_manager"
+       address
+       bool
+       { UNPAIR ;
+         SWAP ;
+         GET 3 ;
+         SWAP ;
+         SELF_ADDRESS ;
+         PAIR ;
+         VIEW "is_metadata_manager" bool ;
+         IF_NONE { PUSH bool False } {} } ;
+  view "is_royalties_manager"
+       address
+       bool
+       { UNPAIR ;
+         SWAP ;
+         GET 3 ;
+         SWAP ;
+         SELF_ADDRESS ;
+         PAIR ;
+         VIEW "is_royalties_manager" bool ;
+         IF_NONE { PUSH bool False } {} } ;
+  view "get_transfer_hooks"
+       unit
+       (set address)
+       { CDR ;
+         GET 3 ;
+         SELF_ADDRESS ;
+         VIEW "get_transfer_hooks" (set address) ;
+         IF_NONE { EMPTY_SET address } {} } ;
+  view "get_create_hooks"
+       unit
+       (set address)
+       { CDR ;
+         GET 3 ;
+         SELF_ADDRESS ;
+         VIEW "get_create_hooks" (set address) ;
+         IF_NONE { EMPTY_SET address } {} } ;
+  view "get_mint_hooks"
+       unit
+       (set address)
+       { CDR ;
+         GET 3 ;
+         SELF_ADDRESS ;
+         VIEW "get_mint_hooks" (set address) ;
+         IF_NONE { EMPTY_SET address } {} } ;
+  view "get_burn_hooks"
+       unit
+       (set address)
+       { CDR ;
+         GET 3 ;
+         SELF_ADDRESS ;
+         VIEW "get_burn_hooks" (set address) ;
+         IF_NONE { EMPTY_SET address } {} } ;
+  view "get_update_metadata_hooks"
+       unit
+       (set address)
+       { CDR ;
+         GET 3 ;
+         SELF_ADDRESS ;
+         VIEW "get_update_metadata_hooks" (set address) ;
+         IF_NONE { EMPTY_SET address } {} } ;
+  view "is_transfer_hook"
+       address
+       bool
+       { UNPAIR ;
+         SWAP ;
+         GET 3 ;
+         SELF_ADDRESS ;
+         VIEW "get_transfer_hooks" (set address) ;
+         IF_NONE { EMPTY_SET address } {} ;
+         SWAP ;
+         MEM } ;
+  view "is_create_hook"
+       address
+       bool
+       { UNPAIR ;
+         SWAP ;
+         GET 3 ;
+         SELF_ADDRESS ;
+         VIEW "get_create_hooks" (set address) ;
+         IF_NONE { EMPTY_SET address } {} ;
+         SWAP ;
+         MEM } ;
+  view "is_mint_hook"
+       address
+       bool
+       { UNPAIR ;
+         SWAP ;
+         GET 3 ;
+         SELF_ADDRESS ;
+         VIEW "get_mint_hooks" (set address) ;
+         IF_NONE { EMPTY_SET address } {} ;
+         SWAP ;
+         MEM } ;
+  view "is_burn_hook"
+       address
+       bool
+       { UNPAIR ;
+         SWAP ;
+         GET 3 ;
+         SELF_ADDRESS ;
+         VIEW "get_burn_hooks" (set address) ;
+         IF_NONE { EMPTY_SET address } {} ;
+         SWAP ;
+         MEM } ;
+  view "is_metadata_update_hook"
+       address
+       bool
+       { UNPAIR ;
+         SWAP ;
+         GET 3 ;
+         SELF_ADDRESS ;
+         VIEW "get_update_metadata_hooks" (set address) ;
+         IF_NONE { EMPTY_SET address } {} ;
+         SWAP ;
+         MEM } ;
+  view "next_token_id" unit nat { CDR ; GET 5 } ;
+  view "get_balance"
+       (pair (address %owner) (nat %token_id))
+       nat
+       { UNPAIR ;
+         SWAP ;
+         GET 9 ;
+         DUP 2 ;
+         CDR ;
+         DIG 2 ;
+         CAR ;
+         PAIR ;
+         GET ;
+         IF_NONE { PUSH nat 0 } {} } ;
+  view "get_total_supply"
+       nat
+       nat
+       { UNPAIR ; SWAP ; GET 7 ; SWAP ; GET ; IF_NONE { PUSH nat 0 } {} } ;
+  view "get_max_supply"
+       nat
+       nat
+       { UNPAIR ; SWAP ; GET 17 ; SWAP ; GET ; IF_NONE { PUSH nat 0 } {} } ;
+  view "is_operator"
+       (pair (address %owner) (address %operator) (nat %token_id))
+       bool
+       { UNPAIR ;
+         DUP ;
+         GET 3 ;
+         DUP 2 ;
+         CAR ;
+         DIG 3 ;
+         GET 11 ;
+         DIG 3 ;
+         GET 4 ;
+         DUP 4 ;
+         PAIR ;
+         DUP 3 ;
+         PAIR ;
+         MEM ;
+         DUG 2 ;
+         COMPARE ;
+         EQ ;
+         OR } ;
+  view "get_token_metadata"
+       nat
+       (map string bytes)
+       { UNPAIR ;
+         SWAP ;
+         GET 13 ;
+         SWAP ;
+         GET ;
+         IF_NONE { EMPTY_MAP string bytes } { CDR } } ;
+  view "is_token" nat bool { UNPAIR ; SWAP ; GET 7 ; SWAP ; MEM } ;
+  view "get_royalties"
+       nat
+       (pair (nat %total_shares) (map %shares address nat))
+       { UNPAIR ;
+         DUP 2 ;
+         GET 15 ;
+         SWAP ;
+         GET ;
+         IF_NONE { GET 18 } { SWAP ; DROP } } }
+
