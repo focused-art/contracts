@@ -6,9 +6,7 @@
   storage
     (pair (big_map %metadata string bytes)
           (big_map %cemented_tokens (pair (address %address) (nat %token_id)) unit)) ;
-  code { NIL operation ;
-         SWAP ;
-         UNPAIR ;
+  code { UNPAIR ;
          PUSH string "FA_DONT_SEND_TEZ" ;
          PUSH mutez 0 ;
          AMOUNT ;
@@ -23,14 +21,6 @@
              CAR ;
              SWAP ;
              VIEW "is_metadata_manager" bool ;
-             IF_NONE { PUSH bool False } {} ;
-             IF { DROP } { FAILWITH } ;
-             PUSH string "FA_NOT_FA2_UPDATE_METADATA_HOOK" ;
-             SELF_ADDRESS ;
-             DUP 4 ;
-             CAR ;
-             SWAP ;
-             VIEW "is_metadata_update_hook" bool ;
              IF_NONE { PUSH bool False } {} ;
              IF { DROP } { FAILWITH } ;
              DUP ;
@@ -50,12 +40,23 @@
                     CDR ;
                     DIG 2 ;
                     GET ;
+                    IF_NONE { NONE unit } { SOME } ;
                     IF_NONE { PUSH bool False } { DROP ; PUSH bool True } ;
                     COMPARE ;
                     EQ ;
                     IF {} { PUSH string "FA_TOKEN_METADATA_UPDATE_DENIED" ; FAILWITH } } } ;
-         SWAP ;
+         NIL operation ;
          PAIR } ;
+  view "is_revocable"
+       (or (or (or (unit %burn) (unit %create)) (or (unit %metadata) (unit %mint)))
+           (unit %transfer))
+       bool
+       { CAR ;
+         IF_LEFT
+           { IF_LEFT
+               { IF_LEFT { DROP ; PUSH bool True } { DROP ; PUSH bool True } }
+               { IF_LEFT { DROP ; PUSH bool False } { DROP ; PUSH bool True } } }
+           { DROP ; PUSH bool True } } ;
   view "is_cemented"
        (pair (address %address) (nat %token_id))
        bool
@@ -64,5 +65,6 @@
          CDR ;
          SWAP ;
          GET ;
+         IF_NONE { NONE unit } { SOME } ;
          IF_NONE { PUSH bool False } { DROP ; PUSH bool True } } }
 

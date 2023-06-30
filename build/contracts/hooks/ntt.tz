@@ -48,6 +48,7 @@
                            CDR ;
                            DIG 2 ;
                            GET ;
+                           IF_NONE { NONE unit } { SOME } ;
                            IF_NONE { PUSH bool False } { DROP ; PUSH bool True } ;
                            COMPARE ;
                            EQ ;
@@ -62,5 +63,6 @@
          CDR ;
          SWAP ;
          GET ;
+         IF_NONE { NONE unit } { SOME } ;
          IF_NONE { PUSH bool False } { DROP ; PUSH bool True } } }
 
