@@ -66,13 +66,6 @@ type renounce_role_params is
 
 type renounce_roles_params is list ((contract_address * renounce_role_params))
 
-type hook_type is
-  | Transfer
-  | Create
-  | Mint
-  | Burn
-  | Metadata
-
 type update_hook_param is
   | Add                       of hook_type * trusted
   | Remove                    of hook_type * trusted

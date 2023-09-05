@@ -5,11 +5,11 @@ type recipients is map (recipient, nat)
 type op_list is list (operation)
 
 type hook_type is
-  | Transfer
-  | Create
-  | Mint
-  | Burn
-  | Metadata
+  | Transfer_hook
+  | Create_hook
+  | Mint_hook
+  | Burn_hook
+  | Metadata_hook
 
 type role_type is
   | Creator

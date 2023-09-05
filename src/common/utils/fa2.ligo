@@ -55,13 +55,31 @@ function is_fa2_royalties_manager (const token : fa2; const check : address) : b
   ]
 
 function is_fa2_transfer_hook (const token : fa2; const check : address) : bool is
-  case (Tezos.call_view("is_transfer_hook", check, token.address) : option(bool)) of [
+  case (Tezos.call_view("is_hook", (check, Transfer_hook), token.address) : option(bool)) of [
     Some(response) -> response
   | None -> False
   ]
 
-function is_fa2_update_metadata_hook (const token : fa2; const check : address) : bool is
-  case (Tezos.call_view("is_metadata_update_hook", check, token.address) : option(bool)) of [
+function is_fa2_create_hook (const token : fa2; const check : address) : bool is
+  case (Tezos.call_view("is_hook", (check, Create_hook), token.address) : option(bool)) of [
+    Some(response) -> response
+  | None -> False
+  ]
+
+function is_fa2_mint_hook (const token : fa2; const check : address) : bool is
+  case (Tezos.call_view("is_hook", (check, Mint_hook), token.address) : option(bool)) of [
+    Some(response) -> response
+  | None -> False
+  ]
+
+function is_fa2_burn_hook (const token : fa2; const check : address) : bool is
+  case (Tezos.call_view("is_hook", (check, Burn_hook), token.address) : option(bool)) of [
+    Some(response) -> response
+  | None -> False
+  ]
+
+function is_fa2_metadata_hook (const token : fa2; const check : address) : bool is
+  case (Tezos.call_view("is_hook", (check, Metadata_hook), token.address) : option(bool)) of [
     Some(response) -> response
   | None -> False
   ]

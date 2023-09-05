@@ -15,7 +15,7 @@ function create (const input : create_params; var s : storage) : return is {
   var operations : list (operation) := nil;
 
   (* send any create hooks *)
-  for hook in set get_create_hooks(Unit, s) {
+  for hook in set get_hooks(Create_hook, s) {
     operations := Tezos.transaction (input, 0tz, get_create_hook(hook)) # operations;
   };
 

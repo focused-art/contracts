@@ -5,11 +5,11 @@
 [@view]
 function is_revocable (const k : hook_type; const _ : storage) : bool is
   case k of [
-  | Transfer -> True
-  | Create -> True
-  | Mint -> True
-  | Burn -> True
-  | Metadata -> False
+  | Transfer_hook -> True
+  | Create_hook -> True
+  | Mint_hook -> True
+  | Burn_hook -> True
+  | Metadata_hook -> False
   ]
 
 [@view]

@@ -8,7 +8,7 @@ function get_permissions_or_fail (const k : contract_address; const s : storage)
   | Some(permissions) -> permissions
   ]
 
-function get_hooks (const k : contract_address; const s : storage) : hooks is
+function internal_get_hooks (const k : contract_address; const s : storage) : hooks is
   case s.hooks[k] of [
     Some(hooks) -> hooks
   | None -> record [

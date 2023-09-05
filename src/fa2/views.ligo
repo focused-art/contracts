@@ -26,59 +26,15 @@ function has_role (const k : address * role_type; const s : storage) : bool is
   ]
 
 [@view]
-function get_transfer_hooks (const _ : unit; const s : storage) : set (trusted) is
-  case (Tezos.call_view("get_transfer_hooks", Tezos.get_self_address(), s.protocol) : option(set(trusted))) of [
+function get_hooks (const k : hook_type; const s : storage) : set (trusted) is
+  case (Tezos.call_view("get_hooks", (Tezos.get_self_address(), k), s.protocol) : option(set(trusted))) of [
     Some(response) -> response
   | None -> set []
   ]
 
 [@view]
-function get_create_hooks (const _ : unit; const s : storage) : set (trusted) is
-  case (Tezos.call_view("get_create_hooks", Tezos.get_self_address(), s.protocol) : option(set(trusted))) of [
-    Some(response) -> response
-  | None -> set []
-  ]
-
-[@view]
-function get_mint_hooks (const _ : unit; const s : storage) : set (trusted) is
-  case (Tezos.call_view("get_mint_hooks", Tezos.get_self_address(), s.protocol) : option(set(trusted))) of [
-    Some(response) -> response
-  | None -> set []
-  ]
-
-[@view]
-function get_burn_hooks (const _ : unit; const s : storage) : set (trusted) is
-  case (Tezos.call_view("get_burn_hooks", Tezos.get_self_address(), s.protocol) : option(set(trusted))) of [
-    Some(response) -> response
-  | None -> set []
-  ]
-
-[@view]
-function get_update_metadata_hooks (const _ : unit; const s : storage) : set (trusted) is
-  case (Tezos.call_view("get_update_metadata_hooks", Tezos.get_self_address(), s.protocol) : option(set(trusted))) of [
-    Some(response) -> response
-  | None -> set []
-  ]
-
-[@view]
-function is_transfer_hook (const input : address; const s : storage) : bool is
-  get_transfer_hooks(Unit, s) contains input
-
-[@view]
-function is_create_hook (const input : address; const s : storage) : bool is
-  get_create_hooks(Unit, s) contains input
-
-[@view]
-function is_mint_hook (const input : address; const s : storage) : bool is
-  get_mint_hooks(Unit, s) contains input
-
-[@view]
-function is_burn_hook (const input : address; const s : storage) : bool is
-  get_burn_hooks(Unit, s) contains input
-
-[@view]
-function is_metadata_update_hook (const input : address; const s : storage) : bool is
-  get_update_metadata_hooks(Unit, s) contains input
+function is_hook (const k : address * hook_type; const s : storage) : bool is
+  get_hooks(k.1, s) contains k.0
 
 [@view]
 function next_token_id (const _ : unit; const s : storage) : nat is

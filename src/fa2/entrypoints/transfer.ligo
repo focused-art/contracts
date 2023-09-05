@@ -50,6 +50,11 @@ function transfer (const params : transfer_params; var s : storage) : return is 
     };
   };
 
+  (* send any transfer hooks *)
+  for hook in set get_hooks(Transfer_hook, s) {
+    operations := Tezos.transaction (params, 0tz, get_transfer_hook(hook)) # operations;
+  };
+
   (* Events *)
   for k -> old_balance in map balance_updates {
     const new_balance : nat = internal_get_balance_of(k.0, k.1, s);
@@ -63,12 +68,3 @@ function transfer (const params : transfer_params; var s : storage) : return is 
   };
 
 } with (operations, s)
-
-function transfer_with_hook (const params : transfer_params; var s : storage) : return is {
-  var res : return := transfer(params, s);
-
-  (* send any transfer hooks *)
-  for hook in set get_transfer_hooks(Unit, s) {
-    res.0 := Tezos.transaction (params, 0tz, get_transfer_hook(hook)) # res.0;
-  };
-} with (res.0, res.1)

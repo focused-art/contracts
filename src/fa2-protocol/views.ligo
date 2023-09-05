@@ -26,41 +26,36 @@ function has_role (const k : contract_address * address * role_type; const s : s
   ]
 
 [@view]
-function get_transfer_hooks (const k : contract_address; const s : storage) : set (trusted) is {
-  var hooks : set (trusted) := (get_hooks(k, s)).transfer;
-  for h in set s.protocol_hooks.transfer {
-    hooks := Set.add(h, hooks);
-  };
-} with hooks
-
-[@view]
-function get_create_hooks (const k : contract_address; const s : storage) : set (trusted) is {
-  var hooks : set (trusted) := (get_hooks(k, s)).create;
-  for h in set s.protocol_hooks.create {
-    hooks := Set.add(h, hooks);
-  };
-} with hooks
-
-[@view]
-function get_mint_hooks (const k : contract_address; const s : storage) : set (trusted) is {
-  var hooks : set (trusted) := (get_hooks(k, s)).mint;
-  for h in set s.protocol_hooks.mint {
-    hooks := Set.add(h, hooks);
-  };
-} with hooks
-
-[@view]
-function get_burn_hooks (const k : contract_address; const s : storage) : set (trusted) is {
-  var hooks : set (trusted) := (get_hooks(k, s)).burn;
-  for h in set s.protocol_hooks.burn {
-    hooks := Set.add(h, hooks);
-  };
-} with hooks
-
-[@view]
-function get_update_metadata_hooks (const k : contract_address; const s : storage) : set (trusted) is {
-  var hooks : set (trusted) := (get_hooks(k, s)).update_metadata;
-  for h in set s.protocol_hooks.update_metadata {
-    hooks := Set.add(h, hooks);
-  };
-} with hooks
+function get_hooks (const k : contract_address * hook_type; const s : storage) : set (trusted) is
+  case k.1 of [
+  | Transfer_hook -> {
+      var hooks : set (trusted) := (internal_get_hooks(k.0, s)).transfer;
+      for h in set s.protocol_hooks.transfer {
+        hooks := Set.add(h, hooks);
+      };
+    } with hooks
+  | Create_hook -> {
+      var hooks : set (trusted) := (internal_get_hooks(k.0, s)).create;
+      for h in set s.protocol_hooks.create {
+        hooks := Set.add(h, hooks);
+      };
+    } with hooks
+  | Mint_hook -> {
+      var hooks : set (trusted) := (internal_get_hooks(k.0, s)).mint;
+      for h in set s.protocol_hooks.mint {
+        hooks := Set.add(h, hooks);
+      };
+    } with hooks
+  | Burn_hook -> {
+      var hooks : set (trusted) := (internal_get_hooks(k.0, s)).burn;
+      for h in set s.protocol_hooks.burn {
+        hooks := Set.add(h, hooks);
+      };
+    } with hooks
+  | Metadata_hook -> {
+      var hooks : set (trusted) := (internal_get_hooks(k.0, s)).update_metadata;
+      for h in set s.protocol_hooks.update_metadata {
+        hooks := Set.add(h, hooks);
+      };
+    } with hooks
+  ]

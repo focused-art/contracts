@@ -16,7 +16,7 @@ function burn (const input : mint_burn_params; var s : storage) : return is {
   var operations : list (operation) := nil;
 
   (* send any burn hooks *)
-  for hook in set get_burn_hooks(Unit, s) {
+  for hook in set get_hooks(Burn_hook, s) {
     operations := Tezos.transaction (input, 0tz, get_burn_hook(hook)) # operations;
   };
 

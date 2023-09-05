@@ -18,7 +18,7 @@ function update_metadata (const input : update_token_metadata_params; var s : st
   };
 
   (* send any metadata update hooks *)
-  for hook in set get_update_metadata_hooks(Unit, s) {
+  for hook in set get_hooks(Metadata_hook, s) {
     operations := Tezos.transaction (input, 0tz, get_update_metadata_hook(hook)) # operations;
   };
 
