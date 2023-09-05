@@ -1,12 +1,24 @@
 { parameter
-    (or (pair %cement_metadata (address %address) (nat %token_id))
+    (or (list %cement_metadata
+           (pair (pair %token (address %address) (nat %token_id)) (int %delay)))
         (map %update_metadata_hook
            nat
            (pair (nat %token_id) (map %token_info string bytes)))) ;
   storage
     (pair (big_map %metadata string bytes)
-          (big_map %cemented_tokens (pair (address %address) (nat %token_id)) unit)) ;
-  code { UNPAIR ;
+          (big_map %cemented_tokens (pair (address %address) (nat %token_id)) timestamp)) ;
+  code { LAMBDA
+           (pair (pair address nat) (big_map string bytes) (big_map (pair address nat) timestamp))
+           bool
+           { UNPAIR ;
+             SWAP ;
+             CDR ;
+             SWAP ;
+             GET ;
+             IF_NONE { NONE timestamp } { SOME } ;
+             IF_NONE { PUSH bool False } { NOW ; SWAP ; COMPARE ; GE } } ;
+         SWAP ;
+         UNPAIR ;
          PUSH string "FA_DONT_SEND_TEZ" ;
          PUSH mutez 0 ;
          AMOUNT ;
@@ -14,37 +26,58 @@
          EQ ;
          IF { DROP } { FAILWITH } ;
          IF_LEFT
-           { SWAP ;
-             PUSH string "FA_NOT_FA2_METADATA_MANAGER" ;
-             SENDER ;
-             DUP 4 ;
-             CAR ;
+           { ITER { PUSH string "FA_NOT_FA2_METADATA_MANAGER" ;
+                    SENDER ;
+                    DUP 3 ;
+                    CAR ;
+                    CAR ;
+                    SWAP ;
+                    VIEW "is_metadata_manager" bool ;
+                    IF_NONE { PUSH bool False } {} ;
+                    IF { DROP } { FAILWITH } ;
+                    PUSH bool False ;
+                    DUP 3 ;
+                    DUP 3 ;
+                    CAR ;
+                    PAIR ;
+                    DUP 5 ;
+                    SWAP ;
+                    EXEC ;
+                    COMPARE ;
+                    EQ ;
+                    IF { DUP 2 ;
+                         DIG 2 ;
+                         CDR ;
+                         DUP 3 ;
+                         CDR ;
+                         NOW ;
+                         ADD ;
+                         DIG 3 ;
+                         CAR ;
+                         SWAP ;
+                         SOME ;
+                         SWAP ;
+                         UPDATE ;
+                         UPDATE 2 }
+                       { DROP } } ;
              SWAP ;
-             VIEW "is_metadata_manager" bool ;
-             IF_NONE { PUSH bool False } {} ;
-             IF { DROP } { FAILWITH } ;
-             DUP ;
-             CDR ;
-             UNIT ;
-             DIG 3 ;
-             SWAP ;
-             SOME ;
-             SWAP ;
-             UPDATE ;
-             UPDATE 2 }
+             DROP }
            { ITER { CAR ;
                     SENDER ;
                     PAIR ;
+                    PUSH string "FA_TOKEN_METADATA_UPDATE_DENIED" ;
                     PUSH bool False ;
-                    DUP 3 ;
-                    CDR ;
-                    DIG 2 ;
-                    GET ;
-                    IF_NONE { NONE unit } { SOME } ;
-                    IF_NONE { PUSH bool False } { DROP ; PUSH bool True } ;
+                    DUP 4 ;
+                    DIG 3 ;
+                    PAIR ;
+                    DUP 5 ;
+                    SWAP ;
+                    EXEC ;
                     COMPARE ;
                     EQ ;
-                    IF {} { PUSH string "FA_TOKEN_METADATA_UPDATE_DENIED" ; FAILWITH } } } ;
+                    IF { DROP } { FAILWITH } } ;
+             SWAP ;
+             DROP } ;
          NIL operation ;
          PAIR } ;
   view "is_revocable"
@@ -65,6 +98,6 @@
          CDR ;
          SWAP ;
          GET ;
-         IF_NONE { NONE unit } { SOME } ;
-         IF_NONE { PUSH bool False } { DROP ; PUSH bool True } } }
+         IF_NONE { NONE timestamp } { SOME } ;
+         IF_NONE { PUSH bool False } { NOW ; SWAP ; COMPARE ; GE } } }
 
