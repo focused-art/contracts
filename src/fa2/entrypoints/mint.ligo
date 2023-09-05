@@ -1,5 +1,6 @@
 (* Mint some tokens *)
 function mint (const input : mint_burn_params; var s : storage) : return is {
+
   assert_with_error(has_role((Tezos.get_sender(), Minter), s), "FA2_INVALID_MINTER_ACCESS");
   validate_token_id(input.token_id, s);
 
@@ -11,7 +12,8 @@ function mint (const input : mint_burn_params; var s : storage) : return is {
 
   (* Cannot exceed mint caps *)
   const max_supply : nat = get_max_supply(input.token_id, s);
-  assert_with_error(new_total_supply <= max_supply, "FA2_MAX_SUPPLY_EXCEEDED");
+  if max_supply > 0n then
+    assert_with_error(new_total_supply <= max_supply, "FA2_MAX_SUPPLY_EXCEEDED");
 
   (* initialize operations *)
   var operations : list (operation) := nil;
