@@ -1,6 +1,6 @@
 (* Update token metadata *)
 function update_metadata (const input : update_token_metadata_params; var s : storage) : return is {
-  assert_with_error(is_metadata_manager(Tezos.get_sender(), s), "FA2_INVALID_METADATA_MANAGER_ACCESS");
+  assert_with_error(has_role((Tezos.get_sender(), Metadata_manager), s), "FA2_INVALID_METADATA_MANAGER_ACCESS");
 
   (* initialize operations *)
   var operations : list (operation) := nil;

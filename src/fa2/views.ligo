@@ -1,4 +1,9 @@
 (* Views *)
+
+[@view]
+function get_protocol (const _ : unit; const s : storage) : trusted is
+  s.protocol
+
 [@view]
 function get_owner (const _ : unit; const s : storage) : trusted is
   case (Tezos.call_view("get_owner", Tezos.get_self_address(), s.protocol) : option(trusted)) of [
@@ -14,29 +19,8 @@ function is_owner (const input : address; const s : storage) : bool is
   ]
 
 [@view]
-function is_creator (const input : address; const s : storage) : bool is
-  case (Tezos.call_view("is_creator", (Tezos.get_self_address(), input), s.protocol) : option(bool)) of [
-    Some(response) -> response
-  | None -> False
-  ]
-
-[@view]
-function is_minter (const input : address; const s : storage) : bool is
-  case (Tezos.call_view("is_minter", (Tezos.get_self_address(), input), s.protocol) : option(bool)) of [
-    Some(response) -> response
-  | None -> False
-  ]
-
-[@view]
-function is_metadata_manager (const input : address; const s : storage) : bool is
-  case (Tezos.call_view("is_metadata_manager", (Tezos.get_self_address(), input), s.protocol) : option(bool)) of [
-    Some(response) -> response
-  | None -> False
-  ]
-
-[@view]
-function is_royalties_manager (const input : address; const s : storage) : bool is
-  case (Tezos.call_view("is_royalties_manager", (Tezos.get_self_address(), input), s.protocol) : option(bool)) of [
+function has_role (const k : address * role_type; const s : storage) : bool is
+  case (Tezos.call_view("has_role", (Tezos.get_self_address(), k.0, k.1), s.protocol) : option(bool)) of [
     Some(response) -> response
   | None -> False
   ]

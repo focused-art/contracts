@@ -181,18 +181,12 @@ type privileged_action is
   | Update_royalties          of update_royalties_params
   | Update_default_royalties  of royalties
 
-type fa2_core_action is
+type entry_action is
+  | Privileged_action         of privileged_action
   | Transfer                  of transfer_params
   | Balance_of                of balance_params
   | Update_operators          of update_operator_params
   | Assert_balances           of assert_balance_params
-
-type fa2_plus_action is
   | Create                    of create_params
   | Mint                      of mint_burn_params
   | Burn                      of mint_burn_params
-
-type entry_action is
-  | Privileged_action         of privileged_action
-  | Fa2_core_action           of fa2_core_action
-  | Fa2_plus_action           of fa2_plus_action
