@@ -5,14 +5,16 @@ function update_metadata (const input : update_token_metadata_params; var s : st
   (* initialize operations *)
   var operations : list (operation) := nil;
 
-  for token_id -> metadata in map input {
-    assert_with_error(token_id = metadata.token_id, "FA2_TOKEN_ID_MISMATCH");
-    s.token_metadata[token_id] := metadata;
+  for token_id -> token_info in map input {
+    s.token_metadata[token_id] := record [
+      token_id = token_id;
+      token_info = token_info;
+    ];
 
     (* events *)
     const token_metadata_update_event : token_metadata_update_event = record [
       token_id = token_id;
-      new_metadata = Some(metadata.token_info)
+      new_metadata = Some(token_info)
     ];
     operations := Tezos.emit("%token_metadata_update", token_metadata_update_event) # operations;
   };

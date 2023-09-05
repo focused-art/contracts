@@ -83,13 +83,13 @@ type assert_balance_params is list (assert_balance_param)
 type create_params is
   [@layout:comb]
   record [
-    token_metadata            : token_metadata;
+    token_metadata            : token_info;
     max_supply                : nat;
     royalties                 : option (royalties);
   ]
 
 type update_royalties_params is map (token_id, royalties)
-type update_token_metadata_params is map (token_id, token_metadata)
+type update_token_metadata_params is map (token_id, token_info)
 
 type mint_burn_params is
   [@layout:comb]
