@@ -84,8 +84,8 @@ type create_params is
   [@layout:comb]
   record [
     token_metadata            : token_metadata;
-    royalties                 : royalties;
     max_supply                : nat;
+    royalties                 : option (royalties);
   ]
 
 type update_royalties_params is map (token_id, royalties)

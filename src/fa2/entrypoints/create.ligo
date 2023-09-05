@@ -6,10 +6,14 @@ function create (const input : create_params; var s : storage) : return is {
   assert_with_error(Big_map.mem(input.token_metadata.token_id, s.token_metadata) = False, "FA2_DUP_TOKEN_ID");
 
   s.token_metadata[input.token_metadata.token_id] := input.token_metadata;
-  s.royalties[input.token_metadata.token_id] := input.royalties;
   s.token_total_supply[input.token_metadata.token_id] := 0n;
   s.next_token_id := nat_max(s.next_token_id, input.token_metadata.token_id + 1n);
   s.token_max_supply[input.token_metadata.token_id] := input.max_supply;
+
+  case input.royalties of [
+    Some(royalties) -> s.royalties[input.token_metadata.token_id] := royalties
+  | None -> skip
+  ];
 
   (* initialize operations *)
   var operations : list (operation) := nil;
