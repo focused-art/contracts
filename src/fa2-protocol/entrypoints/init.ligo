@@ -2,7 +2,7 @@ const create_fa2 : create_fa2 =
 [%Michelson ( {| { UNPPAIIR ;
                   CREATE_CONTRACT
 #if USE_CONSTANTS
-#include "../../../build/contracts/fa2-using-constants.tz"
+#include "../../../build/contracts/fa2-as-const.tz"
 #else
 #include "../../../build/contracts/fa2.tz"
 #endif
