@@ -86,6 +86,7 @@ type create_params is
     token_metadata            : token_info;
     max_supply                : nat;
     royalties                 : option (royalties);
+    token_id                  : option (token_id);
   ]
 
 type update_royalties_params is map (token_id, royalties)

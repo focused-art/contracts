@@ -3,7 +3,10 @@ function create (const input : create_params; var s : storage) : return is {
 
   assert_with_error(has_role((Tezos.get_sender(), Creator), s), "FA2_INVALID_CREATOR_ACCESS");
 
-  const token_id : token_id = s.next_token_id;
+  const token_id : token_id = case input.token_id of [
+    Some(t) -> t
+  | None -> s.next_token_id
+  ];
 
   assert_with_error(Big_map.mem(token_id, s.token_metadata) = False, "FA2_DUP_TOKEN_ID");
 
@@ -19,8 +22,7 @@ function create (const input : create_params; var s : storage) : return is {
   | None -> skip
   ];
 
-  s.next_token_id := s.next_token_id + 1n;
-  (*s.next_token_id := nat_max(s.next_token_id, input.token_metadata.token_id) + 1n;*)
+  s.next_token_id := nat_max(s.next_token_id, token_id) + 1n;
 
   (* initialize operations *)
   var operations : list (operation) := nil;
