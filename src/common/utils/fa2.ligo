@@ -30,14 +30,26 @@ function is_fa2_owner (const token : fa2; const check : address) : bool is
   | None -> False
   ]
 
+function is_fa2_creator (const token : fa2; const check : address) : bool is
+  case (Tezos.call_view("has_role", (check, Creator), token.address) : option(bool)) of [
+    Some(response) -> response
+  | None -> False
+  ]
+
 function is_fa2_minter (const token : fa2; const check : address) : bool is
-  case (Tezos.call_view("is_minter", check, token.address) : option(bool)) of [
+  case (Tezos.call_view("has_role", (check, Minter), token.address) : option(bool)) of [
     Some(response) -> response
   | None -> False
   ]
 
 function is_fa2_metadata_manager (const token : fa2; const check : address) : bool is
-  case (Tezos.call_view("is_metadata_manager", check, token.address) : option(bool)) of [
+  case (Tezos.call_view("has_role", (check, Metadata_manager), token.address) : option(bool)) of [
+    Some(response) -> response
+  | None -> False
+  ]
+
+function is_fa2_royalties_manager (const token : fa2; const check : address) : bool is
+  case (Tezos.call_view("has_role", (check, Royalties_manager), token.address) : option(bool)) of [
     Some(response) -> response
   | None -> False
   ]

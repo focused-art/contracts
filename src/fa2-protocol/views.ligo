@@ -14,30 +14,14 @@ function is_owner (const k : contract_address * address; const s : storage) : bo
   ]
 
 [@view]
-function is_creator (const k : contract_address * address; const s : storage) : bool is
+function has_role (const k : contract_address * address * role_type; const s : storage) : bool is
   case s.roles[k.0] of [
-    Some(entry) -> entry.creator contains k.1
-  | None -> False
-  ]
-
-[@view]
-function is_minter (const k : contract_address * address; const s : storage) : bool is
-  case s.roles[k.0] of [
-    Some(entry) -> entry.minter contains k.1
-  | None -> False
-  ]
-
-[@view]
-function is_metadata_manager (const k : contract_address * address; const s : storage) : bool is
-  case s.roles[k.0] of [
-    Some(entry) -> entry.metadata_manager contains k.1
-  | None -> False
-  ]
-
-[@view]
-function is_royalties_manager (const k : contract_address * address; const s : storage) : bool is
-  case s.roles[k.0] of [
-    Some(entry) -> entry.royalties_manager contains k.1
+    Some(roles) -> case k.2 of [
+      | Creator             -> roles.creator contains k.1
+      | Minter              -> roles.minter contains k.1
+      | Metadata_manager    -> roles.metadata_manager contains k.1
+      | Royalties_manager   -> roles.royalties_manager contains k.1
+    ]
   | None -> False
   ]
 

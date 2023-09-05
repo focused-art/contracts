@@ -51,12 +51,6 @@ type storage is
 (* define return type for readability *)
 type return is op_list * storage
 
-type role_type is
-  | Creator
-  | Minter
-  | Metadata_manager
-  | Royalties_manager
-
 type update_role_param is
   | Add                       of role_type * trusted
   | Remove                    of role_type * trusted
