@@ -8,13 +8,6 @@ type storage is
 (* define return for readability *)
 type return is list (operation) * storage
 
-type hook_type is
-  | Transfer
-  | Create
-  | Mint
-  | Burn
-  | Metadata
-
 (***)
 (* Entrpoint params *)
 (***)

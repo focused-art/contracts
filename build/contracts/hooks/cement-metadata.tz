@@ -31,8 +31,12 @@
                     DUP 3 ;
                     CAR ;
                     CAR ;
-                    SWAP ;
-                    VIEW "is_metadata_manager" bool ;
+                    UNIT ;
+                    RIGHT unit ;
+                    LEFT (or unit unit) ;
+                    DIG 2 ;
+                    PAIR ;
+                    VIEW "has_role" bool ;
                     IF_NONE { PUSH bool False } {} ;
                     IF { DROP } { FAILWITH } ;
                     PUSH bool False ;
