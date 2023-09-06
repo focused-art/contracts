@@ -9,4 +9,4 @@ function transfer_hook (const transfers : transfer_params; const s : storage) : 
       assert_with_error(is_ntt(token, s) = False, "FA_NTT_TOKEN_TRANSFER_DENIED");
     };
   };
-} with ((nil : list (operation)), s);
+} with (noops, s);
