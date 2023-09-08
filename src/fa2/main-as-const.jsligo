@@ -4,8 +4,11 @@
 /*      Built by Codecrafting <♥> Labs      */
 /*                                          */
 
-#include "main.jsligo"
+#include "../common/types.jsligo"
+#include "types.jsligo"
+#include "helpers.jsligo"
+#include "views.jsligo"
 
-// Main entrypoint
+@entry
 const main_as_const = (action: entry_action, s: storage): @return =>
   (Tezos.constant("expruST3iVTEZNuzUeYMkB8kVgZPmu8qgidQqpZTEYWi2HqiVAm1zg") as (v: [entry_action, storage]) => @return)([action, s]);
