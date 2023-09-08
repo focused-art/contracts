@@ -1,0 +1,97 @@
+const transfer = (params: transfer_params, s1: storage): @return => {
+  let s = s1;
+
+  let balance_updates: map<[owner, token_id], nat> = Map.empty;
+
+  // initialize operations
+  let operations: list<operation> = list([]);
+
+  for (const user_trx_params of params) {
+    for (const transfer of user_trx_params.txs) {
+      // Check permissions
+      validate_operator(user_trx_params.from_, Tezos.get_sender(), transfer.token_id, s);
+
+      // Token id check
+      validate_token_id(transfer.token_id, s);
+
+      // Balance check
+      const sender_bal: nat = internal_get_balance_of(user_trx_params.from_, transfer.token_id, s);
+      assert_with_error(sender_bal >= transfer.amount, "FA2_INSUFFICIENT_BALANCE");
+
+      // Track initial balance for update events
+      if (Map.mem([user_trx_params.from_, transfer.token_id], balance_updates) == false) {
+        balance_updates = Map.add(
+            [user_trx_params.from_, transfer.token_id],
+            sender_bal,
+            balance_updates
+          );
+      };
+
+      // Update storage
+      s.ledger = Big_map.update(
+        [user_trx_params.from_, transfer.token_id],
+        is_nat(sender_bal - transfer.amount),
+        s.ledger
+      );
+
+      // Get destination balance
+      let dest_bal: nat = internal_get_balance_of(transfer.to_, transfer.token_id, s);
+
+      // Track initial balance for update events
+      if (Map.mem([transfer.to_, transfer.token_id], balance_updates) == false) {
+        balance_updates = Map.add(
+          [transfer.to_, transfer.token_id],
+          dest_bal,
+          balance_updates
+        );
+      };
+
+      // Update storage
+      s.ledger = Big_map.update(
+        [transfer.to_, transfer.token_id],
+        Some(dest_bal + transfer.amount),
+        s.ledger
+      );
+
+      // Events
+      const transfer_event: transfer_event = {
+        from_: user_trx_params.from_,
+        to_: transfer.to_,
+        token_id: transfer.token_id,
+        amount: transfer.amount
+      };
+
+      operations = list([
+        Tezos.emit("%transfer_event", transfer_event),
+        ...operations
+      ]);
+    };
+  };
+
+  // Send hooks
+  for (const hook of get_hooks(Transfer_hook(), s)) {
+    operations = list([
+      Tezos.transaction(params, (0 as mutez), get_transfer_hook(hook)),
+      ...operations
+    ]);
+  };
+
+  // Balance update events
+  for (const generated of balance_updates) {
+    const [[owner, token_id], old_balance] = generated;
+    const new_balance: nat = internal_get_balance_of(owner, token_id, s);
+    const balance_update_event: balance_update_event = {
+      owner,
+      token_id,
+      new_balance: new_balance,
+      diff: new_balance - old_balance
+    };
+
+    operations = list([
+      Tezos.emit("%balance_update", balance_update_event),
+      ...operations
+    ]);
+  };
+
+  return [operations, s]
+};

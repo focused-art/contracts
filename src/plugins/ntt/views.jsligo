@@ -1,0 +1,15 @@
+@view
+const is_revocable = (k: hook_type, _: storage): bool =>
+  match(k, {
+    Transfer_hook: () => false,
+    Create_hook: () => true,
+    Mint_hook: () => true,
+    Burn_hook: () => true,
+    Metadata_hook: () => true
+  });
+
+@view
+const is_ntt = (k: fa2, s: storage): bool =>
+  match(Big_map.find_opt(k, s.ntt_tokens),
+    { Some: _u => true, None: () => false }
+  );

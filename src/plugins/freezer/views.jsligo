@@ -1,0 +1,15 @@
+@view
+const is_revocable = (k: hook_type, _: storage): bool =>
+  match(k, {
+    Transfer_hook: () => false,
+    Create_hook: () => true,
+    Mint_hook: () => true,
+    Burn_hook: () => false,
+    Metadata_hook: () => true
+  });
+
+@view
+const is_frozen = (k: [owner, fa2], s: storage): bool =>
+  match(Big_map.find_opt(k, s.frozen_tokens),
+    { Some: t => t > Tezos.get_now(), None: () => false }
+  );

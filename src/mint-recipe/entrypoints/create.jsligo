@@ -1,0 +1,57 @@
+// Create new mint
+const create = (params: create_params, s1: storage): @return => {
+  let s = s1;
+
+  for (const product of params.products) {
+    // Must be owner of products
+    assert_with_error(is_fa2_owner(product.token, Tezos.get_sender()), "FA_SELLER_NOT_FA2_OWNER");
+
+    // This contract must have minter permissions
+    assert_with_error(is_fa2_minter(product.token, Tezos.get_self_address()), "FA_SELF_NOT_FA2_MINTER");
+  };
+
+  // Validate recipients
+  let has_price: bool = false;
+  for (const r of params.recipes) {
+    const [_recipe_id, recipe] = r;
+    for (const i of recipe) {
+      let [_recipe_step, instruction] = i;
+      const _ = match(instruction, {
+        Burn: _a => { return },
+        Hold: _a => { return },
+        Freeze: _a => { return },
+        Transfer: _s => { return },
+        Pay: _a => { has_price = true }
+      });
+    }
+  };
+
+  let recipients: recipients = Map.empty;
+  if (has_price == true) {
+    let total: nat = (0 as nat);
+    for (const r of params.recipients) {
+      const [_recipient, pct] = r;
+      total = total + pct
+    };
+    assert_with_error(total == (10000 as nat), "FA_INVALID_RECIPIENT_PCTS");
+    recipients = params.recipients
+  };
+
+  // Create mint
+  s.mints = Big_map.add(s.next_mint_id, {
+    owner: Tezos.get_sender();
+    paused: false;
+    recipes: params.recipes;
+    products: params.products;
+    recipients: recipients;
+    minted: (0 as nat);
+    start_time: params.start_time;
+    duration: params.duration;
+    max_mint: params.max_mint;
+    max_per_block: params.max_per_block;
+    max_per_wallet: params.max_per_wallet
+  }, s.mints);
+  s.next_mint_id = s.next_mint_id + (1 as nat);
+
+  return [noop, s]
+};

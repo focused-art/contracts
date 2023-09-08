@@ -1,0 +1,9 @@
+const get_account_tag = (input: address): bytes =>
+  Bytes.sub((6 as nat), (1 as nat), Bytes.pack(input));
+
+const is_implicit_account = (input: address): bool =>
+  get_account_tag(input) == 0x00;
+
+const is_originated_account = (input: address): bool =>
+  get_account_tag(input) == 0x01;
+

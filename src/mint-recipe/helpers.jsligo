@@ -1,0 +1,46 @@
+// Helpers
+
+const get_mint_or_fail = (k: mint_id, s: storage): mint =>
+  match(Big_map.find_opt(k, s.mints), {
+    None: () => failwith("FA_INVALID_MINT_ID"),
+    Some: mint => mint
+  });
+
+const get_wallet_record = (k: [address, mint_id], s: storage): wallet_record =>
+  match(Big_map.find_opt(k, s.ledger), {
+    None: () => {
+      minted: (0 as nat),
+      last_block: (0 as nat),
+      block_minted: (0 as nat)
+    },
+    Some: wallet_record => wallet_record
+  });
+
+const validate_ingredient = (ingredient: ingredient, step_input: set<fa2_with_amount>): unit => {
+  let sum: nat = (0 as nat);
+  for (const input of step_input) {
+    const _ = match(Map.find_opt(input.token.address, ingredient.tokens), {
+      Some: tokens => {
+        const _ = match(tokens, {
+          Token_id: token_id => {
+            assert_with_error(input.token.token_id == token_id, "FA_INVALID_RECIPE_STEP")
+          },
+          Range: (start_token_id, end_token_id) => {
+            assert_with_error(input.token.token_id >= start_token_id && input.token.token_id <= end_token_id, "FA_INVALID_RECIPE_STEP")
+          },
+          Set: token_ids => {
+            assert_with_error(Set.mem(input.token.token_id, token_ids), "FA_INVALID_RECIPE_STEP")
+          },
+          Any: () => { return }
+        })
+      },
+      None: () => {
+        failwith("FA_INVALID_RECIPE_STEP")
+      }
+    });
+
+    sum = sum + input.amount
+  };
+
+  assert_with_error(sum == ingredient.amount,"FA_INVALID_RECIPE_STEP");
+};

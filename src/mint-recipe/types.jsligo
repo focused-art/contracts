@@ -1,0 +1,113 @@
+type wallet_record =
+// @layout comb
+{
+  minted: nat,
+  last_block: nat,
+  block_minted: nat
+};
+
+type fa2_with_amount =
+// @layout comb
+{
+  token: fa2;
+  amount: nat
+};
+
+type token_id_opts =
+  | ["Token_id", token_id]
+  | ["Range", token_id, token_id]
+  | ["Set", set<token_id>]
+  | ["Any", unit];
+
+type ingredient =
+// @layout comb
+{
+  tokens: map<address, token_id_opts>;
+  amount: nat
+};
+
+type instruction =
+  | ["Burn", ingredient]
+  | ["Hold", ingredient]
+  | ["Freeze", ingredient, timestamp]
+  | ["Transfer", ingredient, recipient]
+  | ["Pay", tez];
+
+type recipe_step = nat;
+
+type recipe_id = nat;
+
+type recipe = map<recipe_step, instruction>;
+
+type products = set<fa2_with_amount>;
+
+type mint =
+// @layout comb
+{
+  owner: address,
+  paused: bool,
+  recipes: map<recipe_id, recipe>,
+  products,
+  recipients,
+  minted: nat,
+  start_time: timestamp,
+  duration: int,
+  max_mint: nat,
+  max_per_block: nat,
+  max_per_wallet: nat
+};
+
+type mint_id = nat;
+
+type storage =
+// @layout comb
+{
+  metadata: big_map<string, bytes>,
+  mints: big_map<mint_id, mint>,
+  next_mint_id: mint_id,
+  ledger: big_map<[address, mint_id], wallet_record>
+};
+
+// define return for readability
+type @return = [op_list, storage];
+
+// Entrypoint params
+type create_params =
+// @layout comb
+{
+  recipes: map<recipe_id, recipe>,
+  products,
+  recipients,
+  start_time: timestamp,
+  duration: int,
+  max_mint: nat,
+  max_per_block: nat,
+  max_per_wallet: nat
+};
+
+type mint_params =
+// @layout comb
+{
+  mint_id,
+  recipe_id,
+  recipe_steps: map<recipe_step, set<fa2_with_amount>>,
+  mint_amount: nat,
+  recipient: option<recipient>
+};
+
+type mint_update_action =
+  | ["Pause", mint_id, bool]
+  | ["Update_start_time", mint_id, timestamp]
+  | ["Update_duration", mint_id, int]
+  | ["Update_max_per_block", mint_id, nat]
+  | ["Update_max_per_wallet", mint_id, nat]
+  | ["Update_recipients", mint_id, recipients];
+
+type mint_owner_action =
+  | ["Cancel", mint_id]
+  | ["Mint_update_action", mint_update_action];
+
+type entry_action =
+  | ["Mint_owner_action", mint_owner_action]
+  | ["Create", create_params]
+  | ["Mint", mint_params];

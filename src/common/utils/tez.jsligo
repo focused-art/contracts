@@ -1,0 +1,18 @@
+const tez_min = (a: tez, b: tez): tez => a < b ? a : b;
+
+const tez_max = (a: tez, b: tez): tez => a > b ? a : b;
+
+const tez_to_nat = (a: tez): nat => a / (1 as mutez);
+
+const tez_to_int = (a: tez): int => int(tez_to_nat(a));
+
+const tez_transfer = (destination: address, amt: tez): operation => {
+  const receiver: contract<unit> =
+    match(Tezos.get_contract_opt(destination) as option<contract<unit>>,
+      {
+        Some: contract => contract,
+        None: () => failwith("FA_INVALID_TEZ_DESTINATION") as (contract<unit>)
+      }
+    );
+  return Tezos.transaction(unit, amt, receiver)
+};

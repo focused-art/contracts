@@ -1,0 +1,14 @@
+// Update contract level metadata
+const update_contract_metadata = (input: metadata, s1: storage): @return => {
+  let s = s1;
+
+  assert_with_error(is_owner(Tezos.get_sender(), s), "FA2_INVALID_OWNER_ACCESS");
+
+  s.metadata = Big_map.empty;
+  for (const generated of input) {
+    let [key, value] = generated;
+    s.metadata = Big_map.add(key, value, s.metadata)
+  };
+
+  return [list([]), s]
+};

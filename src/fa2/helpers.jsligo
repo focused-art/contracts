@@ -1,0 +1,72 @@
+// Helpers
+
+const internal_get_token_total_supply = (token_id: token_id, s: storage): nat =>
+  match(Big_map.find_opt(token_id, s.token_total_supply),
+    { None: () => (0 as nat), Some: supply => supply }
+  );
+
+const internal_get_balance_of = (owner: owner, token_id: token_id, s: storage): nat =>
+  match(Big_map.find_opt([owner, token_id], s.ledger),
+    { None: () => (0 as nat), Some: bal => bal }
+  );
+
+const internal_is_operator = (owner: owner, operator: operator, token_id: token_id, s: storage): bool =>
+  owner == operator ||
+    Big_map.mem([owner, [operator, token_id]], s.operators);
+
+const validate_operator = (owner: owner, operator: operator, token_id: token_id, s: storage): unit =>
+  assert_with_error(
+    internal_is_operator(owner, operator, token_id, s) == true,
+    "FA2_NOT_OPERATOR"
+  );
+
+const validate_is_sender = (sender: address, err: string): unit =>
+  assert_with_error(Tezos.get_sender() == sender, err);
+
+const validate_token_id = (token_id: token_id, s: storage): unit =>
+  assert_with_error(token_id < s.next_token_id, "FA2_TOKEN_UNDEFINED");
+
+const get_transfer_hook = (c: trusted): contract<transfer_params> =>
+  match(
+    Tezos.get_entrypoint_opt("%transfer_hook", c) as option<contract<transfer_params>>,
+    {
+      None: () => failwith("FA_TRANSFER_HOOK_UNDEFINED"),
+      Some: entrypoint => entrypoint
+    }
+  );
+
+const get_create_hook = (c: trusted): contract<create_params> =>
+  match(
+    Tezos.get_entrypoint_opt("%create_hook", c) as option<contract<create_params>>,
+    {
+      None: () => failwith("FA_CREATE_HOOK_UNDEFINED"),
+      Some: entrypoint => entrypoint
+    }
+  );
+
+const get_burn_hook = (c: trusted): contract<mint_burn_params> =>
+  match(
+    Tezos.get_entrypoint_opt("%burn_hook", c) as option<contract<mint_burn_params>>,
+    {
+      None: () => failwith("FA_BURN_HOOK_UNDEFINED"),
+      Some: entrypoint => entrypoint
+    }
+  );
+
+const get_mint_hook = (c: trusted): contract<mint_burn_params> =>
+  match(
+    Tezos.get_entrypoint_opt("%mint_hook", c) as option<contract<mint_burn_params>>,
+    {
+      None: () => failwith("FA_MINT_HOOK_UNDEFINED"),
+      Some: entrypoint => entrypoint
+    }
+  );
+
+const get_update_metadata_hook = (c: trusted): contract<update_token_metadata_params> =>
+  match(
+    Tezos.get_entrypoint_opt("%update_metadata_hook", c) as option<contract<update_token_metadata_params>>,
+    {
+      None: () => failwith("FA_UPDATE_METADATA_HOOK_UNDEFINED"),
+      Some: entrypoint => entrypoint
+    }
+  );

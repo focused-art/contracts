@@ -1,0 +1,15 @@
+@view
+const is_revocable = (k: hook_type, _: storage): bool =>
+  match(k, {
+    Transfer_hook: () => true,
+    Create_hook: () => true,
+    Mint_hook: () => true,
+    Burn_hook: () => true,
+    Metadata_hook: () => false
+  });
+
+@view
+const is_cemented = (k: fa2, s: storage): bool =>
+  match(Big_map.find_opt(k, s.cemented_tokens),
+    { Some: t => t >= Tezos.get_now(), None: () => false }
+  );

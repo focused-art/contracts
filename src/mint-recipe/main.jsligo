@@ -1,0 +1,24 @@
+/*                                          */
+/*               Mint Recipes               */
+/*                                          */
+/*      Built by Codecrafting <♥> Labs      */
+/*                                          */
+
+#include "../common/types.jsligo"
+#include "../common/utils/fa2.jsligo"
+#include "../common/utils/tez.jsligo"
+#include "../common/utils/nat.jsligo"
+#include "../common/utils/int.jsligo"
+#include "../common/payments.jsligo"
+#include "types.jsligo"
+#include "helpers.jsligo"
+#include "views.jsligo"
+#include "entrypoints.jsligo"
+
+@entry
+const main = (action: entry_action, s: storage): @return =>
+  match(action, {
+    Mint_owner_action: params   => mint_owner_main(params, s),
+    Create: params              => create(params, s),
+    Mint: params                => mint(params, s)
+  });

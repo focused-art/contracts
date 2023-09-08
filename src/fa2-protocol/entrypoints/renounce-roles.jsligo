@@ -1,0 +1,43 @@
+const renounce_roles = (params: renounce_roles_params, s1: storage): @return => {
+  let s = s1;
+  for (const entry of params) {
+    const [kt1, renounce_role_params] = entry;
+    const permissions: permissions = get_permissions_or_fail(kt1, s);
+    s.roles = Big_map.update(kt1, Some(match(renounce_role_params, {
+      Ownership: () => {
+        assert_with_error(is_owner([kt1, Tezos.get_sender()], s), "FA2_INVALID_OWNER_ACCESS");
+        return { ...permissions, owner: c_NULL_ADDRESS }
+      },
+      Creator: () => {
+        assert_with_error(has_role([kt1, Tezos.get_sender(), Creator()], s), "FA2_INVALID_CREATOR_ACCESS");
+        return {
+          ...permissions,
+          creator: Set.remove(Tezos.get_sender(), permissions.creator)
+        }
+      },
+      Minter: () => {
+        assert_with_error(has_role([kt1, Tezos.get_sender(), Minter()], s), "FA2_INVALID_MINTER_ACCESS");
+        return {
+          ...permissions,
+          minter: Set.remove(Tezos.get_sender(), permissions.minter)
+        }
+      },
+      Metadata_manager: () => {
+        assert_with_error(has_role([kt1, Tezos.get_sender(), Metadata_manager()], s), "FA2_INVALID_METADATA_MANAGER_ACCESS");
+        return {
+          ...permissions,
+          metadata_manager: Set.remove(Tezos.get_sender(), permissions.metadata_manager)
+        }
+      },
+      Royalties_manager: () => {
+        assert_with_error(has_role([kt1, Tezos.get_sender(), Royalties_manager()], s), "FA2_INVALID_ROYALTIES_MANAGER_ACCESS");
+        return {
+          ...permissions,
+          royalties_manager: Set.remove(Tezos.get_sender(), permissions.royalties_manager)
+        }
+      }
+    })), s.roles);
+  };
+
+  return [noop, s]
+};

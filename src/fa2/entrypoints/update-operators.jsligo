@@ -1,0 +1,54 @@
+const update_operators = (params: update_operator_params, s1: storage): @return => {
+  let s = s1;
+
+  // Initialize operations
+  let operations: list<operation> = list([]);
+
+  for (const update_operator_param of params) {
+    const _ = match(update_operator_param, {
+      Add_operator: param => {
+        validate_token_id(param.token_id, s);
+        validate_is_sender(param.owner, "FA2_NOT_OWNER");
+        s.operators = Big_map.update(
+          [param.owner, [param.operator, param.token_id]],
+          Some(unit),
+          s.operators
+        );
+
+        const operator_update_event: operator_update_event = {
+          owner: param.owner,
+          operator: param.operator,
+          token_id: param.token_id,
+          is_operator: true
+        };
+
+        operations = list([
+          Tezos.emit("%operator_update", operator_update_event),
+          ...operations
+        ]);
+      },
+      Remove_operator: param => {
+        validate_token_id(param.token_id, s);
+        validate_is_sender(param.owner, "FA2_NOT_OWNER");
+        s.operators = Big_map.remove(
+          [param.owner, [param.operator, param.token_id]],
+          s.operators
+        );
+
+        const operator_update_event: operator_update_event = {
+          owner: param.owner,
+          operator: param.operator,
+          token_id: param.token_id,
+          is_operator: false
+        };
+
+        operations = list([
+          Tezos.emit("%operator_update", operator_update_event),
+          ...operations
+        ]);
+      }
+    });
+  };
+
+  return [operations, s]
+};

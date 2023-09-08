@@ -1,0 +1,11 @@
+/*                                          */
+/*                   FA2+                   */
+/*                                          */
+/*      Built by Codecrafting <♥> Labs      */
+/*                                          */
+
+#include "main.jsligo"
+
+// Main entrypoint
+const main_as_const = (action: entry_action, s: storage): @return =>
+  (Tezos.constant("expruST3iVTEZNuzUeYMkB8kVgZPmu8qgidQqpZTEYWi2HqiVAm1zg") as (v: [entry_action, storage]) => @return)([action, s]);

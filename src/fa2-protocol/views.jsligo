@@ -1,0 +1,71 @@
+@view
+const get_owner = (k: contract_address, s: storage): trusted =>
+  match(Big_map.find_opt(k, s.roles), {
+    Some: entry => entry.owner,
+    None: () => c_NULL_ADDRESS
+  });
+
+@view
+const is_owner = ([contract_address, owner]: [contract_address, address], s: storage): bool =>
+  match(Big_map.find_opt(contract_address, s.roles), {
+    Some: entry => entry.owner == owner,
+    None: () => false
+  });
+
+@view
+const has_role = (
+  [contract_address, user, role_type]: [contract_address, address, role_type],
+  s: storage
+): bool =>
+  match(Big_map.find_opt(contract_address, s.roles), {
+    Some: roles => match(role_type, {
+      Creator: () => Set.mem(user, roles.creator),
+      Minter: () => Set.mem(user, roles.minter),
+      Metadata_manager: () => Set.mem(user, roles.metadata_manager),
+      Royalties_manager: () => Set.mem(user, roles.royalties_manager)
+    }),
+    None: () => false
+  });
+
+@view
+const get_hooks = (
+  [contract_address, hook_type]: [contract_address, hook_type],
+  s: storage
+): set<trusted> =>
+  match(hook_type, {
+    Transfer_hook: () => {
+      let hooks: set<trusted> = (internal_get_hooks(contract_address, s)).transfer;
+      for (const h of s.protocol_hooks.transfer) {
+        hooks = Set.add(h, hooks)
+      };
+      return hooks
+    },
+    Create_hook: () => {
+      let hooks: set<trusted> = (internal_get_hooks(contract_address, s)).create;
+      for (const h of s.protocol_hooks.create) {
+        hooks = Set.add(h, hooks)
+      };
+      return hooks
+    },
+    Mint_hook: () => {
+      let hooks: set<trusted> = (internal_get_hooks(contract_address, s)).mint;
+      for (const h of s.protocol_hooks.mint) {
+        hooks = Set.add(h, hooks)
+      };
+      return hooks
+    },
+    Burn_hook: () => {
+      let hooks: set<trusted> = (internal_get_hooks(contract_address, s)).burn;
+      for (const h of s.protocol_hooks.burn) {
+        hooks = Set.add(h, hooks)
+      };
+      return hooks
+    },
+    Metadata_hook: () => {
+      let hooks: set<trusted> = (internal_get_hooks(contract_address, s)).update_metadata;
+      for (const h of s.protocol_hooks.update_metadata) {
+        hooks = Set.add(h, hooks)
+      };
+      return hooks
+    }
+  });

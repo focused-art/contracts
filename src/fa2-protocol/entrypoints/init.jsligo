@@ -1,0 +1,50 @@
+const create_fa2: create_fa2 =
+  Michelson ` { UNPPAIIR ;
+              CREATE_CONTRACT 
+#include "../../../build/contracts/fa2-as-const.jsligo.tz"
+        ;
+          PAIR }`
+  as create_fa2;
+
+// Init a new collection
+const init = (metadata: metadata, s1: storage): @return => {
+  let s = s1;
+
+  const owner: address = Tezos.get_sender();
+  let fa2_storage: fa2_storage = {
+    metadata: Big_map.empty,
+    protocol: Tezos.get_self_address(),
+    next_token_id: (0 as nat),
+    token_total_supply: Big_map.empty,
+    ledger: Big_map.empty,
+    operators: Big_map.empty,
+    token_metadata: Big_map.empty,
+    royalties: Big_map.empty,
+    token_max_supply: Big_map.empty,
+    default_royalties: {
+      total_shares: (0 as nat),
+      shares: Map.empty
+    }
+  };
+
+  for (const generated of metadata) {
+    const [key, value] = generated;
+    fa2_storage.metadata = Big_map.add(key, value, fa2_storage.metadata);
+  };
+
+  const [origination, kt1]: ([operation, address]) = create_fa2([None() as option<key_hash>, (0 as mutez), fa2_storage]);
+
+  s.roles = Big_map.add(kt1,
+    {
+      owner: owner,
+      pending_owner: None() as option<address>,
+      creator: Set.literal(list([owner])),
+      minter: Set.literal(list([owner])),
+      metadata_manager: Set.literal(list([owner])),
+      royalties_manager: Set.literal(list([owner]))
+    },
+    s.roles
+  );
+
+  return [list([origination]), s]
+};

@@ -1,0 +1,10 @@
+const assert_balances = (params: assert_balance_params, s: storage): @return => {
+  for (const param of params) {
+    assert_with_error(
+      internal_get_balance_of(param.owner, param.token_id, s) >= param.balance,
+      "FA2_INSUFFICIENT_BALANCE"
+    );
+  };
+
+  return [noop, s]
+};

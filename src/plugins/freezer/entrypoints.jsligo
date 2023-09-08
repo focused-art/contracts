@@ -1,0 +1,5 @@
+// Entrypoints
+
+#include "entrypoints/freeze.jsligo"
+#include "entrypoints/burn-hook.jsligo"
+#include "entrypoints/transfer-hook.jsligo"

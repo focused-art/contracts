@@ -1,0 +1,10 @@
+// Burn hook
+const burn_hook = (params: mint_burn_params, s: storage): @return => {
+  const token: fa2 = {
+    address: Tezos.get_sender();
+    token_id: params.token_id
+  };
+  assert_with_error(is_frozen([params.owner, token], s) == false, "FA_FROZEN_TOKEN_BURN_DENIED");
+
+  return [noop, s]
+};

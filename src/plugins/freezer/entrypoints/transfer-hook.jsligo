@@ -1,0 +1,14 @@
+// Transfer hook
+const transfer_hook = (transfers: transfer_params, s: storage): @return => {
+  for (const user_tx of transfers) {
+    for (const transfer of user_tx.txs) {
+      const token: fa2 = {
+        address: Tezos.get_sender();
+        token_id: transfer.token_id
+      };
+      assert_with_error(is_frozen([user_tx.from_, token], s) == false, "FA_FROZEN_TOKEN_TRANSFER_DENIED");
+    };
+  };
+
+  return [noop, s]
+};

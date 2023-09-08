@@ -1,0 +1,63 @@
+const update_hooks = (params: update_hooks_params, s1: storage): @return => {
+  let s = s1;
+
+  for (const entry of params) {
+    const [kt1, update_hook_param] = entry;
+    const hooks: hooks = internal_get_hooks(kt1, s);
+    s.hooks = Big_map.update(kt1, Some(match(update_hook_param, {
+      Add: ([hook_type, hook_address]) => {
+        assert_with_error(is_owner([kt1, Tezos.get_sender()], s), "FA_INVALID_ADD_HOOK_ACCESS");
+        return match(hook_type, {
+          Transfer_hook: () => {
+            // Validate hook
+            const _: contract<transfer_params> = get_transfer_hook(hook_address);
+            return { ...hooks, transfer: Set.add(hook_address, hooks.transfer) }
+          },
+          Create_hook: () => {
+            // Validate hook
+            const _: contract<create_params> = get_create_hook(hook_address);
+            return { ...hooks, create: Set.add(hook_address, hooks.create) }
+          },
+          Mint_hook: () => {
+            // Validate hook
+            const _: contract<mint_burn_params> = get_mint_hook(hook_address);
+            return { ...hooks, mint: Set.add(hook_address, hooks.mint) }
+          },
+          Burn_hook: () => {
+            // Validate hook
+            const _: contract<mint_burn_params> = get_burn_hook(hook_address);
+            return { ...hooks, burn: Set.add(hook_address, hooks.burn) }
+          },
+          Metadata_hook: () => {
+            // Validate hook
+            const _: contract<update_token_metadata_params> = get_update_metadata_hook(hook_address);
+            return {
+              ...hooks,
+              update_metadata: Set.add(hook_address, hooks.update_metadata)
+            }
+          }
+        })
+      },
+      Remove: ([hook_type, hook_address]) => {
+        assert_with_error(is_revocable(hook_address, hook_type) == true, "FA_IRREVOCABLE_HOOK");
+        assert_with_error(
+          is_owner([kt1, Tezos.get_sender()], s) || hook_address == Tezos.get_sender(),
+          "FA_INVALID_REMOVE_HOOK_ACCESS");
+        return match(hook_type, {
+          Transfer_hook: () =>
+            { ...hooks, transfer: Set.remove(hook_address, hooks.transfer) },
+          Create_hook: () =>
+            { ...hooks, create: Set.remove(hook_address, hooks.create) },
+          Mint_hook: () =>
+            { ...hooks, mint: Set.remove(hook_address, hooks.mint) },
+          Burn_hook: () =>
+            { ...hooks, burn: Set.remove(hook_address, hooks.burn) },
+          Metadata_hook: () =>
+            { ...hooks, update_metadata: Set.remove(hook_address, hooks.update_metadata) }
+        })
+      }
+    })), s.hooks);
+  };
+
+  return [noop, s]
+};

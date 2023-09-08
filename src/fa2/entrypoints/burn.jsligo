@@ -1,0 +1,64 @@
+// Burn some tokens
+const burn = (input: mint_burn_params, s1: storage): @return => {
+  let s = s1;
+
+  validate_operator(input.owner, Tezos.get_sender(), input.token_id, s);
+  validate_token_id(input.token_id, s);
+
+  const owner_bal: nat = internal_get_balance_of(input.owner, input.token_id, s);
+
+  assert_with_error(owner_bal >= input.amount, "FA2_INSUFFICIENT_BALANCE");
+
+  const new_owner_bal: nat = Option.unopt(is_nat(owner_bal - input.amount));
+
+  s.ledger = Big_map.update([input.owner, input.token_id], Some(new_owner_bal), s.ledger);
+
+  const new_total_supply: nat = Option.unopt(
+    is_nat(internal_get_token_total_supply(input.token_id, s) - input.amount)
+  );
+
+  s.token_total_supply = Big_map.update(input.token_id, Some(new_total_supply), s.token_total_supply);
+
+  // initialize operations
+  let operations: list<operation> = list([]);
+
+  // Send hooks
+  for (const hook of get_hooks(Burn_hook(), s)) {
+    operations = list([
+      Tezos.transaction(input, (0 as mutez), get_burn_hook(hook)),
+      ...operations
+    ]);
+  };
+
+  // Events
+  const total_supply_update_event: total_supply_update_event = {
+    owner_diffs: list([
+      {
+        owner: input.owner;
+        owner_diff: int(input.amount) * -1
+      }]
+    ),
+    token_id: input.token_id,
+    new_total_supply: new_total_supply,
+    diff: int(input.amount) * -1
+  };
+
+  operations = list([
+    Tezos.emit("%total_supply_update", total_supply_update_event),
+    ...operations
+  ]);
+
+  const balance_update_event: balance_update_event = {
+    owner: input.owner,
+    token_id: input.token_id,
+    new_balance: new_owner_bal,
+    diff: int(input.amount) * -1
+  };
+
+  operations = list([
+    Tezos.emit("%balance_update", balance_update_event),
+    ...operations
+  ]);
+
+  return [operations, s]
+};

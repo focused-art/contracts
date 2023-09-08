@@ -1,0 +1,51 @@
+// Create new token
+const create = (input: create_params, s1: storage): @return => {
+  let s = s1;
+
+  assert_with_error(has_role([Tezos.get_sender(), Creator()], s), "FA2_INVALID_CREATOR_ACCESS");
+
+  const token_id: token_id = match(input.token_id, {
+    Some: t => t, None: () => s.next_token_id
+  });
+
+  assert_with_error(Big_map.mem(token_id, s.token_metadata) == false, "FA2_DUP_TOKEN_ID");
+
+  s.token_metadata = Big_map.add(token_id, {
+      token_id: token_id;
+      token_info: input.token_metadata
+    },
+    s.token_metadata);
+  s.token_total_supply = Big_map.add(token_id, (0 as nat), s.token_total_supply);
+  s.token_max_supply = Big_map.add(token_id, input.max_supply, s.token_max_supply);
+
+  const _ = match(input.royalties, {
+    Some: royalties => { s.royalties = Big_map.add(token_id, royalties, s.royalties) },
+    None: () => { return }
+  });
+
+  s.next_token_id = nat_max(s.next_token_id, token_id) + (1 as nat);
+
+  // initialize operations
+  let operations: list<operation> = list([]);
+
+  // Send hooks
+  for (const hook of get_hooks(Create_hook(), s)) {
+    operations = list([
+      Tezos.transaction(input, (0 as mutez), get_create_hook(hook)),
+      ...operations
+    ]);
+  };
+
+  // Events
+  const token_metadata_update_event: token_metadata_update_event = {
+    token_id: token_id;
+    new_metadata: Some(input.token_metadata)
+  };
+
+  operations = list([
+    Tezos.emit("%token_metadata_update", token_metadata_update_event),
+    ...operations
+  ]);
+
+  return [operations, s]
+};

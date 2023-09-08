@@ -1,0 +1,28 @@
+// Update token royalties
+const update_royalties = (input: update_royalties_params, s1: storage): @return => {
+  let s = s1;
+
+  assert_with_error(
+    has_role([Tezos.get_sender(), Royalties_manager()], s),
+    "FA2_INVALID_ROYALTIES_MANAGER_ACCESS"
+  );
+
+  // Initialize operations
+  let operations: list<operation> = list([]);
+
+  for (const generated of input) {
+    const [token_id, royalties] = generated;
+    s.royalties = Big_map.update(token_id, Some(royalties), s.royalties);
+
+    // Events
+    const token_royalties_update_event: token_royalties_update_event =
+      { token_id: token_id; new_royalties: Some(royalties) };
+
+    operations = list([
+      Tezos.emit("%token_royalties_update", token_royalties_update_event),
+      ...operations
+    ]);
+  };
+
+  return [operations, s]
+};

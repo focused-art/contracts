@@ -1,0 +1,35 @@
+// Mint owner main entrypoint
+const mint_owner_main = (action: mint_owner_action, s1: storage): @return => {
+  let s = s1;
+
+  const mint_id: mint_id = match(action, {
+    Cancel: params => params,
+    Mint_update_action: update_action => match(update_action, {
+      Pause: params => params[0],
+      Update_start_time: params => params[0],
+      Update_duration: params => params[0],
+      Update_max_per_block: params => params[0],
+      Update_max_per_wallet: params => params[0],
+      Update_recipients: params => params[0]
+    })
+  });
+
+  assert_with_error(is_mint_owner([mint_id, Tezos.get_sender()], s), "FA_INVALID_MINT_OWNER_ACCESS");
+
+  const mint: mint = get_mint_or_fail(mint_id, s);
+
+  // Update storage
+  s.mints = Big_map.update(mint_id, match(action, {
+    Cancel: _params => None(),
+    Mint_update_action: update_action => Some(match(update_action, {
+      Pause: params => { ...mint, paused: params[1] },
+      Update_start_time: params => { ...mint, start_time: params[1] },
+      Update_duration: params => { ...mint, duration: params[1] },
+      Update_max_per_block: params => { ...mint, max_per_block: params[1] },
+      Update_max_per_wallet: params => { ...mint, max_per_wallet: params[1] },
+      Update_recipients: params => { ...mint, recipients: params[1] }
+    }))
+  }), s.mints);
+
+  return [noop, s]
+};

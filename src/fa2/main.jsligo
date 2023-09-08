@@ -1,0 +1,27 @@
+/*                                          */
+/*                   FA2+                   */
+/*                                          */
+/*      Built by Codecrafting <♥> Labs      */
+/*                                          */
+
+#include "../common/types.jsligo"
+#include "../common/utils/nat.jsligo"
+#include "types.jsligo"
+#include "helpers.jsligo"
+#include "views.jsligo"
+#include "entrypoints.jsligo"
+
+@entry
+const main = ([action, s]: [entry_action, storage]): @return => {
+  assert_with_error(Tezos.get_amount() == (0 as mutez), "FA2_DONT_SEND_TEZ");
+  return match(action, {
+    Privileged_action: params   => privileged_main(params, s),
+    Transfer: params            => transfer(params, s),
+    Update_operators: params    => update_operators(params, s),
+    Assert_balances: params     => assert_balances(params, s),
+    Balance_of: params          => balance_of(params, s),
+    Create: params              => create(params, s),
+    Mint: params                => mint(params, s),
+    Burn: params                => burn(params, s)
+  });
+};

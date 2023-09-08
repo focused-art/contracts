@@ -1,0 +1,52 @@
+// Pay out royalties and recipients
+const pay_royalties_and_recipients = (token: fa2, recipients: recipients, price: tez, operations1: op_list): op_list => {
+  let operations = operations1;
+  let tez_remaining: tez = price;
+
+  if (tez_remaining > (0 as mutez)) {
+    // Pay royalties
+    const royalty_shares: royalty_shares = get_royalty_shares(token, tez_to_nat(tez_remaining));
+    let total_royalties: tez = (0 as mutez);
+    for (const generated of royalty_shares) {
+      const [receiver, share] = generated;
+      if (share > (0 as nat) && tez_remaining > (0 as mutez)) {
+        const share_tez: tez = nat_to_tez(share);
+        operations = list([tez_transfer(receiver, share_tez), ...operations]);
+        total_royalties = total_royalties + share_tez
+      };
+    };
+
+    // Sanity check royalties
+    assert_with_error(tez_remaining >= total_royalties, "FA_INVALID_ROYALTIES");
+
+    if (total_royalties > (0 as mutez)) {
+      tez_remaining = Option.unopt(tez_remaining - total_royalties)
+    };
+
+    // Transfer remaining tez to recipients
+    if (tez_remaining > (0 as mutez)) {
+      const num_recipients: nat = Map.size(recipients);
+      let count: nat = (1 as nat);
+      for (const generated of recipients) {
+        const [recipient, pct] = generated;
+        if (tez_remaining > (0 as mutez)) {
+          let tez_amount: tez = (0 as mutez);
+          if (count == num_recipients) {
+            tez_amount = tez_remaining
+          } else {
+            tez_amount =
+              tez_remaining * pct / (10000 as nat)
+          };
+          if ((tez_amount > (0 as mutez))) {
+            tez_amount = tez_min(tez_remaining, tez_amount);
+            operations = list([tez_transfer(recipient, tez_amount), ...operations]);
+            tez_remaining = Option.unopt(tez_remaining - tez_amount)
+          };
+        };
+        count = count + (1 as nat);
+      };
+    };
+  };
+
+  return operations
+};

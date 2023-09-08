@@ -1,0 +1,10 @@
+const update_metadata_hook = (params: update_token_metadata_params, s: storage): @return => {
+  for (const generated of params) {
+    const [token_id, _m] = generated;
+    const token: fa2 = { address: Tezos.get_sender(); token_id: token_id };
+    assert_with_error(is_cemented(token, s) == false, "FA_TOKEN_METADATA_UPDATE_DENIED");
+  };
+
+  return [noop, s]
+};
+

@@ -1,0 +1,5 @@
+const ts_max = (a: timestamp, b: timestamp): timestamp =>
+  a > b ? a : b;
+
+const ts_min = (a: timestamp, b: timestamp): timestamp =>
+  a < b ? a : b;

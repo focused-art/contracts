@@ -1,0 +1,195 @@
+type token_id = nat;
+type token_ids = set<token_id>;
+type owner = address;
+type operator = address;
+type royalty_shares = map<address, nat>;
+
+type royalties =
+// @layout comb
+{
+  total_shares          : nat,
+  shares                : royalty_shares
+};
+
+type token_metadata =
+// @layout comb
+{
+  token_id,
+  token_info            : metadata
+};
+
+type transfer_destination =
+// @layout comb
+{
+  to_                   : address,
+  token_id,
+  amount                : nat
+};
+
+type transfer_param =
+// @layout comb
+{
+  from_                 : owner,
+  txs                   : list<transfer_destination>
+};
+
+type balance_of_request =
+// @layout comb
+{
+  owner,
+  token_id
+};
+
+type balance_of_response =
+// @layout comb
+{
+  request               : balance_of_request,
+  balance               : nat
+};
+
+type balance_params =
+// @layout comb
+{
+  requests              : list<balance_of_request>,
+  callback              : contract<list<balance_of_response>>
+};
+
+type operator_param =
+// @layout comb
+{
+  owner,
+  operator,
+  token_id
+};
+
+type update_operator_param =
+  | ["Add_operator", operator_param]
+  | ["Remove_operator", operator_param];
+
+type transfer_params = list<transfer_param>;
+
+type update_operator_params = list<update_operator_param>;
+
+type assert_balance_param =
+// @layout comb
+{
+  owner,
+  token_id,
+  balance: nat
+};
+
+type assert_balance_params = list<assert_balance_param>;
+
+type create_params =
+// @layout comb
+{
+  token_metadata        : metadata,
+  max_supply            : nat,
+  royalties             : option<royalties>,
+  token_id              : option<token_id>
+};
+
+type update_royalties_params = map<token_id, royalties>;
+
+type update_token_metadata_params = map<token_id, metadata>;
+
+type mint_burn_params =
+// @layout comb
+{
+  owner,
+  token_id,
+  amount: nat
+};
+
+// contract storage
+type storage =
+// @layout comb
+{
+  metadata              : big_map<string, bytes>,
+  protocol              : trusted,
+  next_token_id         : nat,
+  token_total_supply    : big_map<token_id, nat>,
+  ledger                : big_map<[owner, token_id], nat>,
+  operators             : big_map<[owner, ([operator, token_id])], unit>,
+  token_metadata        : big_map<token_id, token_metadata>,
+  royalties             : big_map<token_id, royalties>,
+  token_max_supply      : big_map<token_id, nat>,
+  default_royalties     : royalties
+};
+
+type operator_update_event =
+// @layout comb
+{
+  owner,
+  operator,
+  token_id,
+  is_operator: bool
+};
+
+type transfer_event =
+// @layout comb
+{
+  from_: owner,
+  to_: address,
+  token_id,
+  amount: nat
+};
+
+type balance_update_event =
+// @layout comb
+{
+  owner,
+  token_id,
+  new_balance: nat,
+  diff: int
+};
+
+type token_metadata_update_event =
+// @layout comb
+{
+  token_id,
+  new_metadata: option<metadata>
+};
+
+type token_royalties_update_event =
+// @layout comb
+{
+  token_id,
+  new_royalties: option<royalties>
+};
+
+type owner_diff =
+// @layout comb
+{
+  owner,
+  owner_diff: int
+};
+
+type total_supply_update_event =
+// @layout comb
+{
+  /* @annot */ owner_diffs: list<owner_diff>,
+  token_id,
+  new_total_supply: nat,
+  diff: int
+};
+
+// define return type for readability
+type @return = [op_list, storage];
+
+type privileged_action =
+  | ["Update_contract_metadata", metadata]
+  | ["Update_metadata", update_token_metadata_params]
+  | ["Update_royalties", update_royalties_params]
+  | ["Update_default_royalties", royalties];
+
+type entry_action =
+  | ["Privileged_action", privileged_action]
+  | ["Transfer", transfer_params]
+  | ["Balance_of", balance_params]
+  | ["Update_operators", update_operator_params]
+  | ["Assert_balances", assert_balance_params]
+  | ["Create", create_params]
+  | ["Mint", mint_burn_params]
+  | ["Burn", mint_burn_params];
+

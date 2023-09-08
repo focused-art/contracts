@@ -1,0 +1,33 @@
+const update_roles = (params: update_roles_params, s1: storage): @return => {
+  let s = s1;
+
+  for (const entry of params) {
+    const [kt1, update_role_param] = entry;
+    assert_with_error(is_owner([kt1, Tezos.get_sender()], s), "FA2_INVALID_OWNER_ACCESS");
+    const permissions: permissions = get_permissions_or_fail(kt1, s);
+    s.roles = Big_map.update(kt1, Some(match(update_role_param, {
+      Add: ([role_type, user]) => match(role_type, {
+        Creator: () =>
+          { ...permissions, creator: Set.add(user, permissions.creator) },
+        Minter: () =>
+          { ...permissions, minter: Set.add(user, permissions.minter) },
+        Metadata_manager: () =>
+          { ...permissions, metadata_manager: Set.add(user, permissions.metadata_manager) },
+        Royalties_manager: () =>
+          { ...permissions, royalties_manager: Set.add(user, permissions.royalties_manager) }
+      }),
+      Remove: ([role_type, user]) => match(role_type, {
+        Creator: () =>
+          { ...permissions, creator: Set.remove(user, permissions.creator) },
+        Minter: () =>
+          { ...permissions, minter: Set.remove(user, permissions.minter) },
+        Metadata_manager: () =>
+          { ...permissions, metadata_manager: Set.remove(user, permissions.metadata_manager) },
+        Royalties_manager: () =>
+          { ...permissions, royalties_manager: Set.remove(user, permissions.royalties_manager) }
+      })
+    })), s.roles);
+  };
+
+  return [noop, s]
+};

@@ -1,0 +1,24 @@
+const balance_of = (balance_params: balance_params, s: storage): @return => {
+
+  let accumulated_response: list<balance_of_response> = list([]);
+
+  for (const request of balance_params.requests) {
+
+    // Token id check
+    validate_token_id(request.token_id, s);
+
+    // Form the response
+    const response: balance_of_response = {
+      request: request,
+      balance: internal_get_balance_of(request.owner, request.token_id, s)
+    };
+
+    accumulated_response = list([response, ...accumulated_response]);
+  };
+
+  const operations: op_list = list([
+    Tezos.transaction(accumulated_response, (0 as mutez), balance_params.callback)
+  ]);
+
+  return [operations, s]
+};

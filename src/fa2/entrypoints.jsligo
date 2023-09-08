@@ -1,0 +1,10 @@
+// Entrypoints
+
+#include "entrypoints/transfer.jsligo"
+#include "entrypoints/update-operators.jsligo"
+#include "entrypoints/assert-balances.jsligo"
+#include "entrypoints/balance-of.jsligo"
+#include "entrypoints/burn.jsligo"
+#include "entrypoints/create.jsligo"
+#include "entrypoints/mint.jsligo"
+#include "entrypoints/privileged-main.jsligo"

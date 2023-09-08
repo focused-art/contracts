@@ -1,0 +1,22 @@
+/*                                          */
+/*             NTT Transfer Hook            */
+/*                                          */
+/*      Built by Codecrafting <♥> Labs      */
+/*                                          */
+
+#include "../../common/types.jsligo"
+#include "../../common/utils/fa2.jsligo"
+#include "../../common/utils/timestamp.jsligo"
+#include "types.jsligo"
+#include "views.jsligo"
+#include "entrypoints.jsligo"
+
+@entry
+const main = (action: entry_action, s: storage): @return => {
+  assert_with_error(Tezos.get_amount() == (0 as mutez), "FA_DONT_SEND_TEZ");
+  return match(action, {
+    Freeze: params          => freeze(params, s),
+    Transfer_hook: params   => transfer_hook(params, s),
+    Burn_hook: params       => burn_hook(params, s)
+  })
+};

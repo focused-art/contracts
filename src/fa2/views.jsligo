@@ -1,0 +1,95 @@
+@view
+const get_protocol = (_: unit, s: storage): trusted =>
+  s.protocol;
+
+@view
+const get_owner = (_: unit, s: storage): trusted =>
+  match(
+    Tezos.call_view(
+      "get_owner",
+      Tezos.get_self_address(),
+      s.protocol
+    ) as option<trusted>,
+    {
+      Some: response => response,
+      None: () => c_NULL_ADDRESS
+    }
+  );
+
+@view
+const is_owner = (input: address, s: storage): bool =>
+  match(
+    Tezos.call_view(
+      "is_owner",
+      [Tezos.get_self_address(), input],
+      s.protocol
+    ) as option<bool>,
+    { Some: response => response, None: () => false }
+  );
+
+@view
+const has_role = ([user, role_type]: [address, role_type], s: storage): bool =>
+  match(
+    Tezos.call_view(
+      "has_role",
+      [Tezos.get_self_address(), user, role_type],
+      s.protocol
+    ) as option<bool>,
+    { Some: response => response, None: () => false }
+  );
+
+@view
+const get_hooks = (k: hook_type, s: storage): set<trusted> =>
+  match(
+    Tezos.call_view(
+      "get_hooks",
+      [Tezos.get_self_address(), k],
+      s.protocol
+    ) as option<set<trusted>>,
+    { Some: response => response, None: () => Set.empty }
+  );
+
+@view
+const is_hook = ([hook_address, hook_type]: [address, hook_type], s: storage): bool =>
+  Set.mem(hook_address, get_hooks(hook_type, s));
+
+@view
+const next_token_id = (_: unit, s: storage): nat =>
+  s.next_token_id;
+
+@view
+const get_balance = (params: balance_of_request, s: storage): nat =>
+  internal_get_balance_of(params.owner, params.token_id, s);
+
+@view
+const get_total_supply = (token_id: token_id, s: storage): nat =>
+  internal_get_token_total_supply(token_id, s);
+
+@view
+const get_max_supply = (token_id: token_id, s: storage): nat =>
+  match(Big_map.find_opt(token_id, s.token_max_supply), {
+    Some: max_supply => max_supply,
+    None: () => (0 as nat)
+  });
+
+@view
+const is_operator = (params: operator_param, s: storage): bool =>
+  internal_is_operator(params.owner, params.operator, params.token_id,s);
+
+@view
+const get_token_metadata = (token_id: token_id, s: storage): metadata =>
+  match(Big_map.find_opt(token_id, s.token_metadata), {
+    Some: token_metadata => token_metadata.token_info,
+    None: () => Map.empty
+  });
+
+@view
+const is_token = (token_id: token_id, s: storage): bool =>
+  Big_map.mem(token_id, s.token_total_supply);
+
+@view
+const get_royalties = (token_id: token_id, s: storage): royalties =>
+  match(Big_map.find_opt(token_id, s.royalties), {
+    Some: royalties => royalties,
+    None: () => s.default_royalties
+  });

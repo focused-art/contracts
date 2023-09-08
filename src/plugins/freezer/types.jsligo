@@ -1,0 +1,23 @@
+type storage =
+// @layout comb
+{
+  metadata: big_map<string, bytes>;
+  frozen_tokens: big_map<[owner, fa2], timestamp>
+};
+
+// define return for readability
+type @return = [op_list, storage];
+
+// Entrpoint params
+type freeze_params =
+// @layout comb
+{
+  owner: address;
+  token: fa2;
+  freeze_until: timestamp
+};
+
+type entry_action =
+  | ["Freeze", freeze_params]
+  | ["Transfer_hook", transfer_params]
+  | ["Burn_hook", mint_burn_params];

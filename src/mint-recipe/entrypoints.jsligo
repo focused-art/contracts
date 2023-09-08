@@ -1,0 +1,7 @@
+/***/
+/* Entrpoints */
+/***/
+
+#include "entrypoints/create.jsligo"
+#include "entrypoints/mint.jsligo"
+#include "entrypoints/mint-owner-main.jsligo"
