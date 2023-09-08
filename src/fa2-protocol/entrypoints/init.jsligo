@@ -1,7 +1,7 @@
 const create_fa2: create_fa2 =
   Michelson ` { UNPPAIIR ;
               CREATE_CONTRACT 
-#include "../../../build/contracts/fa2-as-const.jsligo.tz"
+#include "../../../build/contracts/fa2-as-const.tz"
         ;
           PAIR }`
   as create_fa2;
