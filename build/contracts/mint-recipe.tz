@@ -92,7 +92,8 @@
           (big_map %ledger
              (pair address nat)
              (pair (nat %minted) (nat %last_block) (nat %block_minted)))) ;
-  code { PUSH address "tz1Ke2h7sDdakHJQh8WX4Z372du1KChsksyU" ;
+  code { NIL operation ;
+         PUSH address "tz1Ke2h7sDdakHJQh8WX4Z372du1KChsksyU" ;
          LAMBDA
            (pair (pair address nat) address address nat)
            operation
@@ -177,26 +178,62 @@
              GET 3 ;
              SWAP ;
              GET ;
-             IF_NONE
-               { NONE (pair address
-                            bool
-                            (map nat
-                                 (map nat
-                                      (or (or (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat)
-                                                  (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) timestamp))
-                                              (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) mutez))
-                                          (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) address))))
-                            (set (pair (pair address nat) nat))
-                            (map address nat)
-                            nat
-                            timestamp
-                            int
-                            nat
-                            nat
-                            nat) }
-               { SOME } ;
              IF_NONE { PUSH string "FA_INVALID_MINT_ID" ; FAILWITH } {} } ;
-         DIG 6 ;
+         LAMBDA
+           (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat)
+                 (set (pair (pair address nat) nat)))
+           unit
+           { UNPAIR ;
+             PUSH nat 0 ;
+             DIG 2 ;
+             ITER { DUP 3 ;
+                    CAR ;
+                    DUP 2 ;
+                    CAR ;
+                    CAR ;
+                    GET ;
+                    IF_NONE
+                      { PUSH string "FA_INVALID_RECIPE_STEP" ; FAILWITH }
+                      { IF_LEFT
+                          { IF_LEFT
+                              { DROP }
+                              { UNPAIR ;
+                                SWAP ;
+                                DUP 3 ;
+                                CAR ;
+                                CDR ;
+                                COMPARE ;
+                                LE ;
+                                SWAP ;
+                                DUP 3 ;
+                                CAR ;
+                                CDR ;
+                                COMPARE ;
+                                GE ;
+                                AND ;
+                                IF {} { PUSH string "FA_INVALID_RECIPE_STEP" ; FAILWITH } } }
+                          { IF_LEFT
+                              { DUP 2 ;
+                                CAR ;
+                                CDR ;
+                                MEM ;
+                                IF {} { PUSH string "FA_INVALID_RECIPE_STEP" ; FAILWITH } }
+                              { DUP 2 ;
+                                CAR ;
+                                CDR ;
+                                COMPARE ;
+                                EQ ;
+                                IF {} { PUSH string "FA_INVALID_RECIPE_STEP" ; FAILWITH } } } } ;
+                    CDR ;
+                    ADD } ;
+             PUSH string "FA_INVALID_RECIPE_STEP" ;
+             DIG 2 ;
+             CDR ;
+             DIG 2 ;
+             COMPARE ;
+             EQ ;
+             IF { DROP ; UNIT } { FAILWITH } } ;
+         DIG 8 ;
          UNPAIR ;
          IF_LEFT
            { IF_LEFT
@@ -206,7 +243,8 @@
                  DIG 5 ;
                  DIG 6 ;
                  DIG 7 ;
-                 DROP 6 ;
+                 DIG 8 ;
+                 DROP 7 ;
                  SWAP ;
                  DUP 2 ;
                  GET 3 ;
@@ -224,8 +262,12 @@
                         DIG 2 ;
                         CAR ;
                         CAR ;
-                        SWAP ;
-                        VIEW "is_minter" bool ;
+                        UNIT ;
+                        LEFT unit ;
+                        RIGHT (or unit unit) ;
+                        DIG 2 ;
+                        PAIR ;
+                        VIEW "has_role" bool ;
                         IF_NONE { PUSH bool False } {} ;
                         IF { DROP } { FAILWITH } } ;
                  PUSH bool False ;
@@ -291,9 +333,10 @@
                  DIG 2 ;
                  GET 5 ;
                  ADD ;
-                 UPDATE 5 ;
-                 NIL operation }
-               { SWAP ;
+                 UPDATE 5 }
+               { DIG 9 ;
+                 DROP ;
+                 SWAP ;
                  DUP 2 ;
                  GET 8 ;
                  IF_NONE { SENDER } {} ;
@@ -301,7 +344,7 @@
                  DUP 4 ;
                  CAR ;
                  PAIR ;
-                 DIG 4 ;
+                 DIG 5 ;
                  SWAP ;
                  EXEC ;
                  PUSH bool False ;
@@ -358,7 +401,6 @@
                  GET 6 ;
                  SWAP ;
                  GET ;
-                 IF_NONE { NONE (pair nat nat nat) } { SOME } ;
                  IF_NONE { PUSH nat 0 ; PUSH nat 0 ; PUSH nat 0 ; PAIR 3 } {} ;
                  DUP 2 ;
                  GET 20 ;
@@ -404,13 +446,6 @@
                  DUP 7 ;
                  GET 3 ;
                  GET ;
-                 IF_NONE
-                   { NONE (map nat
-                               (or (or (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat)
-                                           (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) timestamp))
-                                       (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) mutez))
-                                   (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) address))) }
-                   { SOME } ;
                  IF_NONE { PUSH string "FA_INVALID_RECIPE_ID" ; FAILWITH } {} ;
                  PUSH mutez 0 ;
                  SWAP ;
@@ -419,72 +454,17 @@
                         GET 5 ;
                         SWAP ;
                         GET ;
-                        IF_NONE { NONE (set (pair (pair address nat) nat)) } { SOME } ;
                         IF_NONE { EMPTY_SET (pair (pair address nat) nat) } {} ;
-                        LAMBDA
-                          (pair (set (pair (pair address nat) nat))
-                                (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat))
-                          unit
-                          { UNPAIR ;
-                            SWAP ;
-                            PUSH nat 0 ;
-                            DIG 2 ;
-                            ITER { DUP 3 ;
-                                   CAR ;
-                                   DUP 2 ;
-                                   CAR ;
-                                   CAR ;
-                                   GET ;
-                                   IF_NONE { NONE (or (or unit (pair nat nat)) (or (set nat) nat)) } { SOME } ;
-                                   IF_NONE
-                                     { PUSH string "FA_INVALID_RECIPE_STEP" ; FAILWITH }
-                                     { IF_LEFT
-                                         { IF_LEFT
-                                             { DROP }
-                                             { UNPAIR ;
-                                               SWAP ;
-                                               DUP 3 ;
-                                               CAR ;
-                                               CDR ;
-                                               COMPARE ;
-                                               LE ;
-                                               SWAP ;
-                                               DUP 3 ;
-                                               CAR ;
-                                               CDR ;
-                                               COMPARE ;
-                                               GE ;
-                                               AND ;
-                                               IF {} { PUSH string "FA_INVALID_RECIPE_STEP" ; FAILWITH } } }
-                                         { IF_LEFT
-                                             { DUP 2 ;
-                                               CAR ;
-                                               CDR ;
-                                               MEM ;
-                                               IF {} { PUSH string "FA_INVALID_RECIPE_STEP" ; FAILWITH } }
-                                             { DUP 2 ;
-                                               CAR ;
-                                               CDR ;
-                                               COMPARE ;
-                                               EQ ;
-                                               IF {} { PUSH string "FA_INVALID_RECIPE_STEP" ; FAILWITH } } } } ;
-                                   CDR ;
-                                   ADD } ;
-                            PUSH string "FA_INVALID_RECIPE_STEP" ;
-                            DIG 2 ;
-                            CDR ;
-                            DIG 2 ;
-                            COMPARE ;
-                            EQ ;
-                            IF { DROP } { FAILWITH } ;
-                            UNIT } ;
-                        DUP 2 ;
-                        APPLY ;
-                        DIG 2 ;
+                        SWAP ;
                         IF_LEFT
                           { IF_LEFT
                               { IF_LEFT
-                                  { EXEC ;
+                                  { DUP 2 ;
+                                    SWAP ;
+                                    PAIR ;
+                                    DUP 10 ;
+                                    SWAP ;
+                                    EXEC ;
                                     DROP ;
                                     ITER { DIG 2 ;
                                            DUP 8 ;
@@ -499,12 +479,15 @@
                                            CAR ;
                                            CONTRACT %burn (pair (address %owner) (nat %token_id) (nat %amount)) ;
                                            IF_NONE
-                                             { DIG 2 ; DUP 15 ; DIG 3 ; DIG 3 ; PAIR 4 ; DUP 12 ; SWAP ; EXEC }
+                                             { DIG 2 ; DUP 16 ; DIG 3 ; DIG 3 ; PAIR 4 ; DUP 13 ; SWAP ; EXEC }
                                              { PUSH mutez 0 ; DIG 4 ; DIG 3 ; CDR ; DIG 4 ; PAIR 3 ; TRANSFER_TOKENS } ;
                                            CONS ;
                                            SWAP } }
                                   { UNPAIR ;
-                                    DIG 2 ;
+                                    DUP 3 ;
+                                    SWAP ;
+                                    PAIR ;
+                                    DUP 11 ;
                                     SWAP ;
                                     EXEC ;
                                     DROP ;
@@ -522,19 +505,17 @@
                                            DIG 3 ;
                                            DROP ;
                                            DIG 2 ;
-                                           DUP 16 ;
+                                           DUP 17 ;
                                            DIG 3 ;
                                            DIG 3 ;
                                            PAIR 4 ;
-                                           DUP 13 ;
+                                           DUP 14 ;
                                            SWAP ;
                                            EXEC ;
                                            CONS ;
                                            DUG 2 } ;
                                     DROP } }
-                              { SWAP ;
-                                DROP ;
-                                IF_LEFT
+                              { IF_LEFT
                                   { DROP 2 }
                                   { PUSH nat 0 ;
                                     DIG 2 ;
@@ -548,7 +529,10 @@
                                     MUL ;
                                     ADD } } }
                           { UNPAIR ;
-                            DIG 2 ;
+                            DUP 3 ;
+                            SWAP ;
+                            PAIR ;
+                            DUP 11 ;
                             SWAP ;
                             EXEC ;
                             DROP ;
@@ -564,34 +548,35 @@
                                    DIG 4 ;
                                    CAR ;
                                    PAIR 4 ;
-                                   DUP 13 ;
+                                   DUP 14 ;
                                    SWAP ;
                                    EXEC ;
                                    CONS ;
                                    DUG 2 } ;
                             DROP } } ;
-                 DIG 10 ;
+                 DIG 7 ;
                  DIG 11 ;
-                 DROP 2 ;
-                 DUP ;
+                 DIG 12 ;
+                 DROP 3 ;
+                 PUSH string "FA_INVALID_TEZ_AMOUNT" ;
+                 DUP 2 ;
                  AMOUNT ;
                  COMPARE ;
-                 NEQ ;
-                 IF { PUSH string "FA_INVALID_TEZ_AMOUNT" ; FAILWITH } {} ;
-                 PUSH mutez 0 ;
-                 PUSH nat 0 ;
-                 DUP 6 ;
+                 EQ ;
+                 IF { DROP } { FAILWITH } ;
+                 DUP 4 ;
                  GET 7 ;
                  SIZE ;
-                 DIG 3 ;
-                 DUP 13 ;
+                 SWAP ;
+                 DUP 11 ;
                  SWAP ;
                  EXEC ;
                  INT ;
                  EDIV ;
                  IF_NONE
-                   {}
-                   { SWAP ; DIG 2 ; DROP 2 ; UNPAIR ; ABS ; DUP 9 ; SWAP ; EXEC ; SWAP } ;
+                   { PUSH nat 0 ; PUSH mutez 0 }
+                   { UNPAIR ; ABS ; DUP 9 ; SWAP ; EXEC } ;
+                 SWAP ;
                  DUP 5 ;
                  GET 7 ;
                  ITER { DIG 3 ;
@@ -785,13 +770,11 @@
                  DIG 4 ;
                  GET 6 ;
                  DIG 3 ;
+                 SOME ;
                  DUP 6 ;
                  CAR ;
                  SENDER ;
                  PAIR ;
-                 SWAP ;
-                 SOME ;
-                 SWAP ;
                  UPDATE ;
                  UPDATE 6 ;
                  DUG 2 ;
@@ -805,20 +788,18 @@
                  GET 11 ;
                  ADD ;
                  UPDATE 11 ;
+                 SOME ;
                  DIG 4 ;
                  CAR ;
-                 SWAP ;
-                 SOME ;
-                 SWAP ;
                  UPDATE ;
-                 UPDATE 3 ;
-                 SWAP } }
-           { DIG 3 ;
+                 UPDATE 3 } }
+           { DIG 2 ;
              DIG 4 ;
              DIG 5 ;
              DIG 6 ;
              DIG 7 ;
-             DROP 5 ;
+             DIG 8 ;
+             DROP 6 ;
              SWAP ;
              DUP 2 ;
              IF_LEFT
@@ -832,33 +813,46 @@
              DUP 3 ;
              SENDER ;
              DUP 4 ;
+             LAMBDA
+               (pair (pair nat address)
+                     (pair (big_map string bytes)
+                           (big_map
+                              nat
+                              (pair address
+                                    bool
+                                    (map nat
+                                         (map nat
+                                              (or (or (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat)
+                                                          (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) timestamp))
+                                                      (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) mutez))
+                                                  (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) address))))
+                                    (set (pair (pair address nat) nat))
+                                    (map address nat)
+                                    nat
+                                    timestamp
+                                    int
+                                    nat
+                                    nat
+                                    nat))
+                           nat
+                           (big_map (pair address nat) (pair nat nat nat))))
+               bool
+               { UNPAIR ;
+                 UNPAIR ;
+                 DIG 2 ;
+                 GET 3 ;
+                 SWAP ;
+                 GET ;
+                 IF_NONE { DROP ; PUSH bool False } { CAR ; COMPARE ; EQ } } ;
+             DUP 3 ;
+             DUP 3 ;
              PAIR ;
+             APPLY ;
              SWAP ;
-             GET 3 ;
-             DUP 2 ;
-             CAR ;
-             GET ;
-             IF_NONE
-               { NONE (pair address
-                            bool
-                            (map nat
-                                 (map nat
-                                      (or (or (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat)
-                                                  (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) timestamp))
-                                              (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) mutez))
-                                          (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) address))))
-                            (set (pair (pair address nat) nat))
-                            (map address nat)
-                            nat
-                            timestamp
-                            int
-                            nat
-                            nat
-                            nat) }
-               { SOME } ;
-             IF_NONE
-               { DROP ; PUSH bool False }
-               { SWAP ; CDR ; SWAP ; CAR ; COMPARE ; EQ } ;
+             DIG 2 ;
+             DROP 2 ;
+             SWAP ;
+             EXEC ;
              IF { DROP } { FAILWITH } ;
              DUP 2 ;
              DUP 2 ;
@@ -867,13 +861,12 @@
              SWAP ;
              EXEC ;
              DUP 3 ;
+             DIG 3 ;
+             GET 3 ;
              DIG 4 ;
              IF_LEFT
-               { DIG 2 ;
+               { DIG 3 ;
                  DROP 2 ;
-                 DIG 2 ;
-                 GET 3 ;
-                 DIG 2 ;
                  NONE (pair address
                             bool
                             (map nat
@@ -889,33 +882,23 @@
                             int
                             nat
                             nat
-                            nat) ;
-                 SWAP ;
-                 UPDATE }
-               { DUP 5 ;
-                 DIG 5 ;
-                 GET 3 ;
-                 DIG 2 ;
-                 IF_LEFT
+                            nat) }
+               { IF_LEFT
                    { IF_LEFT
                        { IF_LEFT
-                           { DIG 4 ; SWAP ; CDR ; UPDATE 3 }
-                           { DIG 4 ; SWAP ; CDR ; UPDATE 15 } }
+                           { DIG 3 ; SWAP ; CDR ; UPDATE 3 }
+                           { DIG 3 ; SWAP ; CDR ; UPDATE 15 } }
                        { IF_LEFT
-                           { DIG 4 ; SWAP ; CDR ; UPDATE 19 }
-                           { DIG 4 ; SWAP ; CDR ; UPDATE 20 } } }
+                           { DIG 3 ; SWAP ; CDR ; UPDATE 19 }
+                           { DIG 3 ; SWAP ; CDR ; UPDATE 20 } } }
                    { IF_LEFT
-                       { DIG 4 ; SWAP ; CDR ; UPDATE 9 }
-                       { DIG 4 ; SWAP ; CDR ; UPDATE 13 } } ;
-                 DIG 4 ;
-                 SWAP ;
-                 SOME ;
-                 SWAP ;
-                 UPDATE ;
-                 UPDATE 3 ;
-                 GET 3 } ;
-             UPDATE 3 ;
-             NIL operation } ;
+                       { DIG 3 ; SWAP ; CDR ; UPDATE 9 }
+                       { DIG 3 ; SWAP ; CDR ; UPDATE 13 } } ;
+                 SOME } ;
+             DIG 3 ;
+             UPDATE ;
+             UPDATE 3 } ;
+         SWAP ;
          PAIR } ;
   view "get_mint_owner"
        nat
@@ -925,55 +908,17 @@
          GET 3 ;
          SWAP ;
          GET ;
-         IF_NONE
-           { NONE (pair address
-                        bool
-                        (map nat
-                             (map nat
-                                  (or (or (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat)
-                                              (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) timestamp))
-                                          (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) mutez))
-                                      (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) address))))
-                        (set (pair (pair address nat) nat))
-                        (map address nat)
-                        nat
-                        timestamp
-                        int
-                        nat
-                        nat
-                        nat) }
-           { SOME } ;
          IF_NONE { PUSH string "FA_INVALID_MINT_ID" ; FAILWITH } { CAR } } ;
   view "is_mint_owner"
        (pair nat address)
        bool
        { UNPAIR ;
-         SWAP ;
+         UNPAIR ;
+         DIG 2 ;
          GET 3 ;
-         DUP 2 ;
-         CAR ;
+         SWAP ;
          GET ;
-         IF_NONE
-           { NONE (pair address
-                        bool
-                        (map nat
-                             (map nat
-                                  (or (or (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat)
-                                              (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) timestamp))
-                                          (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) mutez))
-                                      (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) address))))
-                        (set (pair (pair address nat) nat))
-                        (map address nat)
-                        nat
-                        timestamp
-                        int
-                        nat
-                        nat
-                        nat) }
-           { SOME } ;
-         IF_NONE
-           { DROP ; PUSH bool False }
-           { SWAP ; CDR ; SWAP ; CAR ; COMPARE ; EQ } } ;
+         IF_NONE { DROP ; PUSH bool False } { CAR ; COMPARE ; EQ } } ;
   view "get_mint_start_time"
        nat
        timestamp
@@ -982,24 +927,6 @@
          GET 3 ;
          SWAP ;
          GET ;
-         IF_NONE
-           { NONE (pair address
-                        bool
-                        (map nat
-                             (map nat
-                                  (or (or (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat)
-                                              (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) timestamp))
-                                          (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) mutez))
-                                      (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) address))))
-                        (set (pair (pair address nat) nat))
-                        (map address nat)
-                        nat
-                        timestamp
-                        int
-                        nat
-                        nat
-                        nat) }
-           { SOME } ;
          IF_NONE { PUSH string "FA_INVALID_MINT_ID" ; FAILWITH } { GET 13 } } ;
   view "get_mint_duration"
        nat
@@ -1009,24 +936,6 @@
          GET 3 ;
          SWAP ;
          GET ;
-         IF_NONE
-           { NONE (pair address
-                        bool
-                        (map nat
-                             (map nat
-                                  (or (or (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat)
-                                              (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) timestamp))
-                                          (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) mutez))
-                                      (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) address))))
-                        (set (pair (pair address nat) nat))
-                        (map address nat)
-                        nat
-                        timestamp
-                        int
-                        nat
-                        nat
-                        nat) }
-           { SOME } ;
          IF_NONE { PUSH string "FA_INVALID_MINT_ID" ; FAILWITH } { GET 15 } } ;
   view "get_num_minted"
        nat
@@ -1036,23 +945,5 @@
          GET 3 ;
          SWAP ;
          GET ;
-         IF_NONE
-           { NONE (pair address
-                        bool
-                        (map nat
-                             (map nat
-                                  (or (or (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat)
-                                              (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) timestamp))
-                                          (or (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) mutez))
-                                      (pair (pair (map address (or (or unit (pair nat nat)) (or (set nat) nat))) nat) address))))
-                        (set (pair (pair address nat) nat))
-                        (map address nat)
-                        nat
-                        timestamp
-                        int
-                        nat
-                        nat
-                        nat) }
-           { SOME } ;
          IF_NONE { PUSH string "FA_INVALID_MINT_ID" ; FAILWITH } { GET 11 } } }
 

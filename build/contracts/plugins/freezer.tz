@@ -1,0 +1,168 @@
+{ parameter
+    (or (or (pair %burn_hook (address %owner) (nat %token_id) (nat %amount))
+            (pair %freeze
+               (address %owner)
+               (pair %token (address %address) (nat %token_id))
+               (timestamp %freeze_until)))
+        (list %transfer_hook
+           (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))) ;
+  storage
+    (pair (big_map %metadata string bytes)
+          (big_map %frozen_tokens (pair address (address %address) (nat %token_id)) timestamp)) ;
+  code { NIL operation ;
+         LAMBDA
+           (pair (pair address address nat)
+                 (big_map string bytes)
+                 (big_map (pair address address nat) timestamp))
+           bool
+           { UNPAIR ;
+             SWAP ;
+             CDR ;
+             SWAP ;
+             GET ;
+             IF_NONE { PUSH bool False } { NOW ; SWAP ; COMPARE ; GT } } ;
+         DIG 2 ;
+         UNPAIR ;
+         PUSH string "FA_DONT_SEND_TEZ" ;
+         PUSH mutez 0 ;
+         AMOUNT ;
+         COMPARE ;
+         EQ ;
+         IF { DROP } { FAILWITH } ;
+         IF_LEFT
+           { IF_LEFT
+               { DUP ;
+                 GET 3 ;
+                 SENDER ;
+                 PAIR ;
+                 PUSH string "FA_FROZEN_TOKEN_BURN_DENIED" ;
+                 PUSH bool False ;
+                 DUP 5 ;
+                 DIG 3 ;
+                 DIG 4 ;
+                 CAR ;
+                 PAIR ;
+                 PAIR ;
+                 DIG 4 ;
+                 SWAP ;
+                 EXEC ;
+                 COMPARE ;
+                 EQ ;
+                 IF { DROP } { FAILWITH } }
+               { DIG 2 ;
+                 DROP ;
+                 SWAP ;
+                 DUP 2 ;
+                 GET 3 ;
+                 CDR ;
+                 SENDER ;
+                 DUP 4 ;
+                 CAR ;
+                 PAIR 3 ;
+                 PUSH string "FA_NOT_FA2_OPERATOR" ;
+                 DUP 4 ;
+                 GET 3 ;
+                 CAR ;
+                 DIG 2 ;
+                 VIEW "is_operator" bool ;
+                 IF_NONE { PUSH bool False } {} ;
+                 IF { DROP } { FAILWITH } ;
+                 PUSH string "FA_NOT_FA2_TRANSFER_HOOK" ;
+                 SELF_ADDRESS ;
+                 DUP 4 ;
+                 GET 3 ;
+                 CAR ;
+                 UNIT ;
+                 RIGHT (or (or unit unit) (or unit unit)) ;
+                 DIG 2 ;
+                 PAIR ;
+                 VIEW "is_hook" bool ;
+                 IF_NONE { PUSH bool False } {} ;
+                 IF { DROP } { FAILWITH } ;
+                 PUSH string "FA_NOT_FA2_BURN_HOOK" ;
+                 SELF_ADDRESS ;
+                 DUP 4 ;
+                 GET 3 ;
+                 CAR ;
+                 UNIT ;
+                 LEFT unit ;
+                 LEFT (or unit unit) ;
+                 LEFT unit ;
+                 DIG 2 ;
+                 PAIR ;
+                 VIEW "is_hook" bool ;
+                 IF_NONE { PUSH bool False } {} ;
+                 IF { DROP } { FAILWITH } ;
+                 DUP ;
+                 DUP 2 ;
+                 CDR ;
+                 DIG 2 ;
+                 CDR ;
+                 DUP 4 ;
+                 GET 3 ;
+                 DUP 5 ;
+                 CAR ;
+                 PAIR ;
+                 GET ;
+                 IF_NONE
+                   { DUP 3 ; GET 4 }
+                   { DUP 4 ;
+                     GET 4 ;
+                     DUP ;
+                     DUP 3 ;
+                     COMPARE ;
+                     GT ;
+                     IF { DROP } { SWAP ; DROP } } ;
+                 SOME ;
+                 DUP 4 ;
+                 GET 3 ;
+                 DIG 4 ;
+                 CAR ;
+                 PAIR ;
+                 UPDATE ;
+                 UPDATE 2 } }
+           { ITER { DUP ;
+                    CDR ;
+                    ITER { GET 3 ;
+                           SENDER ;
+                           PAIR ;
+                           PUSH string "FA_FROZEN_TOKEN_TRANSFER_DENIED" ;
+                           PUSH bool False ;
+                           DUP 5 ;
+                           DIG 3 ;
+                           DUP 5 ;
+                           CAR ;
+                           PAIR ;
+                           PAIR ;
+                           DUP 6 ;
+                           SWAP ;
+                           EXEC ;
+                           COMPARE ;
+                           EQ ;
+                           IF { DROP } { FAILWITH } } ;
+                    DROP } ;
+             SWAP ;
+             DROP } ;
+         SWAP ;
+         PAIR } ;
+  view "is_revocable"
+       (or (or (or (unit %burn_hook) (unit %create_hook))
+               (or (unit %metadata_hook) (unit %mint_hook)))
+           (unit %transfer_hook))
+       bool
+       { CAR ;
+         IF_LEFT
+           { IF_LEFT
+               { IF_LEFT { DROP ; PUSH bool False } { DROP ; PUSH bool True } }
+               { IF_LEFT { DROP ; PUSH bool True } { DROP ; PUSH bool True } } }
+           { DROP ; PUSH bool False } } ;
+  view "is_frozen"
+       (pair address (address %address) (nat %token_id))
+       bool
+       { UNPAIR ;
+         SWAP ;
+         CDR ;
+         SWAP ;
+         GET ;
+         IF_NONE { PUSH bool False } { NOW ; SWAP ; COMPARE ; GT } } }
+

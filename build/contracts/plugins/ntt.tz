@@ -5,7 +5,9 @@
   storage
     (pair (big_map %metadata string bytes)
           (big_map %ntt_tokens (pair (address %address) (nat %token_id)) unit)) ;
-  code { UNPAIR ;
+  code { NIL operation ;
+         SWAP ;
+         UNPAIR ;
          PUSH string "FA_DONT_SEND_TEZ" ;
          PUSH mutez 0 ;
          AMOUNT ;
@@ -26,17 +28,18 @@
              SELF_ADDRESS ;
              DUP 4 ;
              CAR ;
-             SWAP ;
-             VIEW "is_transfer_hook" bool ;
+             UNIT ;
+             RIGHT (or (or unit unit) (or unit unit)) ;
+             DIG 2 ;
+             PAIR ;
+             VIEW "is_hook" bool ;
              IF_NONE { PUSH bool False } {} ;
              IF { DROP } { FAILWITH } ;
              DUP ;
              CDR ;
              UNIT ;
-             DIG 3 ;
-             SWAP ;
              SOME ;
-             SWAP ;
+             DIG 3 ;
              UPDATE ;
              UPDATE 2 }
            { ITER { CDR ;
@@ -48,13 +51,23 @@
                            CDR ;
                            DIG 2 ;
                            GET ;
-                           IF_NONE { NONE unit } { SOME } ;
                            IF_NONE { PUSH bool False } { DROP ; PUSH bool True } ;
                            COMPARE ;
                            EQ ;
                            IF {} { PUSH string "FA_NTT_TOKEN_TRANSFER_DENIED" ; FAILWITH } } } } ;
-         NIL operation ;
+         SWAP ;
          PAIR } ;
+  view "is_revocable"
+       (or (or (or (unit %burn_hook) (unit %create_hook))
+               (or (unit %metadata_hook) (unit %mint_hook)))
+           (unit %transfer_hook))
+       bool
+       { CAR ;
+         IF_LEFT
+           { IF_LEFT
+               { IF_LEFT { DROP ; PUSH bool True } { DROP ; PUSH bool True } }
+               { IF_LEFT { DROP ; PUSH bool True } { DROP ; PUSH bool True } } }
+           { DROP ; PUSH bool False } } ;
   view "is_ntt"
        (pair (address %address) (nat %token_id))
        bool
@@ -63,6 +76,5 @@
          CDR ;
          SWAP ;
          GET ;
-         IF_NONE { NONE unit } { SOME } ;
          IF_NONE { PUSH bool False } { DROP ; PUSH bool True } } }
 

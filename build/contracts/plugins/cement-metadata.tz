@@ -1,13 +1,12 @@
 { parameter
     (or (list %cement_metadata
            (pair (pair %token (address %address) (nat %token_id)) (int %delay)))
-        (map %update_metadata_hook
-           nat
-           (pair (nat %token_id) (map %token_info string bytes)))) ;
+        (map %update_metadata_hook nat (map string bytes))) ;
   storage
     (pair (big_map %metadata string bytes)
           (big_map %cemented_tokens (pair (address %address) (nat %token_id)) timestamp)) ;
-  code { LAMBDA
+  code { NIL operation ;
+         LAMBDA
            (pair (pair address nat) (big_map string bytes) (big_map (pair address nat) timestamp))
            bool
            { UNPAIR ;
@@ -15,9 +14,8 @@
              CDR ;
              SWAP ;
              GET ;
-             IF_NONE { NONE timestamp } { SOME } ;
              IF_NONE { PUSH bool False } { NOW ; SWAP ; COMPARE ; GE } } ;
-         SWAP ;
+         DIG 2 ;
          UNPAIR ;
          PUSH string "FA_DONT_SEND_TEZ" ;
          PUSH mutez 0 ;
@@ -37,6 +35,20 @@
                     DIG 2 ;
                     PAIR ;
                     VIEW "has_role" bool ;
+                    IF_NONE { PUSH bool False } {} ;
+                    IF { DROP } { FAILWITH } ;
+                    PUSH string "FA_NOT_FA2_METADATA_HOOK" ;
+                    SELF_ADDRESS ;
+                    DUP 3 ;
+                    CAR ;
+                    CAR ;
+                    UNIT ;
+                    LEFT unit ;
+                    RIGHT (or unit unit) ;
+                    LEFT unit ;
+                    DIG 2 ;
+                    PAIR ;
+                    VIEW "is_hook" bool ;
                     IF_NONE { PUSH bool False } {} ;
                     IF { DROP } { FAILWITH } ;
                     PUSH bool False ;
@@ -82,11 +94,12 @@
                     IF { DROP } { FAILWITH } } ;
              SWAP ;
              DROP } ;
-         NIL operation ;
+         SWAP ;
          PAIR } ;
   view "is_revocable"
-       (or (or (or (unit %burn) (unit %create)) (or (unit %metadata) (unit %mint)))
-           (unit %transfer))
+       (or (or (or (unit %burn_hook) (unit %create_hook))
+               (or (unit %metadata_hook) (unit %mint_hook)))
+           (unit %transfer_hook))
        bool
        { CAR ;
          IF_LEFT
@@ -102,6 +115,5 @@
          CDR ;
          SWAP ;
          GET ;
-         IF_NONE { NONE timestamp } { SOME } ;
          IF_NONE { PUSH bool False } { NOW ; SWAP ; COMPARE ; GE } } }
 

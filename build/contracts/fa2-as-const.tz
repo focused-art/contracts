@@ -1,0 +1,154 @@
+{ parameter
+    (or (or (or (list %assert_balances (pair (address %owner) (nat %token_id) (nat %balance)))
+                (pair %balance_of
+                   (list %requests (pair (address %owner) (nat %token_id)))
+                   (contract %callback
+                      (list (pair (pair %request (address %owner) (nat %token_id)) (nat %balance))))))
+            (or (pair %burn (address %owner) (nat %token_id) (nat %amount))
+                (pair %create
+                   (map %token_metadata string bytes)
+                   (nat %max_supply)
+                   (option %royalties (pair (nat %total_shares) (map %shares address nat)))
+                   (option %token_id nat))))
+        (or (or (pair %mint (address %owner) (nat %token_id) (nat %amount))
+                (or %privileged_action
+                   (or (map %update_contract_metadata string bytes)
+                       (pair %update_default_royalties (nat %total_shares) (map %shares address nat)))
+                   (or (map %update_metadata nat (map string bytes))
+                       (map %update_royalties nat (pair (nat %total_shares) (map %shares address nat))))))
+            (or (list %transfer
+                   (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))
+                (list %update_operators
+                   (or (pair %add_operator (address %owner) (address %operator) (nat %token_id))
+                       (pair %remove_operator (address %owner) (address %operator) (nat %token_id))))))) ;
+  storage
+    (pair (big_map %metadata string bytes)
+          (address %protocol)
+          (nat %next_token_id)
+          (big_map %token_total_supply nat nat)
+          (big_map %ledger (pair address nat) nat)
+          (big_map %operators (pair address address nat) unit)
+          (big_map %token_metadata nat (pair (nat %token_id) (map %token_info string bytes)))
+          (big_map %royalties nat (pair (nat %total_shares) (map %shares address nat)))
+          (big_map %token_max_supply nat nat)
+          (pair %default_royalties (nat %total_shares) (map %shares address nat))) ;
+  code { constant "expruST3iVTEZNuzUeYMkB8kVgZPmu8qgidQqpZTEYWi2HqiVAm1zg" } ;
+  view "get_protocol" unit address { CDR ; GET 3 } ;
+  view "get_owner"
+       unit
+       address
+       { CDR ;
+         GET 3 ;
+         SELF_ADDRESS ;
+         VIEW "get_owner" address ;
+         IF_NONE { PUSH address "tz1Ke2h7sDdakHJQh8WX4Z372du1KChsksyU" } {} } ;
+  view "is_owner"
+       address
+       bool
+       { UNPAIR ;
+         SWAP ;
+         GET 3 ;
+         SWAP ;
+         SELF_ADDRESS ;
+         PAIR ;
+         VIEW "is_owner" bool ;
+         IF_NONE { PUSH bool False } {} } ;
+  view "has_role"
+       (pair address
+             (or (or (unit %creator) (unit %metadata_manager))
+                 (or (unit %minter) (unit %royalties_manager))))
+       bool
+       { UNPAIR ;
+         UNPAIR ;
+         DIG 2 ;
+         GET 3 ;
+         DUG 2 ;
+         SELF_ADDRESS ;
+         PAIR ;
+         PAIR ;
+         VIEW "has_role" bool ;
+         IF_NONE { PUSH bool False } {} } ;
+  view "get_hooks"
+       (or (or (or (unit %burn_hook) (unit %create_hook))
+               (or (unit %metadata_hook) (unit %mint_hook)))
+           (unit %transfer_hook))
+       (set address)
+       { UNPAIR ;
+         SWAP ;
+         GET 3 ;
+         SWAP ;
+         SELF_ADDRESS ;
+         PAIR ;
+         VIEW "get_hooks" (set address) ;
+         IF_NONE { EMPTY_SET address } {} } ;
+  view "is_hook"
+       (pair address
+             (or (or (or (unit %burn_hook) (unit %create_hook))
+                     (or (unit %metadata_hook) (unit %mint_hook)))
+                 (unit %transfer_hook)))
+       bool
+       { UNPAIR ;
+         UNPAIR ;
+         DIG 2 ;
+         GET 3 ;
+         DIG 2 ;
+         SELF_ADDRESS ;
+         PAIR ;
+         VIEW "get_hooks" (set address) ;
+         IF_NONE { EMPTY_SET address } {} ;
+         SWAP ;
+         MEM } ;
+  view "next_token_id" unit nat { CDR ; GET 5 } ;
+  view "get_balance"
+       (pair (address %owner) (nat %token_id))
+       nat
+       { UNPAIR ; SWAP ; GET 9 ; SWAP ; GET ; IF_NONE { PUSH nat 0 } {} } ;
+  view "get_total_supply"
+       nat
+       nat
+       { UNPAIR ; SWAP ; GET 7 ; SWAP ; GET ; IF_NONE { PUSH nat 0 } {} } ;
+  view "get_max_supply"
+       nat
+       nat
+       { UNPAIR ; SWAP ; GET 17 ; SWAP ; GET ; IF_NONE { PUSH nat 0 } {} } ;
+  view "is_operator"
+       (pair (address %owner) (address %operator) (nat %token_id))
+       bool
+       { UNPAIR ;
+         DUP ;
+         GET 3 ;
+         DUP 2 ;
+         CAR ;
+         DIG 3 ;
+         GET 11 ;
+         DIG 3 ;
+         GET 4 ;
+         DUP 4 ;
+         PAIR ;
+         DUP 3 ;
+         PAIR ;
+         MEM ;
+         DUG 2 ;
+         COMPARE ;
+         EQ ;
+         OR } ;
+  view "get_token_metadata"
+       nat
+       (map string bytes)
+       { UNPAIR ;
+         SWAP ;
+         GET 13 ;
+         SWAP ;
+         GET ;
+         IF_NONE { EMPTY_MAP string bytes } { CDR } } ;
+  view "is_token" nat bool { UNPAIR ; SWAP ; GET 7 ; SWAP ; MEM } ;
+  view "get_royalties"
+       nat
+       (pair (nat %total_shares) (map %shares address nat))
+       { UNPAIR ;
+         DUP 2 ;
+         GET 15 ;
+         SWAP ;
+         GET ;
+         IF_NONE { GET 18 } { SWAP ; DROP } } }
+
