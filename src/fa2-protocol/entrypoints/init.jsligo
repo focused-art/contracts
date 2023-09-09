@@ -27,8 +27,8 @@ const init = (metadata: metadata, s1: storage): @return => {
     }
   };
 
-  for (const generated of metadata) {
-    const [key, value] = generated;
+  for (const entry of metadata) {
+    const [key, value] = entry;
     fa2_storage.metadata = Big_map.add(key, value, fa2_storage.metadata);
   };
 
