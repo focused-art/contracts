@@ -1,8 +1,11 @@
+type delay = int;
+
 type storage =
 // @layout comb
 {
-  metadata: big_map<string, bytes>;
-  cemented_tokens: big_map<fa2, timestamp>
+  metadata: big_map<string, bytes>,
+  cemented_tokens: big_map<fa2, timestamp>,
+  defaults: big_map<contract_address, delay>
 };
 
 // define return for readability
@@ -12,12 +15,13 @@ type @return = [op_list, storage];
 type cement_metadata_param =
 // @layout comb
 {
-  token: fa2;
-  delay: int
+  token: fa2,
+  delay
 };
 
 type cement_metadata_params = list<cement_metadata_param>;
 
 type entry_action =
   | ["Cement_metadata", cement_metadata_params]
+  | ["Update_defaults", michelson_pair<[contract_address, "fa2_address", delay, "delay"]>]
   | ["Update_metadata_hook", update_token_metadata_params];

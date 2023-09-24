@@ -27,6 +27,9 @@ const get_royalty_shares = (token: fa2, price: nat): royalty_shares => {
 const get_total_supply = (token: fa2): nat =>
   Option.unopt(Tezos.call_view("total_supply", token.token_id, token.address) as option<nat>);
 
+const get_fa2_created = (token: fa2): timestamp =>
+  Option.unopt(Tezos.call_view("get_created", token.token_id, token.address) as option<timestamp>);
+
 const is_fa2_owner = (token: fa2, check: address): bool =>
   match(Tezos.call_view("is_owner", check, token.address) as option<bool>,
     { Some: response => response, None: () => false }

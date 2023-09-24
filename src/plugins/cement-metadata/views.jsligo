@@ -10,6 +10,10 @@ const is_revocable = (k: hook_type, _: storage): bool =>
 
 @view
 const is_cemented = (k: fa2, s: storage): bool =>
-  match(Big_map.find_opt(k, s.cemented_tokens),
-    { Some: t => t >= Tezos.get_now(), None: () => false }
-  );
+  match(Big_map.find_opt(k, s.cemented_tokens), {
+    Some: t => t >= Tezos.get_now(),
+    None: () => match(Big_map.find_opt(k.address, s.defaults), {
+      Some: delay => (get_fa2_created(k) + delay) >= Tezos.get_now(),
+      None: () => false
+    })
+  });

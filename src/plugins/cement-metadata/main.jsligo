@@ -15,6 +15,7 @@ const main = (action: entry_action, s: storage): @return => {
   assert_with_error(Tezos.get_amount() == (0 as mutez), "FA_DONT_SEND_TEZ");
   return match(action, {
     Cement_metadata: params         => cement_metadata(params, s),
+    Update_defaults: params         => update_defaults(params[0], params[1], s),
     Update_metadata_hook: params    => update_metadata_hook(params, s)
   })
 };
