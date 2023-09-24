@@ -12,10 +12,10 @@
                    (option %token_id nat))))
         (or (or (pair %mint (address %owner) (nat %token_id) (nat %amount))
                 (or %privileged_action
-                   (or (map %update_contract_metadata string bytes)
-                       (pair %update_default_royalties (nat %total_shares) (map %shares address nat)))
-                   (or (map %update_metadata nat (map string bytes))
-                       (map %update_royalties nat (pair (nat %total_shares) (map %shares address nat))))))
+                   (or (or (map %update_contract_metadata string bytes)
+                           (pair %update_default_royalties (nat %total_shares) (map %shares address nat)))
+                       (or (map %update_metadata nat (map string bytes)) (address %update_protocol)))
+                   (map %update_royalties nat (pair (nat %total_shares) (map %shares address nat)))))
             (or (list %transfer
                    (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))
                 (list %update_operators
@@ -32,7 +32,7 @@
           (big_map %royalties nat (pair (nat %total_shares) (map %shares address nat)))
           (big_map %token_max_supply nat nat)
           (pair %default_royalties (nat %total_shares) (map %shares address nat))) ;
-  code { constant "expruST3iVTEZNuzUeYMkB8kVgZPmu8qgidQqpZTEYWi2HqiVAm1zg" } ;
+  code { constant "exprumUMxeKBZPR51zXBbgWXejSgyF1njC4RP66vsT6D3SGbSwZopC" } ;
   view "get_protocol" unit address { CDR ; GET 3 } ;
   view "get_owner"
        unit

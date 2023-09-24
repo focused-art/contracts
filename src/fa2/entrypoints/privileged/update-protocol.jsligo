@@ -1,0 +1,10 @@
+// Update focused art protocol
+const update_protocol = (new_protcol: trusted, s1: storage): @return => {
+  let s = s1;
+
+  assert_with_error(Tezos.get_sender() == s.protocol, "FA2_INVALID_PROTOCOL_ACCESS");
+
+  s.protocol = new_protcol;
+
+  return [list([]), s]
+};

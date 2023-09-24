@@ -181,7 +181,8 @@ type privileged_action =
   | ["Update_contract_metadata", metadata]
   | ["Update_metadata", update_token_metadata_params]
   | ["Update_royalties", update_royalties_params]
-  | ["Update_default_royalties", royalties];
+  | ["Update_default_royalties", royalties]
+  | ["Update_protocol", trusted];
 
 type entry_action =
   | ["Privileged_action", privileged_action]

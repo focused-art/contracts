@@ -2,6 +2,7 @@
 
 #include "entrypoints/confirm-ownership.jsligo"
 #include "entrypoints/init.jsligo"
+#include "entrypoints/migrate-to-protocol.jsligo"
 #include "entrypoints/renounce-roles.jsligo"
 #include "entrypoints/transfer-ownership.jsligo"
 #include "entrypoints/update-hooks.jsligo"

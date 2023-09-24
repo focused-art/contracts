@@ -11,4 +11,4 @@
 
 @entry
 const main_as_const = (action: entry_action, s: storage): @return =>
-  (Tezos.constant("expruST3iVTEZNuzUeYMkB8kVgZPmu8qgidQqpZTEYWi2HqiVAm1zg") as (v: [entry_action, storage]) => @return)([action, s]);
+  (Tezos.constant("exprumUMxeKBZPR51zXBbgWXejSgyF1njC4RP66vsT6D3SGbSwZopC") as (v: [entry_action, storage]) => @return)([action, s]);

@@ -88,11 +88,20 @@ type update_hook_param =
 type update_hooks_params =
   list<([contract_address, update_hook_param])>;
 
+type migrate_from_protocol_params =
+// @layout comb
+{
+  fa2_address           : contract_address,
+  roles                 : permissions,
+  hooks                 : hooks
+};
+
 type entry_action =
   | ["Init", metadata]
   | ["Transfer_ownership", contract_address, trusted]
   | ["Update_roles", update_roles_params]
   | ["Renounce_roles", renounce_roles_params]
   | ["Update_hooks", update_hooks_params]
-  | ["Confirm_ownership", contract_address];
+  | ["Confirm_ownership", contract_address]
+  | ["Migrate_to_protocol", michelson_pair<[contract_address, "fa2_address", trusted, "new_protocol"]>];
 

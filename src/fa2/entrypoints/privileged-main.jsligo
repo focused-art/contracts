@@ -1,12 +1,14 @@
-#include "privileged/update-metadata.jsligo"
-#include "privileged/update-royalties.jsligo"
 #include "privileged/update-contract-metadata.jsligo"
 #include "privileged/update-default-royalties.jsligo"
+#include "privileged/update-metadata.jsligo"
+#include "privileged/update-protocol.jsligo"
+#include "privileged/update-royalties.jsligo"
 
 const privileged_main = (action: privileged_action, s: storage): @return =>
   match(action, {
     Update_contract_metadata: params    => update_contract_metadata(params, s),
     Update_metadata: params             => update_metadata(params, s),
     Update_royalties: params            => update_royalties(params, s),
-    Update_default_royalties: params    => update_default_royalties(params, s)
+    Update_default_royalties: params    => update_default_royalties(params, s),
+    Update_protocol: params             => update_protocol(params, s)
   });

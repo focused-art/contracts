@@ -20,6 +20,7 @@ const main = (action: entry_action, s: storage): @return => {
     Update_roles: params        => update_roles(params, s),
     Renounce_roles: params      => renounce_roles(params, s),
     Update_hooks: params        => update_hooks(params, s),
-    Confirm_ownership: params   => confirm_ownership(params, s)
+    Confirm_ownership: params   => confirm_ownership(params, s),
+    Migrate_to_protocol: params => migrate_to_protocol(params[0], params[1], s)
   });
 };

@@ -1,22 +1,23 @@
 { parameter
     (or (or (or (address %confirm_ownership) (map %init string bytes))
-            (or (list %renounce_roles
+            (or (pair %migrate_to_protocol (address %fa2_address) (address %new_protocol))
+                (list %renounce_roles
                    (pair address
                          (or (or (or (unit %creator) (unit %metadata_manager)) (or (unit %minter) (unit %ownership)))
-                             (unit %royalties_manager))))
-                (pair %transfer_ownership address address)))
-        (or (list %update_hooks
-               (pair address
-                     (or (pair %add
-                            (or (or (or (unit %burn_hook) (unit %create_hook))
-                                    (or (unit %metadata_hook) (unit %mint_hook)))
-                                (unit %transfer_hook))
-                            address)
-                         (pair %remove
-                            (or (or (or (unit %burn_hook) (unit %create_hook))
-                                    (or (unit %metadata_hook) (unit %mint_hook)))
-                                (unit %transfer_hook))
-                            address))))
+                             (unit %royalties_manager))))))
+        (or (or (pair %transfer_ownership address address)
+                (list %update_hooks
+                   (pair address
+                         (or (pair %add
+                                (or (or (or (unit %burn_hook) (unit %create_hook))
+                                        (or (unit %metadata_hook) (unit %mint_hook)))
+                                    (unit %transfer_hook))
+                                address)
+                             (pair %remove
+                                (or (or (or (unit %burn_hook) (unit %create_hook))
+                                        (or (unit %metadata_hook) (unit %mint_hook)))
+                                    (unit %transfer_hook))
+                                address)))))
             (list %update_roles
                (pair address
                      (or (pair %add
@@ -72,6 +73,38 @@
              SWAP ;
              GET ;
              IF_NONE { PUSH string "FA_INVALID_TOKEN" ; FAILWITH } {} } ;
+         LAMBDA
+           (pair address
+                 (big_map string bytes)
+                 (big_map
+                    address
+                    (pair address (option address) (set address) (set address) (set address) (set address)))
+                 (big_map
+                    address
+                    (pair (map address bool)
+                          (map address bool)
+                          (map address bool)
+                          (map address bool)
+                          (map address bool)))
+                 (pair (set address) (set address) (set address) (set address) (set address)))
+           (pair (map address bool)
+                 (map address bool)
+                 (map address bool)
+                 (map address bool)
+                 (map address bool))
+           { UNPAIR ;
+             SWAP ;
+             GET 5 ;
+             SWAP ;
+             GET ;
+             IF_NONE
+               { EMPTY_MAP address bool ;
+                 EMPTY_MAP address bool ;
+                 EMPTY_MAP address bool ;
+                 EMPTY_MAP address bool ;
+                 EMPTY_MAP address bool ;
+                 PAIR 5 }
+               {} } ;
          LAMBDA
            (pair address address)
            (lambda
@@ -172,7 +205,7 @@
              DIG 2 ;
              DIG 3 ;
              DROP 3 } ;
-         DIG 4 ;
+         DIG 5 ;
          UNPAIR ;
          PUSH string "FA2_DONT_SEND_TEZ" ;
          PUSH mutez 0 ;
@@ -184,7 +217,8 @@
            { IF_LEFT
                { DIG 2 ;
                  DIG 3 ;
-                 DROP 2 ;
+                 DIG 4 ;
+                 DROP 3 ;
                  IF_LEFT
                    { SWAP ;
                      DUP ;
@@ -265,10 +299,10 @@
                                           (option %token_id nat))))
                                (or (or (pair %mint (address %owner) (nat %token_id) (nat %amount))
                                        (or %privileged_action
-                                          (or (map %update_contract_metadata string bytes)
-                                              (pair %update_default_royalties (nat %total_shares) (map %shares address nat)))
-                                          (or (map %update_metadata nat (map string bytes))
-                                              (map %update_royalties nat (pair (nat %total_shares) (map %shares address nat))))))
+                                          (or (or (map %update_contract_metadata string bytes)
+                                                  (pair %update_default_royalties (nat %total_shares) (map %shares address nat)))
+                                              (or (map %update_metadata nat (map string bytes)) (address %update_protocol)))
+                                          (map %update_royalties nat (pair (nat %total_shares) (map %shares address nat)))))
                                    (or (list %transfer
                                           (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))
                                        (list %update_operators
@@ -285,7 +319,7 @@
                                  (big_map %royalties nat (pair (nat %total_shares) (map %shares address nat)))
                                  (big_map %token_max_supply nat nat)
                                  (pair %default_royalties (nat %total_shares) (map %shares address nat))) ;
-                         code { constant "expruST3iVTEZNuzUeYMkB8kVgZPmu8qgidQqpZTEYWi2HqiVAm1zg" } ;
+                         code { constant "exprumUMxeKBZPR51zXBbgWXejSgyF1njC4RP66vsT6D3SGbSwZopC" } ;
                          view "get_protocol" unit address { CDR ; GET 3 } ;
                          view "get_owner"
                               unit
@@ -440,7 +474,71 @@
                      DIG 2 ;
                      CONS } }
                { IF_LEFT
-                   { ITER { UNPAIR ;
+                   { DIG 2 ;
+                     DIG 6 ;
+                     DROP 2 ;
+                     UNPAIR ;
+                     PUSH string "FA2_INVALID_OWNER_ACCESS" ;
+                     DUP 4 ;
+                     SENDER ;
+                     DUP 4 ;
+                     PAIR ;
+                     DIG 6 ;
+                     SWAP ;
+                     EXEC ;
+                     SWAP ;
+                     EXEC ;
+                     IF { DROP } { FAILWITH } ;
+                     DUP 3 ;
+                     DUP 2 ;
+                     PAIR ;
+                     DIG 5 ;
+                     SWAP ;
+                     EXEC ;
+                     DUP 4 ;
+                     DUP 3 ;
+                     PAIR ;
+                     DIG 5 ;
+                     SWAP ;
+                     EXEC ;
+                     DUP 4 ;
+                     CONTRACT %migrate_from_protocol
+                       (pair (address %fa2_address)
+                             (pair %roles
+                                (address %owner)
+                                (option %pending_owner address)
+                                (set %creator address)
+                                (set %minter address)
+                                (set %metadata_manager address)
+                                (set %royalties_manager address))
+                             (pair %hooks
+                                (map %transfer address bool)
+                                (map %create address bool)
+                                (map %mint address bool)
+                                (map %burn address bool)
+                                (map %update_metadata address bool))) ;
+                     IF_NONE { PUSH string "FA_INVALID_PROTCOL_MIGRATION" ; FAILWITH } {} ;
+                     DUP 4 ;
+                     CONTRACT %update_protocol address ;
+                     IF_NONE { PUSH string "FA_INVALID_PROTCOL_MIGRATION" ; FAILWITH } {} ;
+                     NIL operation ;
+                     SWAP ;
+                     PUSH mutez 0 ;
+                     DIG 7 ;
+                     TRANSFER_TOKENS ;
+                     CONS ;
+                     SWAP ;
+                     PUSH mutez 0 ;
+                     DIG 3 ;
+                     DIG 4 ;
+                     DIG 5 ;
+                     PAIR 3 ;
+                     TRANSFER_TOKENS ;
+                     CONS ;
+                     SWAP }
+                   { DIG 4 ;
+                     DROP ;
+                     ITER { UNPAIR ;
                             DUP 3 ;
                             DUP 2 ;
                             PAIR ;
@@ -573,8 +671,13 @@
                      SWAP ;
                      DIG 2 ;
                      DIG 3 ;
-                     DROP 3 }
-                   { DIG 2 ;
+                     DROP 3 } ;
+                 SWAP } }
+           { DIG 2 ;
+             DROP ;
+             IF_LEFT
+               { IF_LEFT
+                   { DIG 3 ;
                      DROP ;
                      DUP ;
                      CAR ;
@@ -607,294 +710,285 @@
                      SOME ;
                      DIG 3 ;
                      UPDATE ;
-                     UPDATE 3 } ;
-                 SWAP } }
-           { DIG 2 ;
-             DROP ;
-             IF_LEFT
+                     UPDATE 3 }
+                   { DIG 4 ;
+                     DROP ;
+                     ITER { UNPAIR ;
+                            DUP 3 ;
+                            DUP 2 ;
+                            PAIR ;
+                            DUP 6 ;
+                            SWAP ;
+                            EXEC ;
+                            DUP 4 ;
+                            DUP 5 ;
+                            GET 5 ;
+                            DIG 4 ;
+                            IF_LEFT
+                              { UNPAIR ;
+                                PUSH string "FA_INVALID_ADD_HOOK_ACCESS" ;
+                                DIG 7 ;
+                                SENDER ;
+                                DUP 9 ;
+                                PAIR ;
+                                DUP 10 ;
+                                SWAP ;
+                                EXEC ;
+                                SWAP ;
+                                EXEC ;
+                                IF { DROP } { FAILWITH } ;
+                                DUP 2 ;
+                                DUP 2 ;
+                                VIEW "is_revocable" bool ;
+                                IF_NONE { PUSH bool True } {} ;
+                                SWAP ;
+                                IF_LEFT
+                                  { IF_LEFT
+                                      { IF_LEFT
+                                          { DROP ;
+                                            PUSH bool False ;
+                                            DUP 6 ;
+                                            GET 7 ;
+                                            DUP 4 ;
+                                            MEM ;
+                                            COMPARE ;
+                                            EQ ;
+                                            IF {} { PUSH string "FA_DUPLICATE_HOOK" ; FAILWITH } ;
+                                            DUP 2 ;
+                                            CONTRACT %burn_hook (pair (address %owner) (nat %token_id) (nat %amount)) ;
+                                            IF_NONE { PUSH string "FA_BURN_HOOK_UNDEFINED" ; FAILWITH } { DROP } ;
+                                            DUP 5 ;
+                                            DIG 5 ;
+                                            GET 7 ;
+                                            DIG 2 ;
+                                            DIG 3 ;
+                                            SWAP ;
+                                            SOME ;
+                                            SWAP ;
+                                            UPDATE ;
+                                            UPDATE 7 }
+                                          { DROP ;
+                                            PUSH bool False ;
+                                            DUP 6 ;
+                                            GET 3 ;
+                                            DUP 4 ;
+                                            MEM ;
+                                            COMPARE ;
+                                            EQ ;
+                                            IF {} { PUSH string "FA_DUPLICATE_HOOK" ; FAILWITH } ;
+                                            DUP 2 ;
+                                            CONTRACT %create_hook
+                                              (pair (map %token_metadata string bytes)
+                                                    (nat %max_supply)
+                                                    (option %royalties (pair (nat %total_shares) (map %shares address nat)))
+                                                    (option %token_id nat)) ;
+                                            IF_NONE { PUSH string "FA_CREATE_HOOK_UNDEFINED" ; FAILWITH } { DROP } ;
+                                            DUP 5 ;
+                                            DIG 5 ;
+                                            GET 3 ;
+                                            DIG 2 ;
+                                            DIG 3 ;
+                                            SWAP ;
+                                            SOME ;
+                                            SWAP ;
+                                            UPDATE ;
+                                            UPDATE 3 } }
+                                      { IF_LEFT
+                                          { DROP ;
+                                            PUSH bool False ;
+                                            DUP 6 ;
+                                            GET 8 ;
+                                            DUP 4 ;
+                                            MEM ;
+                                            COMPARE ;
+                                            EQ ;
+                                            IF {} { PUSH string "FA_DUPLICATE_HOOK" ; FAILWITH } ;
+                                            DUP 2 ;
+                                            CONTRACT %update_metadata_hook (map nat (map string bytes)) ;
+                                            IF_NONE
+                                              { PUSH string "FA_UPDATE_METADATA_HOOK_UNDEFINED" ; FAILWITH }
+                                              { DROP } ;
+                                            DUP 5 ;
+                                            DIG 5 ;
+                                            GET 8 ;
+                                            DIG 2 ;
+                                            DIG 3 ;
+                                            SWAP ;
+                                            SOME ;
+                                            SWAP ;
+                                            UPDATE ;
+                                            UPDATE 8 }
+                                          { DROP ;
+                                            PUSH bool False ;
+                                            DUP 6 ;
+                                            GET 5 ;
+                                            DUP 4 ;
+                                            MEM ;
+                                            COMPARE ;
+                                            EQ ;
+                                            IF {} { PUSH string "FA_DUPLICATE_HOOK" ; FAILWITH } ;
+                                            DUP 2 ;
+                                            CONTRACT %mint_hook (pair (address %owner) (nat %token_id) (nat %amount)) ;
+                                            IF_NONE { PUSH string "FA_MINT_HOOK_UNDEFINED" ; FAILWITH } { DROP } ;
+                                            DUP 5 ;
+                                            DIG 5 ;
+                                            GET 5 ;
+                                            DIG 2 ;
+                                            DIG 3 ;
+                                            SWAP ;
+                                            SOME ;
+                                            SWAP ;
+                                            UPDATE ;
+                                            UPDATE 5 } } }
+                                  { DROP ;
+                                    PUSH bool False ;
+                                    DUP 6 ;
+                                    CAR ;
+                                    DUP 4 ;
+                                    MEM ;
+                                    COMPARE ;
+                                    EQ ;
+                                    IF {} { PUSH string "FA_DUPLICATE_HOOK" ; FAILWITH } ;
+                                    DUP 2 ;
+                                    CONTRACT %transfer_hook
+                                      (list (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount))))) ;
+                                    IF_NONE { PUSH string "FA_TRANSFER_HOOK_UNDEFINED" ; FAILWITH } { DROP } ;
+                                    DUP 5 ;
+                                    DIG 5 ;
+                                    CAR ;
+                                    DIG 2 ;
+                                    DIG 3 ;
+                                    SWAP ;
+                                    SOME ;
+                                    SWAP ;
+                                    UPDATE ;
+                                    UPDATE 1 } }
+                              { UNPAIR ;
+                                PUSH string "FA_INVALID_REMOVE_HOOK_ACCESS" ;
+                                SENDER ;
+                                DUP 4 ;
+                                COMPARE ;
+                                EQ ;
+                                DIG 8 ;
+                                SENDER ;
+                                DUP 10 ;
+                                PAIR ;
+                                DUP 11 ;
+                                SWAP ;
+                                EXEC ;
+                                SWAP ;
+                                EXEC ;
+                                OR ;
+                                IF { DROP } { FAILWITH } ;
+                                IF_LEFT
+                                  { IF_LEFT
+                                      { IF_LEFT
+                                          { DROP ;
+                                            DUP 4 ;
+                                            GET 7 ;
+                                            DUP 2 ;
+                                            GET ;
+                                            IF_NONE { PUSH string "FA_INVALID_HOOK" ; FAILWITH } {} ;
+                                            PUSH bool True ;
+                                            SWAP ;
+                                            COMPARE ;
+                                            EQ ;
+                                            IF {} { PUSH string "FA_IRREVOCABLE_HOOK" ; FAILWITH } ;
+                                            DUP 4 ;
+                                            DIG 4 ;
+                                            GET 7 ;
+                                            DIG 2 ;
+                                            NONE bool ;
+                                            SWAP ;
+                                            UPDATE ;
+                                            UPDATE 7 }
+                                          { DROP ;
+                                            DUP 4 ;
+                                            GET 3 ;
+                                            DUP 2 ;
+                                            GET ;
+                                            IF_NONE { PUSH string "FA_INVALID_HOOK" ; FAILWITH } {} ;
+                                            PUSH bool True ;
+                                            SWAP ;
+                                            COMPARE ;
+                                            EQ ;
+                                            IF {} { PUSH string "FA_IRREVOCABLE_HOOK" ; FAILWITH } ;
+                                            DUP 4 ;
+                                            DIG 4 ;
+                                            GET 3 ;
+                                            DIG 2 ;
+                                            NONE bool ;
+                                            SWAP ;
+                                            UPDATE ;
+                                            UPDATE 3 } }
+                                      { IF_LEFT
+                                          { DROP ;
+                                            DUP 4 ;
+                                            GET 8 ;
+                                            DUP 2 ;
+                                            GET ;
+                                            IF_NONE { PUSH string "FA_INVALID_HOOK" ; FAILWITH } {} ;
+                                            PUSH bool True ;
+                                            SWAP ;
+                                            COMPARE ;
+                                            EQ ;
+                                            IF {} { PUSH string "FA_IRREVOCABLE_HOOK" ; FAILWITH } ;
+                                            DUP 4 ;
+                                            DIG 4 ;
+                                            GET 8 ;
+                                            DIG 2 ;
+                                            NONE bool ;
+                                            SWAP ;
+                                            UPDATE ;
+                                            UPDATE 8 }
+                                          { DROP ;
+                                            DUP 4 ;
+                                            GET 5 ;
+                                            DUP 2 ;
+                                            GET ;
+                                            IF_NONE { PUSH string "FA_INVALID_HOOK" ; FAILWITH } {} ;
+                                            PUSH bool True ;
+                                            SWAP ;
+                                            COMPARE ;
+                                            EQ ;
+                                            IF {} { PUSH string "FA_IRREVOCABLE_HOOK" ; FAILWITH } ;
+                                            DUP 4 ;
+                                            DIG 4 ;
+                                            GET 5 ;
+                                            DIG 2 ;
+                                            NONE bool ;
+                                            SWAP ;
+                                            UPDATE ;
+                                            UPDATE 5 } } }
+                                  { DROP ;
+                                    DUP 4 ;
+                                    CAR ;
+                                    DUP 2 ;
+                                    GET ;
+                                    IF_NONE { PUSH string "FA_INVALID_HOOK" ; FAILWITH } {} ;
+                                    PUSH bool True ;
+                                    SWAP ;
+                                    COMPARE ;
+                                    EQ ;
+                                    IF {} { PUSH string "FA_IRREVOCABLE_HOOK" ; FAILWITH } ;
+                                    DUP 4 ;
+                                    DIG 4 ;
+                                    CAR ;
+                                    DIG 2 ;
+                                    NONE bool ;
+                                    SWAP ;
+                                    UPDATE ;
+                                    UPDATE 1 } } ;
+                            SOME ;
+                            DIG 3 ;
+                            UPDATE ;
+                            UPDATE 5 } ;
+                     SWAP ;
+                     DIG 2 ;
+                     DROP 2 } }
                { DIG 3 ;
                  DROP ;
                  ITER { UNPAIR ;
-                        DUP 3 ;
-                        DUP 2 ;
-                        SWAP ;
-                        GET 5 ;
-                        SWAP ;
-                        GET ;
-                        IF_NONE
-                          { EMPTY_MAP address bool ;
-                            EMPTY_MAP address bool ;
-                            EMPTY_MAP address bool ;
-                            EMPTY_MAP address bool ;
-                            EMPTY_MAP address bool ;
-                            PAIR 5 }
-                          {} ;
-                        DUP 4 ;
-                        DUP 5 ;
-                        GET 5 ;
-                        DIG 4 ;
-                        IF_LEFT
-                          { UNPAIR ;
-                            PUSH string "FA_INVALID_ADD_HOOK_ACCESS" ;
-                            DIG 7 ;
-                            SENDER ;
-                            DUP 9 ;
-                            PAIR ;
-                            DUP 10 ;
-                            SWAP ;
-                            EXEC ;
-                            SWAP ;
-                            EXEC ;
-                            IF { DROP } { FAILWITH } ;
-                            DUP 2 ;
-                            DUP 2 ;
-                            VIEW "is_revocable" bool ;
-                            IF_NONE { PUSH bool True } {} ;
-                            SWAP ;
-                            IF_LEFT
-                              { IF_LEFT
-                                  { IF_LEFT
-                                      { DROP ;
-                                        PUSH bool False ;
-                                        DUP 6 ;
-                                        GET 7 ;
-                                        DUP 4 ;
-                                        MEM ;
-                                        COMPARE ;
-                                        EQ ;
-                                        IF {} { PUSH string "FA_DUPLICATE_HOOK" ; FAILWITH } ;
-                                        DUP 2 ;
-                                        CONTRACT %burn_hook (pair (address %owner) (nat %token_id) (nat %amount)) ;
-                                        IF_NONE { PUSH string "FA_BURN_HOOK_UNDEFINED" ; FAILWITH } { DROP } ;
-                                        DUP 5 ;
-                                        DIG 5 ;
-                                        GET 7 ;
-                                        DIG 2 ;
-                                        DIG 3 ;
-                                        SWAP ;
-                                        SOME ;
-                                        SWAP ;
-                                        UPDATE ;
-                                        UPDATE 7 }
-                                      { DROP ;
-                                        PUSH bool False ;
-                                        DUP 6 ;
-                                        GET 3 ;
-                                        DUP 4 ;
-                                        MEM ;
-                                        COMPARE ;
-                                        EQ ;
-                                        IF {} { PUSH string "FA_DUPLICATE_HOOK" ; FAILWITH } ;
-                                        DUP 2 ;
-                                        CONTRACT %create_hook
-                                          (pair (map %token_metadata string bytes)
-                                                (nat %max_supply)
-                                                (option %royalties (pair (nat %total_shares) (map %shares address nat)))
-                                                (option %token_id nat)) ;
-                                        IF_NONE { PUSH string "FA_CREATE_HOOK_UNDEFINED" ; FAILWITH } { DROP } ;
-                                        DUP 5 ;
-                                        DIG 5 ;
-                                        GET 3 ;
-                                        DIG 2 ;
-                                        DIG 3 ;
-                                        SWAP ;
-                                        SOME ;
-                                        SWAP ;
-                                        UPDATE ;
-                                        UPDATE 3 } }
-                                  { IF_LEFT
-                                      { DROP ;
-                                        PUSH bool False ;
-                                        DUP 6 ;
-                                        GET 8 ;
-                                        DUP 4 ;
-                                        MEM ;
-                                        COMPARE ;
-                                        EQ ;
-                                        IF {} { PUSH string "FA_DUPLICATE_HOOK" ; FAILWITH } ;
-                                        DUP 2 ;
-                                        CONTRACT %update_metadata_hook (map nat (map string bytes)) ;
-                                        IF_NONE
-                                          { PUSH string "FA_UPDATE_METADATA_HOOK_UNDEFINED" ; FAILWITH }
-                                          { DROP } ;
-                                        DUP 5 ;
-                                        DIG 5 ;
-                                        GET 8 ;
-                                        DIG 2 ;
-                                        DIG 3 ;
-                                        SWAP ;
-                                        SOME ;
-                                        SWAP ;
-                                        UPDATE ;
-                                        UPDATE 8 }
-                                      { DROP ;
-                                        PUSH bool False ;
-                                        DUP 6 ;
-                                        GET 5 ;
-                                        DUP 4 ;
-                                        MEM ;
-                                        COMPARE ;
-                                        EQ ;
-                                        IF {} { PUSH string "FA_DUPLICATE_HOOK" ; FAILWITH } ;
-                                        DUP 2 ;
-                                        CONTRACT %mint_hook (pair (address %owner) (nat %token_id) (nat %amount)) ;
-                                        IF_NONE { PUSH string "FA_MINT_HOOK_UNDEFINED" ; FAILWITH } { DROP } ;
-                                        DUP 5 ;
-                                        DIG 5 ;
-                                        GET 5 ;
-                                        DIG 2 ;
-                                        DIG 3 ;
-                                        SWAP ;
-                                        SOME ;
-                                        SWAP ;
-                                        UPDATE ;
-                                        UPDATE 5 } } }
-                              { DROP ;
-                                PUSH bool False ;
-                                DUP 6 ;
-                                CAR ;
-                                DUP 4 ;
-                                MEM ;
-                                COMPARE ;
-                                EQ ;
-                                IF {} { PUSH string "FA_DUPLICATE_HOOK" ; FAILWITH } ;
-                                DUP 2 ;
-                                CONTRACT %transfer_hook
-                                  (list (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount))))) ;
-                                IF_NONE { PUSH string "FA_TRANSFER_HOOK_UNDEFINED" ; FAILWITH } { DROP } ;
-                                DUP 5 ;
-                                DIG 5 ;
-                                CAR ;
-                                DIG 2 ;
-                                DIG 3 ;
-                                SWAP ;
-                                SOME ;
-                                SWAP ;
-                                UPDATE ;
-                                UPDATE 1 } }
-                          { UNPAIR ;
-                            PUSH string "FA_INVALID_REMOVE_HOOK_ACCESS" ;
-                            SENDER ;
-                            DUP 4 ;
-                            COMPARE ;
-                            EQ ;
-                            DIG 8 ;
-                            SENDER ;
-                            DUP 10 ;
-                            PAIR ;
-                            DUP 11 ;
-                            SWAP ;
-                            EXEC ;
-                            SWAP ;
-                            EXEC ;
-                            OR ;
-                            IF { DROP } { FAILWITH } ;
-                            IF_LEFT
-                              { IF_LEFT
-                                  { IF_LEFT
-                                      { DROP ;
-                                        DUP 4 ;
-                                        GET 7 ;
-                                        DUP 2 ;
-                                        GET ;
-                                        IF_NONE { PUSH string "FA_INVALID_HOOK" ; FAILWITH } {} ;
-                                        PUSH bool True ;
-                                        SWAP ;
-                                        COMPARE ;
-                                        EQ ;
-                                        IF {} { PUSH string "FA_IRREVOCABLE_HOOK" ; FAILWITH } ;
-                                        DUP 4 ;
-                                        DIG 4 ;
-                                        GET 7 ;
-                                        DIG 2 ;
-                                        NONE bool ;
-                                        SWAP ;
-                                        UPDATE ;
-                                        UPDATE 7 }
-                                      { DROP ;
-                                        DUP 4 ;
-                                        GET 3 ;
-                                        DUP 2 ;
-                                        GET ;
-                                        IF_NONE { PUSH string "FA_INVALID_HOOK" ; FAILWITH } {} ;
-                                        PUSH bool True ;
-                                        SWAP ;
-                                        COMPARE ;
-                                        EQ ;
-                                        IF {} { PUSH string "FA_IRREVOCABLE_HOOK" ; FAILWITH } ;
-                                        DUP 4 ;
-                                        DIG 4 ;
-                                        GET 3 ;
-                                        DIG 2 ;
-                                        NONE bool ;
-                                        SWAP ;
-                                        UPDATE ;
-                                        UPDATE 3 } }
-                                  { IF_LEFT
-                                      { DROP ;
-                                        DUP 4 ;
-                                        GET 8 ;
-                                        DUP 2 ;
-                                        GET ;
-                                        IF_NONE { PUSH string "FA_INVALID_HOOK" ; FAILWITH } {} ;
-                                        PUSH bool True ;
-                                        SWAP ;
-                                        COMPARE ;
-                                        EQ ;
-                                        IF {} { PUSH string "FA_IRREVOCABLE_HOOK" ; FAILWITH } ;
-                                        DUP 4 ;
-                                        DIG 4 ;
-                                        GET 8 ;
-                                        DIG 2 ;
-                                        NONE bool ;
-                                        SWAP ;
-                                        UPDATE ;
-                                        UPDATE 8 }
-                                      { DROP ;
-                                        DUP 4 ;
-                                        GET 5 ;
-                                        DUP 2 ;
-                                        GET ;
-                                        IF_NONE { PUSH string "FA_INVALID_HOOK" ; FAILWITH } {} ;
-                                        PUSH bool True ;
-                                        SWAP ;
-                                        COMPARE ;
-                                        EQ ;
-                                        IF {} { PUSH string "FA_IRREVOCABLE_HOOK" ; FAILWITH } ;
-                                        DUP 4 ;
-                                        DIG 4 ;
-                                        GET 5 ;
-                                        DIG 2 ;
-                                        NONE bool ;
-                                        SWAP ;
-                                        UPDATE ;
-                                        UPDATE 5 } } }
-                              { DROP ;
-                                DUP 4 ;
-                                CAR ;
-                                DUP 2 ;
-                                GET ;
-                                IF_NONE { PUSH string "FA_INVALID_HOOK" ; FAILWITH } {} ;
-                                PUSH bool True ;
-                                SWAP ;
-                                COMPARE ;
-                                EQ ;
-                                IF {} { PUSH string "FA_IRREVOCABLE_HOOK" ; FAILWITH } ;
-                                DUP 4 ;
-                                DIG 4 ;
-                                CAR ;
-                                DIG 2 ;
-                                NONE bool ;
-                                SWAP ;
-                                UPDATE ;
-                                UPDATE 1 } } ;
-                        SOME ;
-                        DIG 3 ;
-                        UPDATE ;
-                        UPDATE 5 } ;
-                 SWAP ;
-                 DROP }
-               { ITER { UNPAIR ;
                         PUSH string "FA2_INVALID_OWNER_ACCESS" ;
                         DUP 4 ;
                         SENDER ;
