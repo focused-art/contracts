@@ -69,7 +69,7 @@ type update_role_param =
   | ["Remove", role_type, trusted];
 
 type update_roles_params =
-  list<([contract_address, update_role_param])>;
+  list<(michelson_pair<[contract_address, "fa2_address", update_role_param, ""]>)>;
 
 type renounce_role_params =
   | ["Ownership", unit]
@@ -79,14 +79,14 @@ type renounce_role_params =
   | ["Royalties_manager", unit];
 
 type renounce_roles_params =
-  list<([contract_address, renounce_role_params])>;
+  list<(michelson_pair<[contract_address, "fa2_address", renounce_role_params, ""]>)>;
 
 type update_hook_param =
   | ["Add", hook_type, trusted]
   | ["Remove", hook_type, trusted];
 
 type update_hooks_params =
-  list<([contract_address, update_hook_param])>;
+  list<(michelson_pair<[contract_address, "fa2_address", update_hook_param, ""]>)>;
 
 type migrate_from_protocol_params =
 // @layout comb
@@ -98,10 +98,9 @@ type migrate_from_protocol_params =
 
 type entry_action =
   | ["Init", metadata]
-  | ["Transfer_ownership", contract_address, trusted]
+  | ["Transfer_ownership", michelson_pair<[contract_address, "fa2_address", trusted, "new_owner"]>]
   | ["Update_roles", update_roles_params]
   | ["Renounce_roles", renounce_roles_params]
   | ["Update_hooks", update_hooks_params]
   | ["Confirm_ownership", contract_address]
   | ["Migrate_to_protocol", michelson_pair<[contract_address, "fa2_address", trusted, "new_protocol"]>];
-

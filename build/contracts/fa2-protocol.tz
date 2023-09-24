@@ -2,12 +2,12 @@
     (or (or (or (address %confirm_ownership) (map %init string bytes))
             (or (pair %migrate_to_protocol (address %fa2_address) (address %new_protocol))
                 (list %renounce_roles
-                   (pair address
+                   (pair (address %fa2_address)
                          (or (or (or (unit %creator) (unit %metadata_manager)) (or (unit %minter) (unit %ownership)))
                              (unit %royalties_manager))))))
-        (or (or (pair %transfer_ownership address address)
+        (or (or (pair %transfer_ownership (address %fa2_address) (address %new_owner))
                 (list %update_hooks
-                   (pair address
+                   (pair (address %fa2_address)
                          (or (pair %add
                                 (or (or (or (unit %burn_hook) (unit %create_hook))
                                         (or (unit %metadata_hook) (unit %mint_hook)))
@@ -19,7 +19,7 @@
                                     (unit %transfer_hook))
                                 address)))))
             (list %update_roles
-               (pair address
+               (pair (address %fa2_address)
                      (or (pair %add
                             (or (or (unit %creator) (unit %metadata_manager))
                                 (or (unit %minter) (unit %royalties_manager)))
