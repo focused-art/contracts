@@ -7,53 +7,73 @@ const update_hooks = (params: update_hooks_params, s1: storage): @return => {
     s.hooks = Big_map.update(kt1, Some(match(update_hook_param, {
       Add: ([hook_type, hook_address]) => {
         assert_with_error(is_owner([kt1, Tezos.get_sender()], s), "FA_INVALID_ADD_HOOK_ACCESS");
+        const is_revocable : revocable = is_revocable(hook_address, hook_type);
         return match(hook_type, {
           Transfer_hook: () => {
             // Validate hook
+            assert_with_error(Map.mem(hook_address, hooks.transfer) == false, "FA_DUPLICATE_HOOK");
             const _: contract<transfer_params> = get_transfer_hook(hook_address);
-            return { ...hooks, transfer: Set.add(hook_address, hooks.transfer) }
+            return { ...hooks, transfer: Map.add(hook_address, is_revocable, hooks.transfer) }
           },
           Create_hook: () => {
             // Validate hook
+            assert_with_error(Map.mem(hook_address, hooks.create) == false, "FA_DUPLICATE_HOOK");
             const _: contract<create_params> = get_create_hook(hook_address);
-            return { ...hooks, create: Set.add(hook_address, hooks.create) }
+            return { ...hooks, create: Map.add(hook_address, is_revocable, hooks.create) }
           },
           Mint_hook: () => {
             // Validate hook
+            assert_with_error(Map.mem(hook_address, hooks.mint) == false, "FA_DUPLICATE_HOOK");
             const _: contract<mint_burn_params> = get_mint_hook(hook_address);
-            return { ...hooks, mint: Set.add(hook_address, hooks.mint) }
+            return { ...hooks, mint: Map.add(hook_address, is_revocable, hooks.mint) }
           },
           Burn_hook: () => {
             // Validate hook
+            assert_with_error(Map.mem(hook_address, hooks.burn) == false, "FA_DUPLICATE_HOOK");
             const _: contract<mint_burn_params> = get_burn_hook(hook_address);
-            return { ...hooks, burn: Set.add(hook_address, hooks.burn) }
+            return { ...hooks, burn: Map.add(hook_address, is_revocable, hooks.burn) }
           },
           Metadata_hook: () => {
             // Validate hook
+            assert_with_error(Map.mem(hook_address, hooks.update_metadata) == false, "FA_DUPLICATE_HOOK");
             const _: contract<update_token_metadata_params> = get_update_metadata_hook(hook_address);
             return {
               ...hooks,
-              update_metadata: Set.add(hook_address, hooks.update_metadata)
+              update_metadata: Map.add(hook_address, is_revocable, hooks.update_metadata)
             }
           }
         })
       },
       Remove: ([hook_type, hook_address]) => {
-        assert_with_error(is_revocable(hook_address, hook_type) == true, "FA_IRREVOCABLE_HOOK");
         assert_with_error(
           is_owner([kt1, Tezos.get_sender()], s) || hook_address == Tezos.get_sender(),
           "FA_INVALID_REMOVE_HOOK_ACCESS");
         return match(hook_type, {
-          Transfer_hook: () =>
-            { ...hooks, transfer: Set.remove(hook_address, hooks.transfer) },
-          Create_hook: () =>
-            { ...hooks, create: Set.remove(hook_address, hooks.create) },
-          Mint_hook: () =>
-            { ...hooks, mint: Set.remove(hook_address, hooks.mint) },
-          Burn_hook: () =>
-            { ...hooks, burn: Set.remove(hook_address, hooks.burn) },
-          Metadata_hook: () =>
-            { ...hooks, update_metadata: Set.remove(hook_address, hooks.update_metadata) }
+          Transfer_hook: () => {
+            const is_revocable : revocable = Option.unopt_with_error(Map.find_opt(hook_address, hooks.transfer), "FA_INVALID_HOOK");
+            assert_with_error(is_revocable == true, "FA_IRREVOCABLE_HOOK");
+            return { ...hooks, transfer: Map.remove(hook_address, hooks.transfer) }
+          },
+          Create_hook: () => {
+            const is_revocable : revocable = Option.unopt_with_error(Map.find_opt(hook_address, hooks.create), "FA_INVALID_HOOK");
+            assert_with_error(is_revocable == true, "FA_IRREVOCABLE_HOOK");
+            return { ...hooks, create: Map.remove(hook_address, hooks.create) }
+          },
+          Mint_hook: () => {
+            const is_revocable : revocable = Option.unopt_with_error(Map.find_opt(hook_address, hooks.mint), "FA_INVALID_HOOK");
+            assert_with_error(is_revocable == true, "FA_IRREVOCABLE_HOOK");
+            return { ...hooks, mint: Map.remove(hook_address, hooks.mint) }
+          },
+          Burn_hook: () => {
+            const is_revocable : revocable = Option.unopt_with_error(Map.find_opt(hook_address, hooks.burn), "FA_INVALID_HOOK");
+            assert_with_error(is_revocable == true, "FA_IRREVOCABLE_HOOK");
+            return { ...hooks, burn: Map.remove(hook_address, hooks.burn) }
+          },
+          Metadata_hook: () => {
+            const is_revocable : revocable = Option.unopt_with_error(Map.find_opt(hook_address, hooks.update_metadata), "FA_INVALID_HOOK");
+            assert_with_error(is_revocable == true, "FA_IRREVOCABLE_HOOK");
+            return { ...hooks, update_metadata: Map.remove(hook_address, hooks.update_metadata) }
+          }
         })
       }
     })), s.hooks);

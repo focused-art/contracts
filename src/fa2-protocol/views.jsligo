@@ -31,41 +31,48 @@ const has_role = (
 const get_hooks = (
   [contract_address, hook_type]: [contract_address, hook_type],
   s: storage
-): set<trusted> =>
-  match(hook_type, {
+): set<trusted> => {
+  const revocable_hooks: hooks = (internal_get_hooks(contract_address, s));
+  return match(hook_type, {
     Transfer_hook: () => {
-      let hooks: set<trusted> = (internal_get_hooks(contract_address, s)).transfer;
-      for (const h of s.protocol_hooks.transfer) {
-        hooks = Set.add(h, hooks)
+      let hooks: set<trusted> = s.protocol_hooks.transfer;
+      for (const h of revocable_hooks.transfer) {
+        const [hook, _revocable] = h;
+        hooks = Set.add(hook, hooks)
       };
       return hooks
     },
     Create_hook: () => {
-      let hooks: set<trusted> = (internal_get_hooks(contract_address, s)).create;
-      for (const h of s.protocol_hooks.create) {
-        hooks = Set.add(h, hooks)
+      let hooks: set<trusted> = s.protocol_hooks.create;
+      for (const h of revocable_hooks.create) {
+        const [hook, _revocable] = h;
+        hooks = Set.add(hook, hooks)
       };
       return hooks
     },
     Mint_hook: () => {
-      let hooks: set<trusted> = (internal_get_hooks(contract_address, s)).mint;
-      for (const h of s.protocol_hooks.mint) {
-        hooks = Set.add(h, hooks)
+      let hooks: set<trusted> = s.protocol_hooks.mint;
+      for (const h of revocable_hooks.mint) {
+        const [hook, _revocable] = h;
+        hooks = Set.add(hook, hooks)
       };
       return hooks
     },
     Burn_hook: () => {
-      let hooks: set<trusted> = (internal_get_hooks(contract_address, s)).burn;
-      for (const h of s.protocol_hooks.burn) {
-        hooks = Set.add(h, hooks)
+      let hooks: set<trusted> = s.protocol_hooks.burn;
+      for (const h of revocable_hooks.burn) {
+        const [hook, _revocable] = h;
+        hooks = Set.add(hook, hooks)
       };
       return hooks
     },
     Metadata_hook: () => {
-      let hooks: set<trusted> = (internal_get_hooks(contract_address, s)).update_metadata;
-      for (const h of s.protocol_hooks.update_metadata) {
-        hooks = Set.add(h, hooks)
+      let hooks: set<trusted> = s.protocol_hooks.update_metadata;
+      for (const h of revocable_hooks.update_metadata) {
+        const [hook, _revocable] = h;
+        hooks = Set.add(hook, hooks)
       };
       return hooks
     }
   });
+}

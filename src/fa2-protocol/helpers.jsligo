@@ -10,11 +10,11 @@ const internal_get_hooks = (k: contract_address, s: storage): hooks =>
   match(Big_map.find_opt(k, s.hooks), {
     Some: hooks => hooks,
     None: () => {
-      transfer: Set.empty;
-      create: Set.empty;
-      mint: Set.empty;
-      burn: Set.empty;
-      update_metadata: Set.empty
+      transfer: Map.empty;
+      create: Map.empty;
+      mint: Map.empty;
+      burn: Map.empty;
+      update_metadata: Map.empty
     }
   });
 

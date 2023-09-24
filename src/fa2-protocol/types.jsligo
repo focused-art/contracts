@@ -14,6 +14,16 @@ type revocable = bool;
 type hooks =
 // @layout comb
 {
+  transfer              : map<trusted, revocable>,
+  create                : map<trusted, revocable>,
+  mint                  : map<trusted, revocable>,
+  burn                  : map<trusted, revocable>,
+  update_metadata       : map<trusted, revocable>
+};
+
+type protocol_hooks =
+// @layout comb
+{
   transfer              : set<trusted>,
   create                : set<trusted>,
   mint                  : set<trusted>,
@@ -48,7 +58,7 @@ type storage =
   metadata              : big_map<string, bytes>,
   roles                 : big_map<contract_address, permissions>,
   hooks                 : big_map<contract_address, hooks>,
-  protocol_hooks        : hooks
+  protocol_hooks        : protocol_hooks
 };
 
 // define return type for readability
