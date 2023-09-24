@@ -73,6 +73,14 @@ const get_hooks = (
         hooks = Set.add(hook, hooks)
       };
       return hooks
+    },
+    Royalties_hook: () => {
+      let hooks: set<trusted> = s.protocol_hooks.update_royalties;
+      for (const h of revocable_hooks.update_royalties) {
+        const [hook, _revocable] = h;
+        hooks = Set.add(hook, hooks)
+      };
+      return hooks
     }
   });
 }

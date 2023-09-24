@@ -10,7 +10,8 @@ type hook_type =
   | ["Create_hook"]
   | ["Mint_hook"]
   | ["Burn_hook"]
-  | ["Metadata_hook"];
+  | ["Metadata_hook"]
+  | ["Royalties_hook"];
 
 type role_type =
   | ["Creator"]

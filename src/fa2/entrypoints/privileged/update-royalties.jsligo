@@ -24,5 +24,13 @@ const update_royalties = (input: update_royalties_params, s1: storage): @return 
     ]);
   };
 
+  // Send hooks
+  for (const hook of get_hooks(Royalties_hook(), s)) {
+    operations = list([
+      Tezos.transaction(input, (0 as mutez), get_update_royalties_hook(hook)),
+      ...operations
+    ]);
+  };
+
   return [operations, s]
 };

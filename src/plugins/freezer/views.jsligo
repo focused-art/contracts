@@ -5,7 +5,8 @@ const is_revocable = (k: hook_type, _: storage): bool =>
     Create_hook: () => true,
     Mint_hook: () => true,
     Burn_hook: () => false,
-    Metadata_hook: () => true
+    Metadata_hook: () => true,
+    Royalties_hook: () => true
   });
 
 @view

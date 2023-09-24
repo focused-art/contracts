@@ -1,4 +1,5 @@
 // Entrypoints
 
 #include "entrypoints/cement-metadata.jsligo"
+#include "entrypoints/update-defaults.jsligo"
 #include "entrypoints/update-metadata-hook.jsligo"

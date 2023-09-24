@@ -10,11 +10,12 @@ const internal_get_hooks = (k: contract_address, s: storage): hooks =>
   match(Big_map.find_opt(k, s.hooks), {
     Some: hooks => hooks,
     None: () => {
-      transfer: Map.empty;
-      create: Map.empty;
-      mint: Map.empty;
-      burn: Map.empty;
-      update_metadata: Map.empty
+      transfer: Map.empty,
+      create: Map.empty,
+      mint: Map.empty,
+      burn: Map.empty,
+      update_metadata: Map.empty,
+      update_royalties: Map.empty
     }
   });
 
@@ -58,8 +59,16 @@ const get_update_metadata_hook = (c: trusted): contract<update_token_metadata_pa
   match(
     Tezos.get_entrypoint_opt("%update_metadata_hook", c) as option<contract<update_token_metadata_params>>,
     {
-      None: () =>
-        failwith("FA_UPDATE_METADATA_HOOK_UNDEFINED"),
+      None: () => failwith("FA_UPDATE_METADATA_HOOK_UNDEFINED"),
+      Some: entrypoint => entrypoint
+    }
+  );
+
+const get_update_royalties_hook = (c: trusted): contract<update_royalties_params> =>
+  match(
+    Tezos.get_entrypoint_opt("%update_royalties_hook", c) as option<contract<update_royalties_params>>,
+    {
+      None: () => failwith("FA_UPDATE_ROYALTIES_HOOK_UNDEFINED"),
       Some: entrypoint => entrypoint
     }
   );

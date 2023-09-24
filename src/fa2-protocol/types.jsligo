@@ -18,7 +18,8 @@ type hooks =
   create                : map<trusted, revocable>,
   mint                  : map<trusted, revocable>,
   burn                  : map<trusted, revocable>,
-  update_metadata       : map<trusted, revocable>
+  update_metadata       : map<trusted, revocable>,
+  update_royalties      : map<trusted, revocable>
 };
 
 type protocol_hooks =
@@ -28,7 +29,8 @@ type protocol_hooks =
   create                : set<trusted>,
   mint                  : set<trusted>,
   burn                  : set<trusted>,
-  update_metadata       : set<trusted>
+  update_metadata       : set<trusted>,
+  update_royalties      : set<trusted>
 };
 
 type fa2_storage =

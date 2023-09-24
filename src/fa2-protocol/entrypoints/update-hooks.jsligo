@@ -41,6 +41,15 @@ const update_hooks = (params: update_hooks_params, s1: storage): @return => {
               ...hooks,
               update_metadata: Map.add(hook_address, is_revocable, hooks.update_metadata)
             }
+          },
+          Royalties_hook: () => {
+            // Validate hook
+            assert_with_error(Map.mem(hook_address, hooks.update_royalties) == false, "FA_DUPLICATE_HOOK");
+            const _: contract<update_royalties_params> = get_update_royalties_hook(hook_address);
+            return {
+              ...hooks,
+              update_royalties: Map.add(hook_address, is_revocable, hooks.update_royalties)
+            }
           }
         })
       },
@@ -73,6 +82,11 @@ const update_hooks = (params: update_hooks_params, s1: storage): @return => {
             const is_revocable : revocable = Option.unopt_with_error(Map.find_opt(hook_address, hooks.update_metadata), "FA_INVALID_HOOK");
             assert_with_error(is_revocable == true, "FA_IRREVOCABLE_HOOK");
             return { ...hooks, update_metadata: Map.remove(hook_address, hooks.update_metadata) }
+          },
+          Royalties_hook: () => {
+            const is_revocable : revocable = Option.unopt_with_error(Map.find_opt(hook_address, hooks.update_royalties), "FA_INVALID_HOOK");
+            assert_with_error(is_revocable == true, "FA_IRREVOCABLE_HOOK");
+            return { ...hooks, update_royalties: Map.remove(hook_address, hooks.update_royalties) }
           }
         })
       }

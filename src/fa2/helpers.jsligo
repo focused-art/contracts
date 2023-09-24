@@ -70,3 +70,12 @@ const get_update_metadata_hook = (c: trusted): contract<update_token_metadata_pa
       Some: entrypoint => entrypoint
     }
   );
+
+const get_update_royalties_hook = (c: trusted): contract<update_royalties_params> =>
+  match(
+    Tezos.get_entrypoint_opt("%update_royalties_hook", c) as option<contract<update_royalties_params>>,
+    {
+      None: () => failwith("FA_UPDATE_ROYALTIES_HOOK_UNDEFINED"),
+      Some: entrypoint => entrypoint
+    }
+  );
