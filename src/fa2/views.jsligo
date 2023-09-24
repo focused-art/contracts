@@ -93,3 +93,10 @@ const get_royalties = (token_id: token_id, s: storage): royalties =>
     Some: royalties => royalties,
     None: () => s.default_royalties
   });
+
+@view
+const get_created = (token_id: token_id, s: storage): timestamp =>
+  match(Big_map.find_opt(token_id, s.created), {
+    Some: t => t,
+    None: () => Tezos.get_now()
+  });

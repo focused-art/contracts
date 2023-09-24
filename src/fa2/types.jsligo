@@ -114,6 +114,7 @@ type storage =
   token_metadata        : big_map<token_id, token_metadata>,
   royalties             : big_map<token_id, royalties>,
   token_max_supply      : big_map<token_id, nat>,
+  created               : big_map<token_id, timestamp>,
   default_royalties     : royalties
 };
 

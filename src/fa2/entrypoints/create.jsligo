@@ -23,6 +23,7 @@ const create = (input: create_params, s1: storage): @return => {
     None: () => { return }
   });
 
+  s.created = Big_map.add(token_id, Tezos.get_now(), s.created);
   s.next_token_id = nat_max(s.next_token_id, token_id) + (1 as nat);
 
   // initialize operations
