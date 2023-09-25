@@ -1,9 +1,18 @@
 // Update default token royalties
-const update_default_royalties = (input: royalties, s1: storage): @return => {
+const update_default_royalties = (input: royalties, permit_opt: option<permit>, s1: storage): @return => {
   let s = s1;
 
+  const sender : address = match(permit_opt, {
+    Some: permit => {
+      const param_bytes : bytes = Bytes.pack(["%update_default_royalties", input]);
+      s = check_and_store_permit(permit, param_bytes, s);
+      return address_from_key(permit.signer);
+    },
+    None: () => Tezos.get_sender()
+  });
+
   assert_with_error(
-    has_role([Tezos.get_sender(), Royalties_manager()], s),
+    has_role([sender, Royalties_manager()], s),
     "FA2_INVALID_ROYALTIES_MANAGER_ACCESS"
   );
 

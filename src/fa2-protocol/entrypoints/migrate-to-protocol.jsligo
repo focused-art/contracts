@@ -1,8 +1,10 @@
 // Migrate contract to new protocol
-const migrate_to_protocol = (kt1: contract_address, new_protocol: address, s1: storage): @return => {
+const migrate_to_protocol = (new_protocol: address, s1: storage): @return => {
   let s = s1;
 
-  assert_with_error(is_owner([kt1, Tezos.get_sender()], s), "FA2_INVALID_OWNER_ACCESS");
+  const kt1: contract_address = Tezos.get_sender();
+
+  assert_with_error(Big_map.mem(kt1, s.roles) == true, "FA_INVALID_PROTCOL_MIGRATION");
 
   const permissions: permissions = get_permissions_or_fail(kt1, s);
   const hooks: hooks = internal_get_hooks(kt1, s);
@@ -19,16 +21,13 @@ const migrate_to_protocol = (kt1: contract_address, new_protocol: address, s1: s
       { Some: entrypoint => entrypoint, None: () => failwith("FA_INVALID_PROTCOL_MIGRATION") }
     );
 
-  const update_protocol_entrypoint : contract<trusted> =
-    match(
-      Tezos.get_entrypoint_opt("%update_protocol", kt1) as option<contract<trusted>>,
-      { Some: entrypoint => entrypoint, None: () => failwith("FA_INVALID_PROTCOL_MIGRATION") }
-    );
-
   const operations: list<operation> = list([
-    Tezos.transaction(migrate_params, (0 as mutez), migrate_entrypoint),
-    Tezos.transaction(new_protocol, (0 as mutez), update_protocol_entrypoint)
+    Tezos.transaction(migrate_params, (0 as mutez), migrate_entrypoint)
   ]);
 
-  return [operations, s]
+  return [operations, {
+    ...s,
+    roles: Big_map.remove(kt1, s.roles),
+    hooks: Big_map.remove(kt1, s.hooks),
+  }];
 };

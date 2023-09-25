@@ -2,7 +2,7 @@
 const update_contract_metadata = (input: metadata, permit_opt: option<permit>, s1: storage): @return => {
   let s = s1;
 
-  const owner : address = match(permit_opt, {
+  const sender : address = match(permit_opt, {
     Some: permit => {
       const param_bytes : bytes = Bytes.pack(["%update_contract_metadata", input]);
       s = check_and_store_permit(permit, param_bytes, s);
@@ -11,7 +11,7 @@ const update_contract_metadata = (input: metadata, permit_opt: option<permit>, s
     None: () => Tezos.get_sender()
   });
 
-  assert_with_error(is_owner(owner, s), "FA2_INVALID_OWNER_ACCESS");
+  assert_with_error(is_owner(sender, s), "FA2_INVALID_OWNER_ACCESS");
 
   s.metadata = Big_map.empty;
   for (const generated of input) {

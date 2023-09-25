@@ -9,6 +9,6 @@ const privileged_main = (action: privileged_action, s: storage): @return =>
     Update_contract_metadata: params    => update_contract_metadata(params, None(), s),
     Update_metadata: params             => update_metadata(params, None(), s),
     Update_royalties: params            => update_royalties(params, None(), s),
-    Update_default_royalties: params    => update_default_royalties(params, s),
-    Update_protocol: params             => update_protocol(params, s)
+    Update_default_royalties: params    => update_default_royalties(params, None(), s),
+    Update_protocol: params             => update_protocol(params, None(), s)
   });

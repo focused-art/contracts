@@ -194,7 +194,9 @@ type permitted_action =
   | ["Permit_update_operators", michelson_pair<[update_operator_params, "params", permit, "permit"]>]
   | ["Permit_update_contract_metadata", michelson_pair<[metadata, "params", permit, "permit"]>]
   | ["Permit_update_metadata", michelson_pair<[update_token_metadata_params, "params", permit, "permit"]>]
-  | ["Permit_update_royalties", michelson_pair<[update_royalties_params, "params", permit, "permit"]>];
+  | ["Permit_update_royalties", michelson_pair<[update_royalties_params, "params", permit, "permit"]>]
+  | ["Permit_update_default_royalties", michelson_pair<[royalties, "params", permit, "permit"]>]
+  | ["Permit_update_protocol", michelson_pair<[trusted, "params", permit, "permit"]>];
 
 type entry_action =
   | ["Privileged_action", privileged_action]

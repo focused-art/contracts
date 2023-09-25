@@ -1,13 +1,3 @@
-type permit =
-// @layout comb
-{
-  signer                : key,
-  signature             : signature,
-  nonce                 : nat
-};
-
-type used_permits = big_map<bytes, unit>;
-
 const address_from_key = (k: key): address =>
   Tezos.address(Tezos.implicit_account(Crypto.hash_key(k)));
 

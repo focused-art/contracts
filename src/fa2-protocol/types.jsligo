@@ -105,4 +105,4 @@ type entry_action =
   | ["Renounce_roles", renounce_roles_params]
   | ["Update_hooks", update_hooks_params]
   | ["Confirm_ownership", contract_address]
-  | ["Migrate_to_protocol", michelson_pair<[contract_address, "fa2_address", trusted, "new_protocol"]>];
+  | ["Migrate_to_protocol", trusted];

@@ -19,6 +19,16 @@ type role_type =
   | ["Metadata_manager"]
   | ["Royalties_manager"];
 
+type permit =
+// @layout comb
+{
+  signer                : key,
+  signature             : signature,
+  nonce                 : nat
+};
+
+type used_permits = big_map<bytes, unit>;
+
 // define noop for readability
 const noop: list<operation> = list([]);
 
