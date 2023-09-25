@@ -5,10 +5,11 @@
 /*                                          */
 
 #include "../common/types.jsligo"
+#include "../common/utils/permit.jsligo"
 #include "types.jsligo"
 #include "helpers.jsligo"
 #include "views.jsligo"
 
 @entry
 const main_as_const = (action: entry_action, s: storage): @return =>
-  (Tezos.constant("exprumUMxeKBZPR51zXBbgWXejSgyF1njC4RP66vsT6D3SGbSwZopC") as (v: [entry_action, storage]) => @return)([action, s]);
+  (Tezos.constant("expruVWjJ6g4jupfPwz5Xgi1r8u14exHXnf3aWeGCFhLRCvhkMqa3r") as (v: [entry_action, storage]) => @return)([action, s]);

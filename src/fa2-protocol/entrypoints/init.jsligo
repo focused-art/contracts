@@ -21,10 +21,12 @@ const init = (metadata: metadata, s1: storage): @return => {
     token_metadata: Big_map.empty,
     royalties: Big_map.empty,
     token_max_supply: Big_map.empty,
+    created: Big_map.empty,
     default_royalties: {
       total_shares: (0 as nat),
       shares: Map.empty
-    }
+    },
+    permits: Big_map.empty
   };
 
   for (const entry of metadata) {
