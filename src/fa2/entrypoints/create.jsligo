@@ -1,8 +1,17 @@
 // Create new token
-const create = (input: create_params, s1: storage): @return => {
+const create = (input: create_params, permit_opt: option<permit>, s1: storage): @return => {
   let s = s1;
 
-  assert_with_error(has_role([Tezos.get_sender(), Creator()], s), "FA2_INVALID_CREATOR_ACCESS");
+  const creator : address = match(permit_opt, {
+    Some: permit => {
+      const param_bytes : bytes = Bytes.pack(["%create", input]);
+      s = check_and_store_permit(permit, param_bytes, s);
+      return address_from_key(permit.signer);
+    },
+    None: () => Tezos.get_sender()
+  });
+
+  assert_with_error(has_role([creator, Creator()], s), "FA2_INVALID_CREATOR_ACCESS");
 
   const token_id: token_id = match(input.token_id, {
     Some: t => t, None: () => s.next_token_id

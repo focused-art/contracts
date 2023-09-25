@@ -8,3 +8,4 @@
 #include "entrypoints/create.jsligo"
 #include "entrypoints/mint.jsligo"
 #include "entrypoints/privileged-main.jsligo"
+#include "entrypoints/permitted-main.jsligo"

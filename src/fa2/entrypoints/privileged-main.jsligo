@@ -6,7 +6,7 @@
 
 const privileged_main = (action: privileged_action, s: storage): @return =>
   match(action, {
-    Update_contract_metadata: params    => update_contract_metadata(params, s),
+    Update_contract_metadata: params    => update_contract_metadata(params, None(), s),
     Update_metadata: params             => update_metadata(params, s),
     Update_royalties: params            => update_royalties(params, s),
     Update_default_royalties: params    => update_default_royalties(params, s),

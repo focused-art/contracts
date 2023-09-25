@@ -79,3 +79,6 @@ const get_update_royalties_hook = (c: trusted): contract<update_royalties_params
       Some: entrypoint => entrypoint
     }
   );
+
+const check_and_store_permit = (permit: permit, param_bytes: bytes, s: storage): storage =>
+  { ...s, permits: check_permit(permit, param_bytes, s.permits) };

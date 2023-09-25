@@ -115,7 +115,8 @@ type storage =
   royalties             : big_map<token_id, royalties>,
   token_max_supply      : big_map<token_id, nat>,
   created               : big_map<token_id, timestamp>,
-  default_royalties     : royalties
+  default_royalties     : royalties,
+  permits               : used_permits
 };
 
 type operator_update_event =
@@ -185,8 +186,16 @@ type privileged_action =
   | ["Update_default_royalties", royalties]
   | ["Update_protocol", trusted];
 
+type permitted_action =
+  | ["Permit_create", michelson_pair<[create_params, "params", permit, "permit"]>]
+  | ["Permit_mint", michelson_pair<[mint_burn_params, "params", permit, "permit"]>]
+  | ["Permit_burn", michelson_pair<[mint_burn_params, "params", permit, "permit"]>]
+  | ["Permit_transfer", michelson_pair<[transfer_params, "params", permit, "permit"]>]
+  | ["Permit_update_contract_metadata", michelson_pair<[metadata, "params", permit, "permit"]>];
+
 type entry_action =
   | ["Privileged_action", privileged_action]
+  | ["Permitted_action", permitted_action]
   | ["Transfer", transfer_params]
   | ["Balance_of", balance_params]
   | ["Update_operators", update_operator_params]
@@ -194,4 +203,3 @@ type entry_action =
   | ["Create", create_params]
   | ["Mint", mint_burn_params]
   | ["Burn", mint_burn_params];
-

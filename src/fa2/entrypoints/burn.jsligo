@@ -1,8 +1,17 @@
 // Burn some tokens
-const burn = (input: mint_burn_params, s1: storage): @return => {
+const burn = (input: mint_burn_params, permit_opt: option<permit>, s1: storage): @return => {
   let s = s1;
 
-  validate_operator(input.owner, Tezos.get_sender(), input.token_id, s);
+  const operator : operator = match(permit_opt, {
+    Some: permit => {
+      const param_bytes : bytes = Bytes.pack(["%burn", input]);
+      s = check_and_store_permit(permit, param_bytes, s);
+      return address_from_key(permit.signer);
+    },
+    None: () => Tezos.get_sender()
+  });
+
+  validate_operator(input.owner, operator, input.token_id, s);
   validate_token_id(input.token_id, s);
 
   const owner_bal: nat = internal_get_balance_of(input.owner, input.token_id, s);
