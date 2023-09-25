@@ -1,20 +1,44 @@
 { parameter
-    (or (list %cement_metadata
-           (pair (pair %token (address %address) (nat %token_id)) (int %delay)))
+    (or (or (list %cement_metadata
+               (pair (pair %token (address %address) (nat %token_id)) (int %delay)))
+            (pair %update_defaults (address %fa2_address) (int %delay)))
         (map %update_metadata_hook nat (map string bytes))) ;
   storage
     (pair (big_map %metadata string bytes)
-          (big_map %cemented_tokens (pair (address %address) (nat %token_id)) timestamp)) ;
+          (big_map %cemented_tokens (pair (address %address) (nat %token_id)) timestamp)
+          (big_map %defaults address int)) ;
   code { NIL operation ;
          LAMBDA
-           (pair (pair address nat) (big_map string bytes) (big_map (pair address nat) timestamp))
+           (pair (pair address nat)
+                 (big_map string bytes)
+                 (big_map (pair address nat) timestamp)
+                 (big_map address int))
            bool
            { UNPAIR ;
-             SWAP ;
-             CDR ;
-             SWAP ;
+             DUP 2 ;
+             GET 3 ;
+             DUP 2 ;
              GET ;
-             IF_NONE { PUSH bool False } { NOW ; SWAP ; COMPARE ; GE } } ;
+             IF_NONE
+               { SWAP ;
+                 GET 4 ;
+                 DUP 2 ;
+                 CAR ;
+                 GET ;
+                 IF_NONE
+                   { DROP ; PUSH bool False }
+                   { NOW ;
+                     SWAP ;
+                     DUP 3 ;
+                     CAR ;
+                     DIG 3 ;
+                     CDR ;
+                     VIEW "get_created" timestamp ;
+                     IF_NONE { PUSH string "option is None" ; FAILWITH } {} ;
+                     ADD ;
+                     COMPARE ;
+                     GE } }
+               { SWAP ; DIG 2 ; DROP 2 ; NOW ; SWAP ; COMPARE ; GE } } ;
          DIG 2 ;
          UNPAIR ;
          PUSH string "FA_DONT_SEND_TEZ" ;
@@ -24,60 +48,84 @@
          EQ ;
          IF { DROP } { FAILWITH } ;
          IF_LEFT
-           { ITER { PUSH string "FA_NOT_FA2_METADATA_MANAGER" ;
-                    SENDER ;
-                    DUP 3 ;
-                    CAR ;
-                    CAR ;
-                    UNIT ;
-                    RIGHT unit ;
-                    LEFT (or unit unit) ;
-                    DIG 2 ;
-                    PAIR ;
-                    VIEW "has_role" bool ;
-                    IF_NONE { PUSH bool False } {} ;
-                    IF { DROP } { FAILWITH } ;
-                    PUSH string "FA_NOT_FA2_METADATA_HOOK" ;
-                    SELF_ADDRESS ;
-                    DUP 3 ;
-                    CAR ;
-                    CAR ;
-                    UNIT ;
-                    LEFT unit ;
-                    RIGHT (or unit unit) ;
-                    LEFT unit ;
-                    DIG 2 ;
-                    PAIR ;
-                    VIEW "is_hook" bool ;
-                    IF_NONE { PUSH bool False } {} ;
-                    IF { DROP } { FAILWITH } ;
-                    PUSH bool False ;
-                    DUP 3 ;
-                    DUP 3 ;
-                    CAR ;
-                    PAIR ;
-                    DUP 5 ;
-                    SWAP ;
-                    EXEC ;
-                    COMPARE ;
-                    EQ ;
-                    IF { DUP 2 ;
-                         DIG 2 ;
-                         CDR ;
-                         DUP 3 ;
-                         CDR ;
-                         NOW ;
-                         ADD ;
-                         DIG 3 ;
-                         CAR ;
-                         SWAP ;
-                         SOME ;
-                         SWAP ;
-                         UPDATE ;
-                         UPDATE 2 }
-                       { DROP } } ;
-             SWAP ;
-             DROP }
+           { IF_LEFT
+               { ITER { PUSH string "FA_NOT_FA2_METADATA_MANAGER" ;
+                        SENDER ;
+                        DUP 3 ;
+                        CAR ;
+                        CAR ;
+                        UNIT ;
+                        RIGHT unit ;
+                        LEFT (or unit unit) ;
+                        DIG 2 ;
+                        PAIR ;
+                        VIEW "has_role" bool ;
+                        IF_NONE { PUSH bool False } {} ;
+                        IF { DROP } { FAILWITH } ;
+                        PUSH string "FA_NOT_FA2_METADATA_HOOK" ;
+                        SELF_ADDRESS ;
+                        DUP 3 ;
+                        CAR ;
+                        CAR ;
+                        UNIT ;
+                        LEFT unit ;
+                        RIGHT (or unit unit) ;
+                        LEFT (or unit unit) ;
+                        DIG 2 ;
+                        PAIR ;
+                        VIEW "is_hook" bool ;
+                        IF_NONE { PUSH bool False } {} ;
+                        IF { DROP } { FAILWITH } ;
+                        PUSH bool False ;
+                        DUP 3 ;
+                        DUP 3 ;
+                        CAR ;
+                        PAIR ;
+                        DUP 5 ;
+                        SWAP ;
+                        EXEC ;
+                        COMPARE ;
+                        EQ ;
+                        IF { DUP 2 ;
+                             DIG 2 ;
+                             GET 3 ;
+                             DUP 3 ;
+                             CDR ;
+                             NOW ;
+                             ADD ;
+                             DIG 3 ;
+                             CAR ;
+                             SWAP ;
+                             SOME ;
+                             SWAP ;
+                             UPDATE ;
+                             UPDATE 3 }
+                           { DROP } } ;
+                 SWAP ;
+                 DROP }
+               { DIG 2 ;
+                 DROP ;
+                 DUP ;
+                 CAR ;
+                 DIG 2 ;
+                 PUSH string "FA_NOT_FA2_OWNER" ;
+                 SENDER ;
+                 PUSH nat 0 ;
+                 DUP 5 ;
+                 SWAP ;
+                 DROP ;
+                 SWAP ;
+                 VIEW "is_owner" bool ;
+                 IF_NONE { PUSH bool False } {} ;
+                 IF { DROP } { FAILWITH } ;
+                 DUP ;
+                 GET 4 ;
+                 DIG 3 ;
+                 CDR ;
+                 SOME ;
+                 DIG 3 ;
+                 UPDATE ;
+                 UPDATE 4 } }
            { ITER { CAR ;
                     SENDER ;
                     PAIR ;
@@ -99,21 +147,40 @@
   view "is_revocable"
        (or (or (or (unit %burn_hook) (unit %create_hook))
                (or (unit %metadata_hook) (unit %mint_hook)))
-           (unit %transfer_hook))
+           (or (unit %royalties_hook) (unit %transfer_hook)))
        bool
        { CAR ;
          IF_LEFT
            { IF_LEFT
                { IF_LEFT { DROP ; PUSH bool True } { DROP ; PUSH bool True } }
                { IF_LEFT { DROP ; PUSH bool False } { DROP ; PUSH bool True } } }
-           { DROP ; PUSH bool True } } ;
+           { IF_LEFT { DROP ; PUSH bool True } { DROP ; PUSH bool True } } } ;
   view "is_cemented"
        (pair (address %address) (nat %token_id))
        bool
        { UNPAIR ;
-         SWAP ;
-         CDR ;
-         SWAP ;
+         DUP 2 ;
+         GET 3 ;
+         DUP 2 ;
          GET ;
-         IF_NONE { PUSH bool False } { NOW ; SWAP ; COMPARE ; GE } } }
+         IF_NONE
+           { SWAP ;
+             GET 4 ;
+             DUP 2 ;
+             CAR ;
+             GET ;
+             IF_NONE
+               { DROP ; PUSH bool False }
+               { NOW ;
+                 SWAP ;
+                 DUP 3 ;
+                 CAR ;
+                 DIG 3 ;
+                 CDR ;
+                 VIEW "get_created" timestamp ;
+                 IF_NONE { PUSH string "option is None" ; FAILWITH } {} ;
+                 ADD ;
+                 COMPARE ;
+                 GE } }
+           { SWAP ; DIG 2 ; DROP 2 ; NOW ; SWAP ; COMPARE ; GE } } }
 

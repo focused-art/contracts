@@ -1,6 +1,6 @@
 { parameter
     (or (or (or (address %confirm_ownership) (map %init string bytes))
-            (or (pair %migrate_to_protocol (address %fa2_address) (address %new_protocol))
+            (or (address %migrate_to_protocol)
                 (list %renounce_roles
                    (pair (address %fa2_address)
                          (or (or (or (unit %creator) (unit %metadata_manager)) (or (unit %minter) (unit %ownership)))
@@ -11,12 +11,12 @@
                          (or (pair %add
                                 (or (or (or (unit %burn_hook) (unit %create_hook))
                                         (or (unit %metadata_hook) (unit %mint_hook)))
-                                    (unit %transfer_hook))
+                                    (or (unit %royalties_hook) (unit %transfer_hook)))
                                 address)
                              (pair %remove
                                 (or (or (or (unit %burn_hook) (unit %create_hook))
                                         (or (unit %metadata_hook) (unit %mint_hook)))
-                                    (unit %transfer_hook))
+                                    (or (unit %royalties_hook) (unit %transfer_hook)))
                                 address)))))
             (list %update_roles
                (pair (address %fa2_address)
@@ -44,13 +44,15 @@
                    (map %create address bool)
                    (map %mint address bool)
                    (map %burn address bool)
-                   (map %update_metadata address bool)))
+                   (map %update_metadata address bool)
+                   (map %update_royalties address bool)))
           (pair %protocol_hooks
              (set %transfer address)
              (set %create address)
              (set %mint address)
              (set %burn address)
-             (set %update_metadata address))) ;
+             (set %update_metadata address)
+             (set %update_royalties address))) ;
   code { NIL operation ;
          LAMBDA
            (pair address
@@ -64,8 +66,9 @@
                           (map address bool)
                           (map address bool)
                           (map address bool)
+                          (map address bool)
                           (map address bool)))
-                 (pair (set address) (set address) (set address) (set address) (set address)))
+                 (pair (set address) (set address) (set address) (set address) (set address) (set address)))
            (pair address (option address) (set address) (set address) (set address) (set address))
            { UNPAIR ;
              SWAP ;
@@ -85,9 +88,11 @@
                           (map address bool)
                           (map address bool)
                           (map address bool)
+                          (map address bool)
                           (map address bool)))
-                 (pair (set address) (set address) (set address) (set address) (set address)))
+                 (pair (set address) (set address) (set address) (set address) (set address) (set address)))
            (pair (map address bool)
+                 (map address bool)
                  (map address bool)
                  (map address bool)
                  (map address bool)
@@ -103,7 +108,8 @@
                  EMPTY_MAP address bool ;
                  EMPTY_MAP address bool ;
                  EMPTY_MAP address bool ;
-                 PAIR 5 }
+                 EMPTY_MAP address bool ;
+                 PAIR 6 }
                {} } ;
          LAMBDA
            (pair address address)
@@ -118,8 +124,9 @@
                              (map address bool)
                              (map address bool)
                              (map address bool)
+                             (map address bool)
                              (map address bool)))
-                    (pair (set address) (set address) (set address) (set address) (set address)))
+                    (pair (set address) (set address) (set address) (set address) (set address) (set address)))
               bool)
            { UNPAIR ;
              LAMBDA
@@ -134,8 +141,9 @@
                                     (map address bool)
                                     (map address bool)
                                     (map address bool)
+                                    (map address bool)
                                     (map address bool)))
-                           (pair (set address) (set address) (set address) (set address) (set address))))
+                           (pair (set address) (set address) (set address) (set address) (set address) (set address))))
                bool
                { UNPAIR ;
                  UNPAIR ;
@@ -164,8 +172,9 @@
                              (map address bool)
                              (map address bool)
                              (map address bool)
+                             (map address bool)
                              (map address bool)))
-                    (pair (set address) (set address) (set address) (set address) (set address)))
+                    (pair (set address) (set address) (set address) (set address) (set address) (set address)))
               bool)
            { UNPAIR ;
              UNPAIR ;
@@ -181,8 +190,9 @@
                                     (map address bool)
                                     (map address bool)
                                     (map address bool)
+                                    (map address bool)
                                     (map address bool)))
-                           (pair (set address) (set address) (set address) (set address) (set address))))
+                           (pair (set address) (set address) (set address) (set address) (set address) (set address))))
                bool
                { UNPAIR ;
                  UNPAIR 3 ;
@@ -254,9 +264,11 @@
                      DROP 2 ;
                      SWAP ;
                      SENDER ;
+                     EMPTY_BIG_MAP bytes unit ;
                      EMPTY_MAP address nat ;
                      PUSH nat 0 ;
                      PAIR ;
+                     EMPTY_BIG_MAP nat timestamp ;
                      EMPTY_BIG_MAP nat nat ;
                      EMPTY_BIG_MAP nat (pair nat (map address nat)) ;
                      EMPTY_BIG_MAP nat (pair nat (map string bytes)) ;
@@ -266,7 +278,7 @@
                      PUSH nat 0 ;
                      SELF_ADDRESS ;
                      EMPTY_BIG_MAP string bytes ;
-                     PAIR 10 ;
+                     PAIR 12 ;
                      DIG 3 ;
                      ITER { UNPAIR ;
                             DUP 3 ;
@@ -286,28 +298,66 @@
                      UNPPAIIR ;
                      CREATE_CONTRACT
                        { parameter
-                           (or (or (or (list %assert_balances (pair (address %owner) (nat %token_id) (nat %balance)))
-                                       (pair %balance_of
-                                          (list %requests (pair (address %owner) (nat %token_id)))
-                                          (contract %callback
-                                             (list (pair (pair %request (address %owner) (nat %token_id)) (nat %balance))))))
-                                   (or (pair %burn (address %owner) (nat %token_id) (nat %amount))
-                                       (pair %create
-                                          (map %token_metadata string bytes)
-                                          (nat %max_supply)
-                                          (option %royalties (pair (nat %total_shares) (map %shares address nat)))
-                                          (option %token_id nat))))
-                               (or (or (pair %mint (address %owner) (nat %token_id) (nat %amount))
-                                       (or %privileged_action
-                                          (or (or (map %update_contract_metadata string bytes)
-                                                  (pair %update_default_royalties (nat %total_shares) (map %shares address nat)))
-                                              (or (map %update_metadata nat (map string bytes)) (address %update_protocol)))
-                                          (map %update_royalties nat (pair (nat %total_shares) (map %shares address nat)))))
-                                   (or (list %transfer
-                                          (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))
-                                       (list %update_operators
-                                          (or (pair %add_operator (address %owner) (address %operator) (nat %token_id))
-                                              (pair %remove_operator (address %owner) (address %operator) (nat %token_id))))))) ;
+                           (or (or (or (or (list %assert_balances (pair (address %owner) (nat %token_id) (nat %balance)))
+                                           (pair %balance_of
+                                              (list %requests (pair (address %owner) (nat %token_id)))
+                                              (contract %callback
+                                                 (list (pair (pair %request (address %owner) (nat %token_id)) (nat %balance))))))
+                                       (or (pair %burn (address %owner) (nat %token_id) (nat %amount))
+                                           (pair %create
+                                              (map %token_metadata string bytes)
+                                              (nat %max_supply)
+                                              (option %royalties (pair (nat %total_shares) (map %shares address nat)))
+                                              (option %token_id nat))))
+                                   (or (or (pair %mint (address %owner) (nat %token_id) (nat %amount))
+                                           (or %permitted_action
+                                              (or (or (or (pair %permit_burn
+                                                             (pair %params (address %owner) (nat %token_id) (nat %amount))
+                                                             (pair %permit (key %signer) (signature %signature) (nat %nonce)))
+                                                          (pair %permit_create
+                                                             (pair %params
+                                                                (map %token_metadata string bytes)
+                                                                (nat %max_supply)
+                                                                (option %royalties (pair (nat %total_shares) (map %shares address nat)))
+                                                                (option %token_id nat))
+                                                             (pair %permit (key %signer) (signature %signature) (nat %nonce))))
+                                                      (or (pair %permit_mint
+                                                             (pair %params (address %owner) (nat %token_id) (nat %amount))
+                                                             (pair %permit (key %signer) (signature %signature) (nat %nonce)))
+                                                          (pair %permit_transfer
+                                                             (list %params
+                                                                (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))
+                                                             (pair %permit (key %signer) (signature %signature) (nat %nonce)))))
+                                                  (or (or (pair %permit_update_contract_metadata
+                                                             (map %params string bytes)
+                                                             (pair %permit (key %signer) (signature %signature) (nat %nonce)))
+                                                          (pair %permit_update_default_royalties
+                                                             (pair %params (nat %total_shares) (map %shares address nat))
+                                                             (pair %permit (key %signer) (signature %signature) (nat %nonce))))
+                                                      (or (pair %permit_update_metadata
+                                                             (map %params nat (map string bytes))
+                                                             (pair %permit (key %signer) (signature %signature) (nat %nonce)))
+                                                          (pair %permit_update_operators
+                                                             (list %params
+                                                                (or (pair %add_operator (address %owner) (address %operator) (nat %token_id))
+                                                                    (pair %remove_operator (address %owner) (address %operator) (nat %token_id))))
+                                                             (pair %permit (key %signer) (signature %signature) (nat %nonce))))))
+                                              (or (pair %permit_update_protocol
+                                                     (address %params)
+                                                     (pair %permit (key %signer) (signature %signature) (nat %nonce)))
+                                                  (pair %permit_update_royalties
+                                                     (map %params nat (pair (nat %total_shares) (map %shares address nat)))
+                                                     (pair %permit (key %signer) (signature %signature) (nat %nonce))))))
+                                       (or (or %privileged_action
+                                              (or (or (map %update_contract_metadata string bytes)
+                                                      (pair %update_default_royalties (nat %total_shares) (map %shares address nat)))
+                                                  (or (map %update_metadata nat (map string bytes)) (address %update_protocol)))
+                                              (map %update_royalties nat (pair (nat %total_shares) (map %shares address nat))))
+                                           (list %transfer
+                                              (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount))))))))
+                               (list %update_operators
+                                  (or (pair %add_operator (address %owner) (address %operator) (nat %token_id))
+                                      (pair %remove_operator (address %owner) (address %operator) (nat %token_id))))) ;
                          storage
                            (pair (big_map %metadata string bytes)
                                  (address %protocol)
@@ -318,8 +368,10 @@
                                  (big_map %token_metadata nat (pair (nat %token_id) (map %token_info string bytes)))
                                  (big_map %royalties nat (pair (nat %total_shares) (map %shares address nat)))
                                  (big_map %token_max_supply nat nat)
-                                 (pair %default_royalties (nat %total_shares) (map %shares address nat))) ;
-                         code { constant "exprumUMxeKBZPR51zXBbgWXejSgyF1njC4RP66vsT6D3SGbSwZopC" } ;
+                                 (big_map %created nat timestamp)
+                                 (pair %default_royalties (nat %total_shares) (map %shares address nat))
+                                 (big_map %permits bytes unit)) ;
+                         code { constant "expruVWjJ6g4jupfPwz5Xgi1r8u14exHXnf3aWeGCFhLRCvhkMqa3r" } ;
                          view "get_protocol" unit address { CDR ; GET 3 } ;
                          view "get_owner"
                               unit
@@ -358,7 +410,7 @@
                          view "get_hooks"
                               (or (or (or (unit %burn_hook) (unit %create_hook))
                                       (or (unit %metadata_hook) (unit %mint_hook)))
-                                  (unit %transfer_hook))
+                                  (or (unit %royalties_hook) (unit %transfer_hook)))
                               (set address)
                               { UNPAIR ;
                                 SWAP ;
@@ -372,7 +424,7 @@
                               (pair address
                                     (or (or (or (unit %burn_hook) (unit %create_hook))
                                             (or (unit %metadata_hook) (unit %mint_hook)))
-                                        (unit %transfer_hook)))
+                                        (or (unit %royalties_hook) (unit %transfer_hook))))
                               bool
                               { UNPAIR ;
                                 UNPAIR ;
@@ -437,7 +489,11 @@
                                 GET 15 ;
                                 SWAP ;
                                 GET ;
-                                IF_NONE { GET 18 } { SWAP ; DROP } } } ;
+                                IF_NONE { GET 21 } { SWAP ; DROP } } ;
+                         view "get_created"
+                              nat
+                              timestamp
+                              { UNPAIR ; SWAP ; GET 19 ; SWAP ; GET ; IF_NONE { NOW } {} } } ;
                      DUP 4 ;
                      DIG 4 ;
                      GET 3 ;
@@ -475,20 +531,18 @@
                      CONS } }
                { IF_LEFT
                    { DIG 2 ;
+                     DIG 3 ;
                      DIG 6 ;
-                     DROP 2 ;
-                     UNPAIR ;
-                     PUSH string "FA2_INVALID_OWNER_ACCESS" ;
-                     DUP 4 ;
+                     DROP 3 ;
                      SENDER ;
+                     PUSH bool True ;
                      DUP 4 ;
-                     PAIR ;
-                     DIG 6 ;
-                     SWAP ;
-                     EXEC ;
-                     SWAP ;
-                     EXEC ;
-                     IF { DROP } { FAILWITH } ;
+                     GET 3 ;
+                     DUP 3 ;
+                     MEM ;
+                     COMPARE ;
+                     EQ ;
+                     IF {} { PUSH string "FA_INVALID_PROTCOL_MIGRATION" ; FAILWITH } ;
                      DUP 3 ;
                      DUP 2 ;
                      PAIR ;
@@ -501,7 +555,7 @@
                      DIG 5 ;
                      SWAP ;
                      EXEC ;
-                     DUP 4 ;
+                     DIG 3 ;
                      CONTRACT %migrate_from_protocol
                        (pair (address %fa2_address)
                              (pair %roles
@@ -516,26 +570,38 @@
                                 (map %create address bool)
                                 (map %mint address bool)
                                 (map %burn address bool)
-                                (map %update_metadata address bool))) ;
-                     IF_NONE { PUSH string "FA_INVALID_PROTCOL_MIGRATION" ; FAILWITH } {} ;
-                     DUP 4 ;
-                     CONTRACT %update_protocol address ;
+                                (map %update_metadata address bool)
+                                (map %update_royalties address bool))) ;
                      IF_NONE { PUSH string "FA_INVALID_PROTCOL_MIGRATION" ; FAILWITH } {} ;
                      NIL operation ;
                      SWAP ;
                      PUSH mutez 0 ;
-                     DIG 7 ;
-                     TRANSFER_TOKENS ;
-                     CONS ;
-                     SWAP ;
-                     PUSH mutez 0 ;
                      DIG 3 ;
                      DIG 4 ;
-                     DIG 5 ;
+                     DUP 6 ;
                      PAIR 3 ;
                      TRANSFER_TOKENS ;
                      CONS ;
-                     SWAP }
+                     DUP 3 ;
+                     DUP 4 ;
+                     GET 3 ;
+                     DUP 4 ;
+                     NONE (pair address (option address) (set address) (set address) (set address) (set address)) ;
+                     SWAP ;
+                     UPDATE ;
+                     UPDATE 3 ;
+                     DIG 3 ;
+                     GET 5 ;
+                     DIG 3 ;
+                     NONE (pair (map address bool)
+                                (map address bool)
+                                (map address bool)
+                                (map address bool)
+                                (map address bool)
+                                (map address bool)) ;
+                     SWAP ;
+                     UPDATE ;
+                     UPDATE 5 }
                    { DIG 4 ;
                      DROP ;
                      ITER { UNPAIR ;
@@ -797,7 +863,7 @@
                                           { DROP ;
                                             PUSH bool False ;
                                             DUP 6 ;
-                                            GET 8 ;
+                                            GET 9 ;
                                             DUP 4 ;
                                             MEM ;
                                             COMPARE ;
@@ -810,14 +876,14 @@
                                               { DROP } ;
                                             DUP 5 ;
                                             DIG 5 ;
-                                            GET 8 ;
+                                            GET 9 ;
                                             DIG 2 ;
                                             DIG 3 ;
                                             SWAP ;
                                             SOME ;
                                             SWAP ;
                                             UPDATE ;
-                                            UPDATE 8 }
+                                            UPDATE 9 }
                                           { DROP ;
                                             PUSH bool False ;
                                             DUP 6 ;
@@ -840,29 +906,55 @@
                                             SWAP ;
                                             UPDATE ;
                                             UPDATE 5 } } }
-                                  { DROP ;
-                                    PUSH bool False ;
-                                    DUP 6 ;
-                                    CAR ;
-                                    DUP 4 ;
-                                    MEM ;
-                                    COMPARE ;
-                                    EQ ;
-                                    IF {} { PUSH string "FA_DUPLICATE_HOOK" ; FAILWITH } ;
-                                    DUP 2 ;
-                                    CONTRACT %transfer_hook
-                                      (list (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount))))) ;
-                                    IF_NONE { PUSH string "FA_TRANSFER_HOOK_UNDEFINED" ; FAILWITH } { DROP } ;
-                                    DUP 5 ;
-                                    DIG 5 ;
-                                    CAR ;
-                                    DIG 2 ;
-                                    DIG 3 ;
-                                    SWAP ;
-                                    SOME ;
-                                    SWAP ;
-                                    UPDATE ;
-                                    UPDATE 1 } }
+                                  { IF_LEFT
+                                      { DROP ;
+                                        PUSH bool False ;
+                                        DUP 6 ;
+                                        GET 10 ;
+                                        DUP 4 ;
+                                        MEM ;
+                                        COMPARE ;
+                                        EQ ;
+                                        IF {} { PUSH string "FA_DUPLICATE_HOOK" ; FAILWITH } ;
+                                        DUP 2 ;
+                                        CONTRACT %update_royalties_hook
+                                          (map nat (pair (nat %total_shares) (map %shares address nat))) ;
+                                        IF_NONE
+                                          { PUSH string "FA_UPDATE_ROYALTIES_HOOK_UNDEFINED" ; FAILWITH }
+                                          { DROP } ;
+                                        DUP 5 ;
+                                        DIG 5 ;
+                                        GET 10 ;
+                                        DIG 2 ;
+                                        DIG 3 ;
+                                        SWAP ;
+                                        SOME ;
+                                        SWAP ;
+                                        UPDATE ;
+                                        UPDATE 10 }
+                                      { DROP ;
+                                        PUSH bool False ;
+                                        DUP 6 ;
+                                        CAR ;
+                                        DUP 4 ;
+                                        MEM ;
+                                        COMPARE ;
+                                        EQ ;
+                                        IF {} { PUSH string "FA_DUPLICATE_HOOK" ; FAILWITH } ;
+                                        DUP 2 ;
+                                        CONTRACT %transfer_hook
+                                          (list (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount))))) ;
+                                        IF_NONE { PUSH string "FA_TRANSFER_HOOK_UNDEFINED" ; FAILWITH } { DROP } ;
+                                        DUP 5 ;
+                                        DIG 5 ;
+                                        CAR ;
+                                        DIG 2 ;
+                                        DIG 3 ;
+                                        SWAP ;
+                                        SOME ;
+                                        SWAP ;
+                                        UPDATE ;
+                                        UPDATE 1 } } }
                               { UNPAIR ;
                                 PUSH string "FA_INVALID_REMOVE_HOOK_ACCESS" ;
                                 SENDER ;
@@ -924,7 +1016,7 @@
                                       { IF_LEFT
                                           { DROP ;
                                             DUP 4 ;
-                                            GET 8 ;
+                                            GET 9 ;
                                             DUP 2 ;
                                             GET ;
                                             IF_NONE { PUSH string "FA_INVALID_HOOK" ; FAILWITH } {} ;
@@ -935,12 +1027,12 @@
                                             IF {} { PUSH string "FA_IRREVOCABLE_HOOK" ; FAILWITH } ;
                                             DUP 4 ;
                                             DIG 4 ;
-                                            GET 8 ;
+                                            GET 9 ;
                                             DIG 2 ;
                                             NONE bool ;
                                             SWAP ;
                                             UPDATE ;
-                                            UPDATE 8 }
+                                            UPDATE 9 }
                                           { DROP ;
                                             DUP 4 ;
                                             GET 5 ;
@@ -960,25 +1052,45 @@
                                             SWAP ;
                                             UPDATE ;
                                             UPDATE 5 } } }
-                                  { DROP ;
-                                    DUP 4 ;
-                                    CAR ;
-                                    DUP 2 ;
-                                    GET ;
-                                    IF_NONE { PUSH string "FA_INVALID_HOOK" ; FAILWITH } {} ;
-                                    PUSH bool True ;
-                                    SWAP ;
-                                    COMPARE ;
-                                    EQ ;
-                                    IF {} { PUSH string "FA_IRREVOCABLE_HOOK" ; FAILWITH } ;
-                                    DUP 4 ;
-                                    DIG 4 ;
-                                    CAR ;
-                                    DIG 2 ;
-                                    NONE bool ;
-                                    SWAP ;
-                                    UPDATE ;
-                                    UPDATE 1 } } ;
+                                  { IF_LEFT
+                                      { DROP ;
+                                        DUP 4 ;
+                                        GET 10 ;
+                                        DUP 2 ;
+                                        GET ;
+                                        IF_NONE { PUSH string "FA_INVALID_HOOK" ; FAILWITH } {} ;
+                                        PUSH bool True ;
+                                        SWAP ;
+                                        COMPARE ;
+                                        EQ ;
+                                        IF {} { PUSH string "FA_IRREVOCABLE_HOOK" ; FAILWITH } ;
+                                        DUP 4 ;
+                                        DIG 4 ;
+                                        GET 10 ;
+                                        DIG 2 ;
+                                        NONE bool ;
+                                        SWAP ;
+                                        UPDATE ;
+                                        UPDATE 10 }
+                                      { DROP ;
+                                        DUP 4 ;
+                                        CAR ;
+                                        DUP 2 ;
+                                        GET ;
+                                        IF_NONE { PUSH string "FA_INVALID_HOOK" ; FAILWITH } {} ;
+                                        PUSH bool True ;
+                                        SWAP ;
+                                        COMPARE ;
+                                        EQ ;
+                                        IF {} { PUSH string "FA_IRREVOCABLE_HOOK" ; FAILWITH } ;
+                                        DUP 4 ;
+                                        DIG 4 ;
+                                        CAR ;
+                                        DIG 2 ;
+                                        NONE bool ;
+                                        SWAP ;
+                                        UPDATE ;
+                                        UPDATE 1 } } } ;
                             SOME ;
                             DIG 3 ;
                             UPDATE ;
@@ -1141,7 +1253,7 @@
        (pair address
              (or (or (or (unit %burn_hook) (unit %create_hook))
                      (or (unit %metadata_hook) (unit %mint_hook)))
-                 (unit %transfer_hook)))
+                 (or (unit %royalties_hook) (unit %transfer_hook))))
        (set address)
        { UNPAIR ;
          UNPAIR ;
@@ -1155,7 +1267,8 @@
              EMPTY_MAP address bool ;
              EMPTY_MAP address bool ;
              EMPTY_MAP address bool ;
-             PAIR 5 }
+             EMPTY_MAP address bool ;
+             PAIR 6 }
            {} ;
          SWAP ;
          IF_LEFT
@@ -1179,9 +1292,9 @@
                    { DROP ;
                      SWAP ;
                      GET 6 ;
-                     GET 8 ;
+                     GET 9 ;
                      SWAP ;
-                     GET 8 ;
+                     GET 9 ;
                      ITER { CAR ; PUSH bool True ; SWAP ; UPDATE } }
                    { DROP ;
                      SWAP ;
@@ -1190,11 +1303,19 @@
                      SWAP ;
                      GET 5 ;
                      ITER { CAR ; PUSH bool True ; SWAP ; UPDATE } } } }
-           { DROP ;
-             SWAP ;
-             GET 6 ;
-             CAR ;
-             SWAP ;
-             CAR ;
-             ITER { CAR ; PUSH bool True ; SWAP ; UPDATE } } } }
+           { IF_LEFT
+               { DROP ;
+                 SWAP ;
+                 GET 6 ;
+                 GET 10 ;
+                 SWAP ;
+                 GET 10 ;
+                 ITER { CAR ; PUSH bool True ; SWAP ; UPDATE } }
+               { DROP ;
+                 SWAP ;
+                 GET 6 ;
+                 CAR ;
+                 SWAP ;
+                 CAR ;
+                 ITER { CAR ; PUSH bool True ; SWAP ; UPDATE } } } } }
 

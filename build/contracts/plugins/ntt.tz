@@ -29,6 +29,7 @@
              DUP 4 ;
              CAR ;
              UNIT ;
+             RIGHT unit ;
              RIGHT (or (or unit unit) (or unit unit)) ;
              DIG 2 ;
              PAIR ;
@@ -60,14 +61,14 @@
   view "is_revocable"
        (or (or (or (unit %burn_hook) (unit %create_hook))
                (or (unit %metadata_hook) (unit %mint_hook)))
-           (unit %transfer_hook))
+           (or (unit %royalties_hook) (unit %transfer_hook)))
        bool
        { CAR ;
          IF_LEFT
            { IF_LEFT
                { IF_LEFT { DROP ; PUSH bool True } { DROP ; PUSH bool True } }
                { IF_LEFT { DROP ; PUSH bool True } { DROP ; PUSH bool True } } }
-           { DROP ; PUSH bool False } } ;
+           { IF_LEFT { DROP ; PUSH bool True } { DROP ; PUSH bool False } } } ;
   view "is_ntt"
        (pair (address %address) (nat %token_id))
        bool

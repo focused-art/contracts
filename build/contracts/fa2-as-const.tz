@@ -1,26 +1,64 @@
 { parameter
-    (or (or (or (list %assert_balances (pair (address %owner) (nat %token_id) (nat %balance)))
-                (pair %balance_of
-                   (list %requests (pair (address %owner) (nat %token_id)))
-                   (contract %callback
-                      (list (pair (pair %request (address %owner) (nat %token_id)) (nat %balance))))))
-            (or (pair %burn (address %owner) (nat %token_id) (nat %amount))
-                (pair %create
-                   (map %token_metadata string bytes)
-                   (nat %max_supply)
-                   (option %royalties (pair (nat %total_shares) (map %shares address nat)))
-                   (option %token_id nat))))
-        (or (or (pair %mint (address %owner) (nat %token_id) (nat %amount))
-                (or %privileged_action
-                   (or (or (map %update_contract_metadata string bytes)
-                           (pair %update_default_royalties (nat %total_shares) (map %shares address nat)))
-                       (or (map %update_metadata nat (map string bytes)) (address %update_protocol)))
-                   (map %update_royalties nat (pair (nat %total_shares) (map %shares address nat)))))
-            (or (list %transfer
-                   (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))
-                (list %update_operators
-                   (or (pair %add_operator (address %owner) (address %operator) (nat %token_id))
-                       (pair %remove_operator (address %owner) (address %operator) (nat %token_id))))))) ;
+    (or (or (or (or (list %assert_balances (pair (address %owner) (nat %token_id) (nat %balance)))
+                    (pair %balance_of
+                       (list %requests (pair (address %owner) (nat %token_id)))
+                       (contract %callback
+                          (list (pair (pair %request (address %owner) (nat %token_id)) (nat %balance))))))
+                (or (pair %burn (address %owner) (nat %token_id) (nat %amount))
+                    (pair %create
+                       (map %token_metadata string bytes)
+                       (nat %max_supply)
+                       (option %royalties (pair (nat %total_shares) (map %shares address nat)))
+                       (option %token_id nat))))
+            (or (or (pair %mint (address %owner) (nat %token_id) (nat %amount))
+                    (or %permitted_action
+                       (or (or (or (pair %permit_burn
+                                      (pair %params (address %owner) (nat %token_id) (nat %amount))
+                                      (pair %permit (key %signer) (signature %signature) (nat %nonce)))
+                                   (pair %permit_create
+                                      (pair %params
+                                         (map %token_metadata string bytes)
+                                         (nat %max_supply)
+                                         (option %royalties (pair (nat %total_shares) (map %shares address nat)))
+                                         (option %token_id nat))
+                                      (pair %permit (key %signer) (signature %signature) (nat %nonce))))
+                               (or (pair %permit_mint
+                                      (pair %params (address %owner) (nat %token_id) (nat %amount))
+                                      (pair %permit (key %signer) (signature %signature) (nat %nonce)))
+                                   (pair %permit_transfer
+                                      (list %params
+                                         (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))
+                                      (pair %permit (key %signer) (signature %signature) (nat %nonce)))))
+                           (or (or (pair %permit_update_contract_metadata
+                                      (map %params string bytes)
+                                      (pair %permit (key %signer) (signature %signature) (nat %nonce)))
+                                   (pair %permit_update_default_royalties
+                                      (pair %params (nat %total_shares) (map %shares address nat))
+                                      (pair %permit (key %signer) (signature %signature) (nat %nonce))))
+                               (or (pair %permit_update_metadata
+                                      (map %params nat (map string bytes))
+                                      (pair %permit (key %signer) (signature %signature) (nat %nonce)))
+                                   (pair %permit_update_operators
+                                      (list %params
+                                         (or (pair %add_operator (address %owner) (address %operator) (nat %token_id))
+                                             (pair %remove_operator (address %owner) (address %operator) (nat %token_id))))
+                                      (pair %permit (key %signer) (signature %signature) (nat %nonce))))))
+                       (or (pair %permit_update_protocol
+                              (address %params)
+                              (pair %permit (key %signer) (signature %signature) (nat %nonce)))
+                           (pair %permit_update_royalties
+                              (map %params nat (pair (nat %total_shares) (map %shares address nat)))
+                              (pair %permit (key %signer) (signature %signature) (nat %nonce))))))
+                (or (or %privileged_action
+                       (or (or (map %update_contract_metadata string bytes)
+                               (pair %update_default_royalties (nat %total_shares) (map %shares address nat)))
+                           (or (map %update_metadata nat (map string bytes)) (address %update_protocol)))
+                       (map %update_royalties nat (pair (nat %total_shares) (map %shares address nat))))
+                    (list %transfer
+                       (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount))))))))
+        (list %update_operators
+           (or (pair %add_operator (address %owner) (address %operator) (nat %token_id))
+               (pair %remove_operator (address %owner) (address %operator) (nat %token_id))))) ;
   storage
     (pair (big_map %metadata string bytes)
           (address %protocol)
@@ -31,8 +69,10 @@
           (big_map %token_metadata nat (pair (nat %token_id) (map %token_info string bytes)))
           (big_map %royalties nat (pair (nat %total_shares) (map %shares address nat)))
           (big_map %token_max_supply nat nat)
-          (pair %default_royalties (nat %total_shares) (map %shares address nat))) ;
-  code { constant "exprumUMxeKBZPR51zXBbgWXejSgyF1njC4RP66vsT6D3SGbSwZopC" } ;
+          (big_map %created nat timestamp)
+          (pair %default_royalties (nat %total_shares) (map %shares address nat))
+          (big_map %permits bytes unit)) ;
+  code { constant "expruVWjJ6g4jupfPwz5Xgi1r8u14exHXnf3aWeGCFhLRCvhkMqa3r" } ;
   view "get_protocol" unit address { CDR ; GET 3 } ;
   view "get_owner"
        unit
@@ -71,7 +111,7 @@
   view "get_hooks"
        (or (or (or (unit %burn_hook) (unit %create_hook))
                (or (unit %metadata_hook) (unit %mint_hook)))
-           (unit %transfer_hook))
+           (or (unit %royalties_hook) (unit %transfer_hook)))
        (set address)
        { UNPAIR ;
          SWAP ;
@@ -85,7 +125,7 @@
        (pair address
              (or (or (or (unit %burn_hook) (unit %create_hook))
                      (or (unit %metadata_hook) (unit %mint_hook)))
-                 (unit %transfer_hook)))
+                 (or (unit %royalties_hook) (unit %transfer_hook))))
        bool
        { UNPAIR ;
          UNPAIR ;
@@ -150,5 +190,9 @@
          GET 15 ;
          SWAP ;
          GET ;
-         IF_NONE { GET 18 } { SWAP ; DROP } } }
+         IF_NONE { GET 21 } { SWAP ; DROP } } ;
+  view "get_created"
+       nat
+       timestamp
+       { UNPAIR ; SWAP ; GET 19 ; SWAP ; GET ; IF_NONE { NOW } {} } }
 
