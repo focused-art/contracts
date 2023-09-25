@@ -62,7 +62,8 @@ type storage =
   metadata              : big_map<string, bytes>,
   roles                 : big_map<contract_address, permissions>,
   hooks                 : big_map<contract_address, hooks>,
-  protocol_hooks        : protocol_hooks
+  protocol_hooks        : protocol_hooks,
+  permits               : used_permits
 };
 
 // define return type for readability
@@ -92,6 +93,13 @@ type update_hook_param =
 type update_hooks_params =
   list<(michelson_pair<[contract_address, "fa2_address", update_hook_param, ""]>)>;
 
+type transfer_ownership_params =
+// @layout comb
+{
+  fa2_address           : contract_address,
+  new_owner             : trusted,
+};
+
 type migrate_from_protocol_params =
 // @layout comb
 {
@@ -100,9 +108,15 @@ type migrate_from_protocol_params =
   hooks                 : hooks
 };
 
+type permitted_action =
+  | ["Permit_init", michelson_pair<[metadata, "params", permit, "permit"]>]
+  | ["Permit_transfer_ownership", michelson_pair<[transfer_ownership_params, "params", permit, "permit"]>]
+  | ["Permit_update_roles", michelson_pair<[update_roles_params, "params", permit, "permit"]>];
+
 type entry_action =
+  | ["Permitted_action", permitted_action]
   | ["Init", metadata]
-  | ["Transfer_ownership", michelson_pair<[contract_address, "fa2_address", trusted, "new_owner"]>]
+  | ["Transfer_ownership", transfer_ownership_params]
   | ["Update_roles", update_roles_params]
   | ["Renounce_roles", renounce_roles_params]
   | ["Update_hooks", update_hooks_params]

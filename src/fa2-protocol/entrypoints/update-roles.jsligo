@@ -1,9 +1,18 @@
-const update_roles = (params: update_roles_params, s1: storage): @return => {
+const update_roles = (params: update_roles_params, permit_opt: option<permit>, s1: storage): @return => {
   let s = s1;
+
+  const sender : address = match(permit_opt, {
+    Some: permit => {
+      const param_bytes : bytes = Bytes.pack(["%update_roles", params]);
+      s = check_and_store_permit(permit, param_bytes, s);
+      return address_from_key(permit.signer);
+    },
+    None: () => Tezos.get_sender()
+  });
 
   for (const entry of params) {
     const [kt1, update_role_param] = entry;
-    assert_with_error(is_owner([kt1, Tezos.get_sender()], s), "FA2_INVALID_OWNER_ACCESS");
+    assert_with_error(is_owner([kt1, sender], s), "FA2_INVALID_OWNER_ACCESS");
     const permissions: permissions = get_permissions_or_fail(kt1, s);
     s.roles = Big_map.update(kt1, Some(match(update_role_param, {
       Add: ([role_type, user]) => match(role_type, {
@@ -29,5 +38,5 @@ const update_roles = (params: update_roles_params, s1: storage): @return => {
     })), s.roles);
   };
 
-  return [noop, s]
+  return [list([]), s]
 };

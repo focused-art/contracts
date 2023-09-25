@@ -7,3 +7,4 @@
 #include "entrypoints/transfer-ownership.jsligo"
 #include "entrypoints/update-hooks.jsligo"
 #include "entrypoints/update-roles.jsligo"
+#include "entrypoints/permitted-main.jsligo"

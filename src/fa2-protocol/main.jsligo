@@ -6,6 +6,7 @@
 
 #include "../common/types.jsligo"
 #include "../common/utils/fa2.jsligo"
+#include "../common/utils/permit.jsligo"
 #include "types.jsligo"
 #include "helpers.jsligo"
 #include "views.jsligo"
@@ -15,9 +16,10 @@
 const main = (action: entry_action, s: storage): @return => {
   assert_with_error(Tezos.get_amount() == (0 as mutez), "FA2_DONT_SEND_TEZ");
   return match(action, {
-    Init: params                => init(params, s),
-    Transfer_ownership: params  => transfer_ownership(params[0], params[1], s),
-    Update_roles: params        => update_roles(params, s),
+    Permitted_action: params    => permitted_main(params, s),
+    Init: params                => init(params, None(), s),
+    Transfer_ownership: params  => transfer_ownership(params, None(), s),
+    Update_roles: params        => update_roles(params, None(), s),
     Renounce_roles: params      => renounce_roles(params, s),
     Update_hooks: params        => update_hooks(params, s),
     Confirm_ownership: params   => confirm_ownership(params, s),

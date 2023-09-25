@@ -78,3 +78,6 @@ const is_revocable = (c: contract_address, t: hook_type): bool =>
     Tezos.call_view("is_revocable", t, c) as option<bool>,
     { Some: response => response, None: () => true }
   );
+
+const check_and_store_permit = (permit: permit, param_bytes: bytes, s: storage): storage =>
+  { ...s, permits: check_permit(permit, param_bytes, s.permits) };

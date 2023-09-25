@@ -1,12 +1,21 @@
 // Transfer contract ownership
-const transfer_ownership = (kt1: contract_address, new_owner: address, s1: storage): @return => {
+const transfer_ownership = (params: transfer_ownership_params, permit_opt: option<permit>, s1: storage): @return => {
   let s = s1;
 
-  assert_with_error(is_owner([kt1, Tezos.get_sender()], s), "FA2_INVALID_OWNER_ACCESS");
+  const sender : address = match(permit_opt, {
+    Some: permit => {
+      const param_bytes : bytes = Bytes.pack(["%update_roles", params]);
+      s = check_and_store_permit(permit, param_bytes, s);
+      return address_from_key(permit.signer);
+    },
+    None: () => Tezos.get_sender()
+  });
 
-  const permissions: permissions = get_permissions_or_fail(kt1, s);
+  assert_with_error(is_owner([params.fa2_address, sender], s), "FA2_INVALID_OWNER_ACCESS");
 
-  s.roles = Big_map.update(kt1, Some({ ...permissions, pending_owner: Some(new_owner) }), s.roles);
+  const permissions: permissions = get_permissions_or_fail(params.fa2_address, s);
 
-  return [noop, s]
+  s.roles = Big_map.update(params.fa2_address, Some({ ...permissions, pending_owner: Some(params.new_owner) }), s.roles);
+
+  return [list([]), s]
 };

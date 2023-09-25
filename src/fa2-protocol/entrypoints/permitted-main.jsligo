@@ -1,0 +1,6 @@
+const permitted_main = (action: permitted_action, s: storage): @return =>
+  match(action, {
+    Permit_init: params                     => init(params[0], Some(params[1]), s),
+    Permit_transfer_ownership: params       => transfer_ownership(params[0], Some(params[1]), s),
+    Permit_update_roles: params             => update_roles(params[0], Some(params[1]), s),
+  });

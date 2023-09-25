@@ -7,10 +7,18 @@ const create_fa2: create_fa2 =
   as create_fa2;
 
 // Init a new collection
-const init = (metadata: metadata, s1: storage): @return => {
+const init = (metadata: metadata, permit_opt: option<permit>, s1: storage): @return => {
   let s = s1;
 
-  const owner: address = Tezos.get_sender();
+  const owner : address = match(permit_opt, {
+    Some: permit => {
+      const param_bytes : bytes = Bytes.pack(["%init", metadata]);
+      s = check_and_store_permit(permit, param_bytes, s);
+      return address_from_key(permit.signer);
+    },
+    None: () => Tezos.get_sender()
+  });
+
   let fa2_storage: fa2_storage = {
     metadata: Big_map.empty,
     protocol: Tezos.get_self_address(),
