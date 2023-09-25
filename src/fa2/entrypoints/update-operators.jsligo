@@ -1,5 +1,14 @@
-const update_operators = (params: update_operator_params, s1: storage): @return => {
+const update_operators = (params: update_operator_params, permit_opt: option<permit>, s1: storage): @return => {
   let s = s1;
+
+  const sender : address = match(permit_opt, {
+    Some: permit => {
+      const param_bytes : bytes = Bytes.pack(["%update_operators", params]);
+      s = check_and_store_permit(permit, param_bytes, s);
+      return address_from_key(permit.signer);
+    },
+    None: () => Tezos.get_sender()
+  });
 
   // Initialize operations
   let operations: list<operation> = list([]);
@@ -8,7 +17,7 @@ const update_operators = (params: update_operator_params, s1: storage): @return 
     const _ = match(update_operator_param, {
       Add_operator: param => {
         validate_token_id(param.token_id, s);
-        validate_is_sender(param.owner, "FA2_NOT_OWNER");
+        assert_with_error(param.owner == sender, "FA2_NOT_OWNER");
         s.operators = Big_map.update(
           [param.owner, [param.operator, param.token_id]],
           Some(unit),
@@ -29,7 +38,7 @@ const update_operators = (params: update_operator_params, s1: storage): @return 
       },
       Remove_operator: param => {
         validate_token_id(param.token_id, s);
-        validate_is_sender(param.owner, "FA2_NOT_OWNER");
+        assert_with_error(param.owner == sender, "FA2_NOT_OWNER");
         s.operators = Big_map.remove(
           [param.owner, [param.operator, param.token_id]],
           s.operators

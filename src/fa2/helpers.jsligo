@@ -20,9 +20,6 @@ const validate_operator = (owner: owner, operator: operator, token_id: token_id,
     "FA2_NOT_OPERATOR"
   );
 
-const validate_is_sender = (sender: address, err: string): unit =>
-  assert_with_error(Tezos.get_sender() == sender, err);
-
 const validate_token_id = (token_id: token_id, s: storage): unit =>
   assert_with_error(token_id < s.next_token_id, "FA2_TOKEN_UNDEFINED");
 

@@ -1,8 +1,11 @@
 const permitted_main = (action: permitted_action, s: storage): @return =>
   match(action, {
-    Permit_create: params       => create(params[0], Some(params[1]), s),
-    Permit_mint: params         => mint(params[0], Some(params[1]), s),
-    Permit_burn: params         => burn(params[0], Some(params[1]), s),
-    Permit_transfer: params     => transfer(params[0], Some(params[1]), s),
-    Permit_update_contract_metadata: params => update_contract_metadata(params[0], Some(params[1]), s)
+    Permit_create: params                   => create(params[0], Some(params[1]), s),
+    Permit_mint: params                     => mint(params[0], Some(params[1]), s),
+    Permit_burn: params                     => burn(params[0], Some(params[1]), s),
+    Permit_transfer: params                 => transfer(params[0], Some(params[1]), s),
+    Permit_update_operators: params         => update_operators(params[0], Some(params[1]), s),
+    Permit_update_contract_metadata: params => update_contract_metadata(params[0], Some(params[1]), s),
+    Permit_update_metadata: params          => update_metadata(params[0], Some(params[1]), s),
+    Permit_update_royalties: params         => update_royalties(params[0], Some(params[1]), s)
   });

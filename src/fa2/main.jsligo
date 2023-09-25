@@ -19,7 +19,7 @@ const main = ([action, s]: [entry_action, storage]): @return => {
     Privileged_action: params   => privileged_main(params, s),
     Permitted_action: params    => permitted_main(params, s),
     Transfer: params            => transfer(params, None(), s),
-    Update_operators: params    => update_operators(params, s),
+    Update_operators: params    => update_operators(params, None(), s),
     Assert_balances: params     => assert_balances(params, s),
     Balance_of: params          => balance_of(params, s),
     Create: params              => create(params, None(), s),
