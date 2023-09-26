@@ -3,4 +3,7 @@ const permitted_main = (action: permitted_action, s: storage): @return =>
     Permit_init: params                     => init(params[0], Some(params[1]), s),
     Permit_transfer_ownership: params       => transfer_ownership(params[0], Some(params[1]), s),
     Permit_update_roles: params             => update_roles(params[0], Some(params[1]), s),
+    Permit_renounce_roles: params           => renounce_roles(params[0], Some(params[1]), s),
+    Permit_update_hooks: params             => update_hooks(params[0], Some(params[1]), s),
+    Permit_confirm_ownership: params        => confirm_ownership(params[0], Some(params[1]), s),
   });

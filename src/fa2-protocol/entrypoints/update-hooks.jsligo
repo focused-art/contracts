@@ -1,12 +1,21 @@
-const update_hooks = (params: update_hooks_params, s1: storage): @return => {
+const update_hooks = (params: update_hooks_params, permit_opt: option<permit>, s1: storage): @return => {
   let s = s1;
+
+  const sender : address = match(permit_opt, {
+    Some: permit => {
+      const param_bytes : bytes = Bytes.pack(["%update_hooks", params]);
+      s = check_and_store_permit(permit, param_bytes, s);
+      return address_from_key(permit.signer);
+    },
+    None: () => Tezos.get_sender()
+  });
 
   for (const entry of params) {
     const [kt1, update_hook_param] = entry;
     const hooks: hooks = internal_get_hooks(kt1, s);
     s.hooks = Big_map.update(kt1, Some(match(update_hook_param, {
       Add: ([hook_type, hook_address]) => {
-        assert_with_error(is_owner([kt1, Tezos.get_sender()], s), "FA_INVALID_ADD_HOOK_ACCESS");
+        assert_with_error(is_owner([kt1, sender], s), "FA_INVALID_ADD_HOOK_ACCESS");
         const is_revocable : revocable = is_revocable(hook_address, hook_type);
         return match(hook_type, {
           Transfer_hook: () => {
@@ -55,7 +64,7 @@ const update_hooks = (params: update_hooks_params, s1: storage): @return => {
       },
       Remove: ([hook_type, hook_address]) => {
         assert_with_error(
-          is_owner([kt1, Tezos.get_sender()], s) || hook_address == Tezos.get_sender(),
+          is_owner([kt1, sender], s) || hook_address == sender,
           "FA_INVALID_REMOVE_HOOK_ACCESS");
         return match(hook_type, {
           Transfer_hook: () => {
@@ -93,5 +102,5 @@ const update_hooks = (params: update_hooks_params, s1: storage): @return => {
     })), s.hooks);
   };
 
-  return [noop, s]
+  return [list([]), s]
 };

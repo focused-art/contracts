@@ -20,9 +20,9 @@ const main = (action: entry_action, s: storage): @return => {
     Init: params                => init(params, None(), s),
     Transfer_ownership: params  => transfer_ownership(params, None(), s),
     Update_roles: params        => update_roles(params, None(), s),
-    Renounce_roles: params      => renounce_roles(params, s),
-    Update_hooks: params        => update_hooks(params, s),
-    Confirm_ownership: params   => confirm_ownership(params, s),
+    Renounce_roles: params      => renounce_roles(params, None(), s),
+    Update_hooks: params        => update_hooks(params, None(), s),
+    Confirm_ownership: params   => confirm_ownership(params, None(), s),
     Migrate_to_protocol: params => migrate_to_protocol(params, s)
   });
 };
