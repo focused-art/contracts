@@ -1,3 +1,3 @@
-const nat_max = (a: nat, b: nat): nat => a > b ? a : b;
+export const max = (a: nat, b: nat): nat => a > b ? a : b;
 
-const nat_to_tez = (a: nat): tez => a * (1 as mutez);
+export const to_tez = (a: nat): tez => a * 1mutez;

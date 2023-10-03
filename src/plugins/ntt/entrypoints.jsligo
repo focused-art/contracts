@@ -1,4 +1,0 @@
-// Entrypoint
-
-#include "entrypoints/transfer-hook.jsligo"
-#include "entrypoints/make-ntt.jsligo"

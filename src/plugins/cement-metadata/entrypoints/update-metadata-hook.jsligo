@@ -1,10 +1,14 @@
-const update_metadata_hook = (params: update_token_metadata_params, s: storage): @return => {
-  for (const generated of params) {
-    const [token_id, _m] = generated;
-    const token: fa2 = { address: Tezos.get_sender(); token_id: token_id };
-    assert_with_error(is_cemented(token, s) == false, "FA_TOKEN_METADATA_UPDATE_DENIED");
+#import "../types.jsligo" "T"
+#import "../views.jsligo" "V"
+#import "../../../common/types.jsligo" "Common"
+#import "../../../common/utils/fa2.jsligo" "Fa2"
+
+export const entrypoint = (params: Fa2.Fa2.update_token_metadata_params, s: T.storage): T.@return => {
+  for (const param of params) {
+    const [token_id, _m] = param;
+    const token: Fa2.fa2 = { address: Tezos.get_sender(); token_id: token_id };
+    assert_with_error(V.is_cemented(token, s) == false, "FA_TOKEN_METADATA_UPDATE_DENIED");
   };
 
-  return [noop, s]
+  return [Common.noop, s]
 };
-

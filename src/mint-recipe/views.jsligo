@@ -1,33 +1,31 @@
-@view
-const get_mint_owner = (k: mint_id, s: storage): address =>
-  match(Big_map.find_opt(k, s.mints), {
-    None: () => failwith("FA_INVALID_MINT_ID"),
-    Some: mint => mint.owner
-  });
+#import "types.jsligo" "T"
 
-@view
-const is_mint_owner = ([mint_id, owner]: [mint_id, address], s: storage): bool =>
-  match(Big_map.find_opt(mint_id, s.mints),
-    { None: () => false, Some: mint => mint.owner == owner }
-  );
+export const get_mint_owner = (k: T.mint_id, s: T.storage): address =>
+  match(Big_map.find_opt(k, s.mints)) {
+    when(Some(mint)): mint.owner;
+    when(None()): failwith("FA_INVALID_MINT_ID");
+  };
 
-@view
-const get_mint_start_time = (k: mint_id, s: storage): timestamp =>
-  match(Big_map.find_opt(k, s.mints), {
-    None: () => failwith("FA_INVALID_MINT_ID"),
-    Some: mint => mint.start_time
-  });
+export const is_mint_owner = ([mint_id, owner]: [T.mint_id, address], s: T.storage): bool =>
+  match(Big_map.find_opt(mint_id, s.mints)) {
+    when(Some(mint)): mint.owner == owner;
+    when(None()): false;
+  };
 
-@view
-const get_mint_duration = (k: mint_id, s: storage): int =>
-  match(Big_map.find_opt(k, s.mints), {
-    None: () => failwith("FA_INVALID_MINT_ID"),
-    Some: mint => mint.duration
-  });
+export const get_mint_start_time = (k: T.mint_id, s: T.storage): timestamp =>
+  match(Big_map.find_opt(k, s.mints)) {
+    when(Some(mint)): mint.start_time;
+    when(None()): failwith("FA_INVALID_MINT_ID");
+  };
 
-@view
-const get_num_minted = (k: mint_id, s: storage): nat =>
-  match(Big_map.find_opt(k, s.mints), {
-    None: () => failwith("FA_INVALID_MINT_ID"),
-    Some: mint => mint.minted
-  });
+export const get_mint_duration = (k: T.mint_id, s: T.storage): int =>
+  match(Big_map.find_opt(k, s.mints)) {
+    when(Some(mint)): mint.duration;
+    when(None()): failwith("FA_INVALID_MINT_ID");
+  };
+
+export const get_num_minted = (k: T.mint_id, s: T.storage): nat =>
+  match(Big_map.find_opt(k, s.mints)) {
+    when(Some(mint)): mint.minted;
+    when(None()):  failwith("FA_INVALID_MINT_ID");
+  };

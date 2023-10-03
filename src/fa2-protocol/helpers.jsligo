@@ -1,85 +1,78 @@
+#import "types.jsligo" "T"
+#import "../common/types.jsligo" "Common"
+#import "../common/utils/fa2.jsligo" "Fa2"
+#import "../common/utils/permit.jsligo" "Permit"
+
 // Helpers
 
-const get_permissions_or_fail = (k: contract_address, s: storage): permissions =>
-  match(Big_map.find_opt(k, s.roles), {
-    Some: permissions => permissions,
-    None: () => failwith("FA_INVALID_TOKEN")
-  });
+export const get_permissions_or_fail = (k: Common.contract_address, s: T.storage): T.permissions =>
+  match(Big_map.find_opt(k, s.roles)) {
+    when(Some(permissions)): permissions;
+    when(None()): failwith("FA_INVALID_TOKEN");
+  };
 
-const internal_get_hooks = (k: contract_address, s: storage): hooks =>
-  match(Big_map.find_opt(k, s.hooks), {
-    Some: hooks => hooks,
-    None: () => {
+export const internal_get_hooks = (k: Common.contract_address, s: T.storage): T.hooks =>
+  match(Big_map.find_opt(k, s.hooks)) {
+    when(Some(hooks)): hooks;
+    when(None()): {
       transfer: Map.empty,
       create: Map.empty,
       mint: Map.empty,
       burn: Map.empty,
       update_metadata: Map.empty,
       update_royalties: Map.empty
-    }
-  });
+    };
+  };
 
-const get_transfer_hook = (c: trusted): contract<transfer_params> =>
+export const get_transfer_hook = (c: T.trusted): contract<Fa2.Fa2.transfer_params> =>
   match(
-    Tezos.get_entrypoint_opt("%transfer_hook", c) as option<contract<transfer_params>>,
-    {
-      None: () => failwith("FA_TRANSFER_HOOK_UNDEFINED"),
-      Some: entrypoint => entrypoint
-    }
-  );
+    Tezos.get_entrypoint_opt("%transfer_hook", c) as option<contract<Fa2.Fa2.transfer_params>>
+  ) {
+    when(None()): failwith("FA_TRANSFER_HOOK_UNDEFINED");
+    when(Some(entrypoint)): entrypoint;
+  };
 
-const get_create_hook = (c: trusted): contract<create_params> =>
+export const get_create_hook = (c: T.trusted): contract<Fa2.Fa2.create_params> =>
   match(
-    Tezos.get_entrypoint_opt("%create_hook", c) as option<contract<create_params>>,
-    {
-      None: () => failwith("FA_CREATE_HOOK_UNDEFINED"),
-      Some: entrypoint => entrypoint
-    }
-  );
+    Tezos.get_entrypoint_opt("%create_hook", c) as option<contract<Fa2.Fa2.create_params>>
+  ) {
+    when(None()): failwith("FA_CREATE_HOOK_UNDEFINED");
+    when(Some(entrypoint)): entrypoint;
+  };
 
-const get_burn_hook = (c: trusted): contract<mint_burn_params> =>
+export const get_burn_hook = (c: T.trusted): contract<Fa2.Fa2.mint_burn_params> =>
   match(
-    Tezos.get_entrypoint_opt("%burn_hook", c) as option<contract<mint_burn_params>>,
-    {
-      None: () => failwith("FA_BURN_HOOK_UNDEFINED"),
-      Some: entrypoint => entrypoint
-    }
-  );
+    Tezos.get_entrypoint_opt("%burn_hook", c) as option<contract<Fa2.Fa2.mint_burn_params>>
+  ) {
+    when(None()): failwith("FA_BURN_HOOK_UNDEFINED");
+    when(Some(entrypoint)): entrypoint;
+  };
 
-const get_mint_hook = (c: trusted): contract<mint_burn_params> =>
+export const get_mint_hook = (c: T.trusted): contract<Fa2.Fa2.mint_burn_params> =>
   match(
-    Tezos.get_entrypoint_opt("%mint_hook", c) as option<contract<mint_burn_params>>,
-    {
-      None: () => failwith("FA_MINT_HOOK_UNDEFINED"),
-      Some: entrypoint => entrypoint
-    }
-  );
+    Tezos.get_entrypoint_opt("%mint_hook", c) as option<contract<Fa2.Fa2.mint_burn_params>>
+  ) {
+    when(None()): failwith("FA_MINT_HOOK_UNDEFINED");
+    when(Some(entrypoint)): entrypoint;
+  };
 
-const get_update_metadata_hook = (c: trusted): contract<update_token_metadata_params> =>
+export const get_update_metadata_hook = (c: T.trusted): contract<Fa2.Fa2.update_token_metadata_params> =>
   match(
-    Tezos.get_entrypoint_opt("%update_metadata_hook", c) as option<contract<update_token_metadata_params>>,
-    {
-      None: () => failwith("FA_UPDATE_METADATA_HOOK_UNDEFINED"),
-      Some: entrypoint => entrypoint
-    }
-  );
+    Tezos.get_entrypoint_opt("%update_metadata_hook", c) as option<contract<Fa2.Fa2.update_token_metadata_params>>
+  ) {
+    when(None()): failwith("FA_UPDATE_METADATA_HOOK_UNDEFINED");
+    when(Some(entrypoint)): entrypoint;
+  };
 
-const get_update_royalties_hook = (c: trusted): contract<update_royalties_params> =>
+export const get_update_royalties_hook = (c: T.trusted): contract<Fa2.Fa2.update_royalties_params> =>
   match(
-    Tezos.get_entrypoint_opt("%update_royalties_hook", c) as option<contract<update_royalties_params>>,
-    {
-      None: () => failwith("FA_UPDATE_ROYALTIES_HOOK_UNDEFINED"),
-      Some: entrypoint => entrypoint
-    }
-  );
+    Tezos.get_entrypoint_opt("%update_royalties_hook", c) as option<contract<Fa2.Fa2.update_royalties_params>>
+  ) {
+    when(None()): failwith("FA_UPDATE_ROYALTIES_HOOK_UNDEFINED");
+    when(Some(entrypoint)): entrypoint;
+  };
 
-const is_revocable = (c: contract_address, t: hook_type): bool =>
-  match(
-    Tezos.call_view("is_revocable", t, c) as option<bool>,
-    { Some: response => response, None: () => true }
-  );
-
-const check_and_store_permit = (permit: permit, param_bytes: bytes, s: storage): storage => {
-  const [permits, permits_expiry] = check_permit(permit, param_bytes, [s.permits, s.permits_expiry]);
+export const check_and_store_permit = (permit: Permit.permit, param_bytes: bytes, s: T.storage): T.storage => {
+  const [permits, permits_expiry] = Permit.check_permit(permit, param_bytes, [s.permits, s.permits_expiry]);
   return { ...s, permits, permits_expiry };
 };

@@ -1,13 +1,20 @@
+#import "../types.jsligo" "T"
+#import "../helpers.jsligo" "H"
+#import "../../common/utils/fa2.jsligo" "Fa2"
+#import "../../common/utils/tez.jsligo" "Tez"
+#import "../../common/utils/int.jsligo" "Int"
+#import "../../common/payments.jsligo" "Payments"
+
 // Mint the mint
-const mint = (params: mint_params, s1: storage): @return => {
+export const entrypoint = (params: T.mint_params, s1: T.storage): T.@return => {
   let s = s1;
 
-  const recipient: recipient = match(params.recipient, {
-    Some: recipient => recipient,
-    None: () => Tezos.get_sender()
-  });
+  const recipient: T.Common.recipient = match(params.recipient) {
+    when(Some(recipient)): recipient;
+    when(None()): Tezos.get_sender();
+  };
 
-  const mint: mint = get_mint_or_fail(params.mint_id, s);
+  const mint: T.mint = H.get_mint_or_fail(params.mint_id, s);
 
   // Mint is paused?
   assert_with_error(mint.paused == false, "FA_MINT_PAUSED");
@@ -20,106 +27,108 @@ const mint = (params: mint_params, s1: storage): @return => {
     assert_with_error(Tezos.get_now() < (mint.start_time + mint.duration), "FA_MINT_ENDED");
 
   // Max mint reached
-  if (mint.max_mint > (0 as nat) && mint.minted + params.mint_amount > mint.max_mint)
+  if (mint.max_mint > 0n && mint.minted + params.mint_amount > mint.max_mint)
     failwith("FA_MAX_MINT_EXCEEDED");
 
   // Get wallet record
-  let wallet_record: wallet_record = get_wallet_record([Tezos.get_sender(), params.mint_id], s);
+  let wallet_record: T.wallet_record = H.get_wallet_record([Tezos.get_sender(), params.mint_id], s);
 
   // Minted max per wallet?
-  if (mint.max_per_wallet > (0 as nat) && wallet_record.minted + params.mint_amount > mint.max_per_wallet)
+  if (mint.max_per_wallet > 0n && wallet_record.minted + params.mint_amount > mint.max_per_wallet)
     failwith("FA_MAX_MINT_PER_WALLET_EXCEEDED");
 
   // Update last block minted
   if (wallet_record.last_block != Tezos.get_level()) {
-    wallet_record.block_minted = (0 as nat);
+    wallet_record.block_minted = 0n;
     wallet_record.last_block = Tezos.get_level()
   };
 
   // Minted max per block?
-  if (mint.max_per_block > (0 as nat) && wallet_record.block_minted + params.mint_amount > mint.max_per_block)
+  if (mint.max_per_block > 0n && wallet_record.block_minted + params.mint_amount > mint.max_per_block)
     failwith("FA_MAX_MINT_PER_BLOCK_EXCEEDED");
 
   // Initialize operations
   let operations: list<operation> = list([]);
 
   // Get mint recipe instructions
-  const recipe: recipe = match(Map.find_opt(params.recipe_id, mint.recipes), {
-    Some: recipe => recipe,
-    None: () => failwith("FA_INVALID_RECIPE_ID")
-  });
+  const recipe: T.recipe = match(Map.find_opt(params.recipe_id, mint.recipes)) {
+    when(Some(recipe)): recipe;
+    when(None()): failwith("FA_INVALID_RECIPE_ID");
+  };
 
-  let required_tez: tez = (0 as mutez);
+  let required_tez: tez = 0mutez;
 
   for (const r of recipe) {
     const [recipe_step, instruction] = r;
 
-    const step_input: set<fa2_with_amount> = match(Map.find_opt(recipe_step, params.recipe_steps),
-      { Some: input => input, None: () => Set.empty }
-    );
+    const step_input: set<T.fa2_with_amount> =
+      match(Map.find_opt(recipe_step, params.recipe_steps)) {
+        when(Some(input)): input;
+        when(None()): Set.empty;
+      };
 
-    const _ = match(instruction, {
-      Burn: ingredient => {
-        validate_ingredient(ingredient, step_input);
+    match(instruction) {
+      when(Burn(ingredient)): do {
+        H.validate_ingredient(ingredient, step_input);
         for (const input of step_input) {
           operations = list([
-            fa2_burn(input.token, Tezos.get_sender(), input.amount * params.mint_amount),
+            Fa2.fa2_burn(input.token, Tezos.get_sender(), input.amount * params.mint_amount),
             ...operations
           ]);
         }
-      },
-      Hold: ingredient => { return },
-      Freeze: (ingredient, freeze_until) => {
-        validate_ingredient(ingredient, step_input);
+      };
+      when(Hold(_ingredient)): unit;
+      when(Freeze(ingredient, freeze_until)): do {
+        H.validate_ingredient(ingredient, step_input);
         for (const input of step_input) {
           operations = list([
-            fa2_freeze(input.token, Tezos.get_sender(), input.amount * params.mint_amount, freeze_until),
+            Fa2.fa2_freeze(input.token, Tezos.get_sender(), input.amount * params.mint_amount, freeze_until),
             ...operations
           ]);
         }
-      },
-      Transfer: (ingredient, recipient) => {
-        validate_ingredient(ingredient, step_input);
+      };
+      when(Transfer(ingredient, recipient)): do {
+        H.validate_ingredient(ingredient, step_input);
         for (const input of step_input) {
           operations = list([
-            fa2_transfer(input.token, Tezos.get_sender(), recipient, input.amount * params.mint_amount),
+            Fa2.fa2_transfer(input.token, Tezos.get_sender(), recipient, input.amount * params.mint_amount),
             ...operations
           ]);
         }
-      },
-      Pay: amount => {
-        assert_with_error(Set.size(step_input) == (0 as nat), "FA_INVALID_RECIPE_STEP");
+      };
+      when(Pay(amount)): do {
+        assert_with_error(Set.size(step_input) == 0n, "FA_INVALID_RECIPE_STEP");
         required_tez = required_tez + (amount * params.mint_amount);
       }
-    });
+    };
   };
 
   // Must be sending valid amount of tez
   assert_with_error(Tezos.get_amount() == required_tez, "FA_INVALID_TEZ_AMOUNT");
 
   // split tez per product
-  const ediv1: option<[int, nat]> = ediv(tez_to_int(required_tez), Set.size(mint.products));
-  const [required_tez_per_product, remainder_count_c]: [tez, nat] = match(ediv1, {
-    Some: (quotient, remainder) => [int_to_tez(quotient), remainder],
-    None: () => [(0 as mutez), (0 as nat)]
-  });
+  const ediv1: option<[int, nat]> = ediv(Tez.to_int(required_tez), Set.size(mint.products));
+  const [required_tez_per_product, remainder_count_c]: [tez, nat] = match(ediv1) {
+    when(Some(quotient, remainder)): [Int.to_tez(quotient), remainder];
+    when(None()): [0mutez, 0n];
+  };
 
   let remainder_count = remainder_count_c;
   for (const product of mint.products) {
     // Mint operations
     operations = list([
-      fa2_mint(product.token, recipient, product.amount * params.mint_amount),
+      Fa2.fa2_mint(product.token, recipient, product.amount * params.mint_amount),
       ...operations
     ]);
 
     // Pay out royalties and recipients
-    if (required_tez_per_product > (0 as mutez) || remainder_count > (0 as nat)) {
+    if (required_tez_per_product > 0mutez || remainder_count > 0n) {
       let t: tez = required_tez_per_product;
-      if (remainder_count > (0 as nat)) {
-        t = t + (1 as mutez);
-        remainder_count = Option.unopt(is_nat(remainder_count - (1 as nat)))
+      if (remainder_count > 0n) {
+        t = t + 1mutez;
+        remainder_count = Option.unopt(is_nat(remainder_count - 1n))
       };
-      operations = pay_royalties_and_recipients(product.token, mint.recipients, t, operations)
+      operations = Payments.pay_royalties_and_recipients(product.token, mint.recipients, t, operations)
     }
   };
 

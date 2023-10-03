@@ -1,16 +1,19 @@
-@view
-const is_revocable = (k: hook_type, _: storage): bool =>
-  match(k, {
-    Transfer_hook: () => false,
-    Create_hook: () => true,
-    Mint_hook: () => true,
-    Burn_hook: () => false,
-    Metadata_hook: () => true,
-    Royalties_hook: () => true
-  });
+#import "types.jsligo" "T"
+#import "../../common/types.jsligo" "Common"
+#import "../../common/utils/fa2.jsligo" "Fa2"
 
-@view
-const is_frozen = (k: [owner, fa2], s: storage): bool =>
-  match(Big_map.find_opt(k, s.frozen_tokens),
-    { Some: t => t > Tezos.get_now(), None: () => false }
-  );
+export const is_revocable = (k: Common.hook_type, _: T.storage): bool =>
+  match(k) {
+    when(Transfer_hook()):  false;
+    when(Create_hook()):    true;
+    when(Mint_hook()):      true;
+    when(Burn_hook()):      false;
+    when(Metadata_hook()):  true;
+    when(Royalties_hook()): true;
+  };
+
+export const is_frozen = (k: [Fa2.owner, Fa2.fa2], s: T.storage): bool =>
+  match(Big_map.find_opt(k, s.frozen_tokens)) {
+    when(Some(t)): t > Tezos.get_now();
+    when(None()): false;
+  };

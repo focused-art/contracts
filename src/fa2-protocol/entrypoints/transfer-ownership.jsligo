@@ -1,19 +1,24 @@
+#import "../types.jsligo" "T"
+#import "../helpers.jsligo" "H"
+#import "../views.jsligo" "V"
+#import "../../common/utils/address.jsligo" "A"
+
 // Transfer contract ownership
-const transfer_ownership = (params: transfer_ownership_params, permit_opt: option<permit>, s1: storage): @return => {
+export const entrypoint = (params: T.transfer_ownership_params, permit_opt: option<T.Permit.permit>, s1: T.storage): T.@return => {
   let s = s1;
 
-  const sender : address = match(permit_opt, {
-    Some: permit => {
-      const param_bytes : bytes = Bytes.pack(["%update_roles", params]);
-      s = check_and_store_permit(permit, param_bytes, s);
-      return address_from_key(permit.signer);
-    },
-    None: () => Tezos.get_sender()
-  });
+  const sender : address = match(permit_opt) {
+    when(Some(permit)): do {
+      const param_bytes : bytes = Bytes.pack(["%transfer_ownership", params]);
+      s = H.check_and_store_permit(permit, param_bytes, s);
+      return A.address_from_key(permit.signer);
+    };
+    when(None()): Tezos.get_sender();
+  };
 
-  assert_with_error(is_owner([params.fa2_address, sender], s), "FA2_INVALID_OWNER_ACCESS");
+  assert_with_error(V.is_owner([params.fa2_address, sender], s), "FA2_INVALID_OWNER_ACCESS");
 
-  const permissions: permissions = get_permissions_or_fail(params.fa2_address, s);
+  const permissions: T.permissions = H.get_permissions_or_fail(params.fa2_address, s);
 
   s.roles = Big_map.update(params.fa2_address, Some({ ...permissions, pending_owner: Some(params.new_owner) }), s.roles);
 

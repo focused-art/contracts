@@ -1,7 +1,14 @@
-const address_from_key = (k: key): address =>
-  Tezos.address(Tezos.implicit_account(Crypto.hash_key(k)));
+export type permit = {
+  signer                : key,
+  signature             : signature,
+  expiry                : timestamp
+};
 
-const check_permit = (permit: permit, param_bytes: bytes, permit_storage: permit_storage): permit_storage => {
+export type used_permits = big_map<bytes, unit>;
+export type expiring_permits = big_map<key, map<bytes, timestamp>>;
+export type t = [used_permits, expiring_permits];
+
+export const check_permit = (permit: permit, param_bytes: bytes, permit_storage: t): t => {
   let [used_permits, expiring_permits] = permit_storage;
 
   const param_hash: bytes = Crypto.blake2b(param_bytes);
@@ -20,21 +27,22 @@ const check_permit = (permit: permit, param_bytes: bytes, permit_storage: permit
   assert_with_error(Tezos.get_now() <= permit.expiry, "PERMIT_EXPIRED");
 
   // Add to list of expiring permits
-  expiring_permits = Big_map.update(permit.signer, Some(match(Big_map.find_opt(permit.signer, expiring_permits), {
-    Some: expiring1 => {
-      let expiring = expiring1;
-      // Delete any expired permits to save space.
-      for (const entry of expiring) {
-        const [expiring_hash, expiry] = entry;
-        if (Tezos.get_now() <= expiry) {
-          expiring = Map.remove(expiring_hash, expiring);
-          used_permits = Big_map.remove(expiring_hash, used_permits);
+  expiring_permits = Big_map.update(permit.signer, Some(
+    match(Big_map.find_opt(permit.signer, expiring_permits)) {
+      when(Some(expiring1)): do {
+        let expiring = expiring1;
+        // Delete any expired permits to save space.
+        for (const entry of expiring) {
+          const [expiring_hash, expiry] = entry;
+          if (Tezos.get_now() <= expiry) {
+            expiring = Map.remove(expiring_hash, expiring);
+            used_permits = Big_map.remove(expiring_hash, used_permits);
+          };
         };
+        return Map.add(permit_hash, permit.expiry, expiring);
       };
-      return Map.add(permit_hash, permit.expiry, expiring);
-    },
-    None: () => Map.literal(list([[permit_hash, permit.expiry]]))
-  })), expiring_permits);
+      when(None()): Map.literal(list([[permit_hash, permit.expiry]]))
+    }), expiring_permits);
 
   used_permits = Big_map.add(permit_hash, unit, used_permits);
 

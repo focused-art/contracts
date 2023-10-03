@@ -1,15 +1,19 @@
+#import "../types.jsligo" "T"
+#import "../../../common/types.jsligo" "Common"
+#import "../../../common/utils/fa2.jsligo" "Fa2"
+
 // Make a token non transferable
-const make_ntt = (token: fa2, s1: storage): @return => {
+export const entrypoint = (token: Fa2.fa2, s1: T.storage): T.@return => {
   let s = s1;
 
   // Only fa2 owner can call
-  assert_with_error(is_fa2_owner(token, Tezos.get_sender()), "FA_NOT_FA2_OWNER");
+  assert_with_error(Fa2.is_fa2_owner(token, Tezos.get_sender()), "FA_NOT_FA2_OWNER");
 
   // Must be a transfer hook
-  assert_with_error(is_fa2_transfer_hook(token, Tezos.get_self_address()), "FA_NOT_FA2_TRANSFER_HOOK");
+  assert_with_error(Fa2.is_fa2_transfer_hook(token, Tezos.get_self_address()), "FA_NOT_FA2_TRANSFER_HOOK");
 
   // Update storage
   s.ntt_tokens = Big_map.update(token, Some(unit), s.ntt_tokens);
 
-  return [noop, s]
+  return [Common.noop, s]
 };

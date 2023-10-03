@@ -1,45 +1,54 @@
-const permitted_main = (input: permitted_params, s: storage): @return =>
-  match(input.action, {
-    Init: () => {
-      const params: metadata = Option.unopt_with_error(
+#import "../types.jsligo" "T"
+#import "confirm-ownership.jsligo" "ConfirmOwnership"
+#import "init.jsligo" "Init"
+#import "migrate-to-protocol.jsligo" "MigrateToProtocol"
+#import "renounce-roles.jsligo" "RenounceRoles"
+#import "transfer-ownership.jsligo" "TransferOwnership"
+#import "update-hooks.jsligo" "UpdateHooks"
+#import "update-roles.jsligo" "UpdateRoles"
+
+export const entrypoint = (input: T.permitted_params, s: T.storage): T.@return =>
+  match(input.action) {
+    when(Init()): do {
+      const params: T.Common.metadata = Option.unopt_with_error(
         Bytes.unpack(input.packed_params),
         "FA_INVALID_PACKED_PARAMS"
       );
-      return init(params, Some(input.permit), s);
-    },
-    Transfer_ownership: () => {
-      const params: transfer_ownership_params = Option.unopt_with_error(
+      return Init.entrypoint(params, Some(input.permit), s);
+    };
+    when(Transfer_ownership()): do {
+      const params: T.transfer_ownership_params = Option.unopt_with_error(
         Bytes.unpack(input.packed_params),
         "FA_INVALID_PACKED_PARAMS"
       );
-      return transfer_ownership(params, Some(input.permit), s);
-    },
-    Update_roles: () => {
-      const params: update_roles_params = Option.unopt_with_error(
+      return TransferOwnership.entrypoint(params, Some(input.permit), s);
+    };
+    when(Update_roles()): do {
+      const params: T.update_roles_params = Option.unopt_with_error(
         Bytes.unpack(input.packed_params),
         "FA_INVALID_PACKED_PARAMS"
       );
-      return update_roles(params, Some(input.permit), s);
-    },
-    Renounce_roles: () => {
-      const params: renounce_roles_params = Option.unopt_with_error(
+      return UpdateRoles.entrypoint(params, Some(input.permit), s);
+    };
+    when(Renounce_roles()): do {
+      const params: T.renounce_roles_params = Option.unopt_with_error(
         Bytes.unpack(input.packed_params),
         "FA_INVALID_PACKED_PARAMS"
       );
-      return renounce_roles(params, Some(input.permit), s);
-    },
-    Update_hooks: () => {
-      const params: update_hooks_params = Option.unopt_with_error(
+      return RenounceRoles.entrypoint(params, Some(input.permit), s);
+    };
+    when(Update_hooks()): do {
+      const params: T.update_hooks_params = Option.unopt_with_error(
         Bytes.unpack(input.packed_params),
         "FA_INVALID_PACKED_PARAMS"
       );
-      return update_hooks(params, Some(input.permit), s);
-    },
-    Confirm_ownership: () => {
-      const params: contract_address = Option.unopt_with_error(
+      return UpdateHooks.entrypoint(params, Some(input.permit), s);
+    };
+    when(Confirm_ownership()): do {
+      const params: T.Common.contract_address = Option.unopt_with_error(
         Bytes.unpack(input.packed_params),
         "FA_INVALID_PACKED_PARAMS"
       );
-      return confirm_ownership(params, Some(input.permit), s);
-    },
-  });
+      return ConfirmOwnership.entrypoint(params, Some(input.permit), s);
+    };
+  };

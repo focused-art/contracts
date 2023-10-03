@@ -1,10 +1,10 @@
 // Entrypoints
 
-#include "entrypoints/confirm-ownership.jsligo"
-#include "entrypoints/init.jsligo"
-#include "entrypoints/migrate-to-protocol.jsligo"
-#include "entrypoints/renounce-roles.jsligo"
-#include "entrypoints/transfer-ownership.jsligo"
-#include "entrypoints/update-hooks.jsligo"
-#include "entrypoints/update-roles.jsligo"
-#include "entrypoints/permitted-main.jsligo"
+#import "entrypoints/confirm-ownership.jsligo" "ConfirmOwnership"
+#import "entrypoints/init.jsligo" "Init"
+#import "entrypoints/migrate-to-protocol.jsligo" "MigrateToProtocol"
+#import "entrypoints/renounce-roles.jsligo" "RenounceRoles"
+#import "entrypoints/transfer-ownership.jsligo" "TransferOwnership"
+#import "entrypoints/update-hooks.jsligo" "UpdateHooks"
+#import "entrypoints/update-roles.jsligo" "UpdateRoles"
+#import "entrypoints/permitted-main.jsligo" "Permitted"

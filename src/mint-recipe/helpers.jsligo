@@ -1,44 +1,38 @@
+#import "types.jsligo" "T"
+
 // Helpers
 
-const get_mint_or_fail = (k: mint_id, s: storage): mint =>
-  match(Big_map.find_opt(k, s.mints), {
-    None: () => failwith("FA_INVALID_MINT_ID"),
-    Some: mint => mint
-  });
+export const get_mint_or_fail = (k: T.mint_id, s: T.storage): T.mint =>
+  match(Big_map.find_opt(k, s.mints)) {
+    when(Some(mint)): mint;
+    when(None()): failwith("FA_INVALID_MINT_ID");
+  };
 
-const get_wallet_record = (k: [address, mint_id], s: storage): wallet_record =>
-  match(Big_map.find_opt(k, s.ledger), {
-    None: () => {
-      minted: (0 as nat),
-      last_block: (0 as nat),
-      block_minted: (0 as nat)
-    },
-    Some: wallet_record => wallet_record
-  });
+export const get_wallet_record = (k: [address, T.mint_id], s: T.storage): T.wallet_record =>
+  match(Big_map.find_opt(k, s.ledger)) {
+    when(Some(wallet_record)): wallet_record;
+    when(None()): {
+      minted: 0n,
+      last_block: 0n,
+      block_minted: 0n,
+    };
+  };
 
-const validate_ingredient = (ingredient: ingredient, step_input: set<fa2_with_amount>): unit => {
-  let sum: nat = (0 as nat);
+export const validate_ingredient = (ingredient: T.ingredient, step_input: set<T.fa2_with_amount>): unit => {
+  let sum: nat = 0n;
   for (const input of step_input) {
-    const _ = match(Map.find_opt(input.token.address, ingredient.tokens), {
-      Some: tokens => {
-        const _ = match(tokens, {
-          Token_id: token_id => {
-            assert_with_error(input.token.token_id == token_id, "FA_INVALID_RECIPE_STEP")
-          },
-          Range: (start_token_id, end_token_id) => {
-            assert_with_error(input.token.token_id >= start_token_id && input.token.token_id <= end_token_id, "FA_INVALID_RECIPE_STEP")
-          },
-          Set: token_ids => {
-            assert_with_error(Set.mem(input.token.token_id, token_ids), "FA_INVALID_RECIPE_STEP")
-          },
-          Any: () => { return }
-        })
-      },
-      None: () => {
-        failwith("FA_INVALID_RECIPE_STEP")
-      }
-    });
-
+    match(Map.find_opt(input.token.address, ingredient.tokens)) {
+      when(Some(tokens)): match(tokens) {
+        when(Token_id(token_id)):
+          assert_with_error(input.token.token_id == token_id, "FA_INVALID_RECIPE_STEP");
+        when(Range(start_token_id, end_token_id)):
+          assert_with_error(input.token.token_id >= start_token_id && input.token.token_id <= end_token_id, "FA_INVALID_RECIPE_STEP");
+        when(Set(token_ids)):
+          assert_with_error(Set.mem(input.token.token_id, token_ids), "FA_INVALID_RECIPE_STEP");
+        when(Any): unit;
+      };
+      when(None()): failwith("FA_INVALID_RECIPE_STEP");
+    };
     sum = sum + input.amount
   };
 

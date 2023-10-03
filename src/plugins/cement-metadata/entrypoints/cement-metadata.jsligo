@@ -1,18 +1,23 @@
+#import "../types.jsligo" "T"
+#import "../views.jsligo" "V"
+#import "../../../common/types.jsligo" "Common"
+#import "../../../common/utils/fa2.jsligo" "Fa2"
+
 // Cement a token's metadata
-const cement_metadata = (params: cement_metadata_params, s1: storage): @return => {
+export const entrypoint = (params: T.cement_metadata_params, s1: T.storage): T.@return => {
   let s = s1;
 
   for (const p of params) {
     // Only fa2 metadata managers can call
-    assert_with_error(is_fa2_metadata_manager(p.token, Tezos.get_sender()), "FA_NOT_FA2_METADATA_MANAGER");
+    assert_with_error(Fa2.is_fa2_metadata_manager(p.token, Tezos.get_sender()), "FA_NOT_FA2_METADATA_MANAGER");
 
     // Must be a metadata hook
-    assert_with_error(is_fa2_metadata_hook(p.token, Tezos.get_self_address()), "FA_NOT_FA2_METADATA_HOOK");
+    assert_with_error(Fa2.is_fa2_metadata_hook(p.token, Tezos.get_self_address()), "FA_NOT_FA2_METADATA_HOOK");
 
     // Update storage if not already cemented
-    if (is_cemented(p.token, s) == false)
+    if (V.is_cemented(p.token, s) == false)
       s.cemented_tokens = Big_map.add(p.token, Tezos.get_now() + p.delay, s.cemented_tokens);
   };
 
-  return [noop, s]
+  return [Common.noop, s]
 };

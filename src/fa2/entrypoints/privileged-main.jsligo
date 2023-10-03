@@ -1,14 +1,15 @@
-#include "privileged/update-contract-metadata.jsligo"
-#include "privileged/update-default-royalties.jsligo"
-#include "privileged/update-metadata.jsligo"
-#include "privileged/update-protocol.jsligo"
-#include "privileged/update-royalties.jsligo"
+#import "../types.jsligo" "T"
+#import "privileged/update-contract-metadata.jsligo" "UpdateContractMetadata"
+#import "privileged/update-metadata.jsligo" "UpdateMetadata"
+#import "privileged/update-royalties.jsligo" "UpdateRoyalties"
+#import "privileged/update-default-royalties.jsligo" "UpdateDefaultRoyalties"
+#import "privileged/update-protocol.jsligo" "UpdateProtocol"
 
-const privileged_main = (action: privileged_action, s: storage): @return =>
-  match(action, {
-    Update_contract_metadata: params    => update_contract_metadata(params, None(), s),
-    Update_metadata: params             => update_metadata(params, None(), s),
-    Update_royalties: params            => update_royalties(params, None(), s),
-    Update_default_royalties: params    => update_default_royalties(params, None(), s),
-    Update_protocol: params             => update_protocol(params, None(), s)
-  });
+export const entrypoint = (action: T.privileged_action, s: T.storage): T.@return =>
+  match(action) {
+    when(Update_contract_metadata(params)): UpdateContractMetadata.entrypoint(params, None(), s);
+    when(Update_metadata(params)):          UpdateMetadata.entrypoint(params, None(), s);
+    when(Update_royalties(params)):         UpdateRoyalties.entrypoint(params, None(), s);
+    when(Update_default_royalties(params)): UpdateDefaultRoyalties.entrypoint(params, None(), s);
+    when(Update_protocol(params)):          UpdateProtocol.entrypoint(params, None(), s);
+  };

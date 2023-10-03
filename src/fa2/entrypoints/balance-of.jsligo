@@ -1,23 +1,26 @@
-const balance_of = (balance_params: balance_params, s: storage): @return => {
+#import "../types.jsligo" "T"
+#import "../helpers.jsligo" "H"
 
-  let accumulated_response: list<balance_of_response> = list([]);
+export const entrypoint = (balance_params: T.balance_params, s: T.storage): T.@return => {
+
+  let accumulated_response: list<T.balance_of_response> = list([]);
 
   for (const request of balance_params.requests) {
 
     // Token id check
-    validate_token_id(request.token_id, s);
+    H.validate_token_id(request.token_id, s);
 
     // Form the response
-    const response: balance_of_response = {
+    const response: T.balance_of_response = {
       request: request,
-      balance: internal_get_balance_of(request.owner, request.token_id, s)
+      balance: H.internal_get_balance_of(request.owner, request.token_id, s)
     };
 
     accumulated_response = list([response, ...accumulated_response]);
   };
 
-  const operations: op_list = list([
-    Tezos.transaction(accumulated_response, (0 as mutez), balance_params.callback)
+  const operations: T.Common.op_list = list([
+    Tezos.transaction(accumulated_response, 0mutez, balance_params.callback)
   ]);
 
   return [operations, s]

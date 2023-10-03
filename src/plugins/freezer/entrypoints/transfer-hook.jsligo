@@ -1,14 +1,18 @@
+#import "../types.jsligo" "T"
+#import "../views.jsligo" "V"
+#import "../../../common/utils/fa2.jsligo" "Fa2"
+
 // Transfer hook
-const transfer_hook = (transfers: transfer_params, s: storage): @return => {
+export const entrypoint = (transfers: Fa2.transfer_params, s: T.storage): T.@return => {
   for (const user_tx of transfers) {
     for (const transfer of user_tx.txs) {
-      const token: fa2 = {
+      const token: Fa2.fa2 = {
         address: Tezos.get_sender();
         token_id: transfer.token_id
       };
-      assert_with_error(is_frozen([user_tx.from_, token], s) == false, "FA_FROZEN_TOKEN_TRANSFER_DENIED");
+      assert_with_error(V.is_frozen([user_tx.from_, token], s) == false, "FA_FROZEN_TOKEN_TRANSFER_DENIED");
     };
   };
 
-  return [noop, s]
+  return [T.Common.noop, s]
 };

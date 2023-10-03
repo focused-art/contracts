@@ -1,11 +1,11 @@
-type contract_address = address;
-type trusted = address;
-type recipient = address;
-type recipients = map<recipient, nat>;
-type op_list = list<operation>;
-type metadata = map<string, bytes>;
+export type contract_address = address;
+export type trusted = address;
+export type recipient = address;
+export type recipients = map<recipient, nat>;
+export type op_list = list<operation>;
+export type metadata = map<string, bytes>;
 
-type hook_type =
+export type hook_type =
   | ["Transfer_hook"]
   | ["Create_hook"]
   | ["Mint_hook"]
@@ -13,25 +13,24 @@ type hook_type =
   | ["Metadata_hook"]
   | ["Royalties_hook"];
 
-type role_type =
+export type role_type =
   | ["Creator"]
   | ["Minter"]
   | ["Metadata_manager"]
   | ["Royalties_manager"];
 
-type permit =
-// @layout comb
+export type permit =
 {
   signer                : key,
   signature             : signature,
   expiry                : timestamp
 };
 
-type used_permits = big_map<bytes, unit>;
-type expiring_permits = big_map<key, map<bytes, timestamp>>;
-type permit_storage = [used_permits, expiring_permits];
+export type used_permits = big_map<bytes, unit>;
+export type expiring_permits = big_map<key, map<bytes, timestamp>>;
+export type permit_storage = [used_permits, expiring_permits];
 
 // define noop for readability
-const noop: list<operation> = list([]);
+export const noop: list<operation> = list([]);
 
-const c_NULL_ADDRESS: address = "tz1Ke2h7sDdakHJQh8WX4Z372du1KChsksyU" as address;
+export const c_NULL_ADDRESS: address = "tz1Ke2h7sDdakHJQh8WX4Z372du1KChsksyU" as address;

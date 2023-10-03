@@ -1,17 +1,22 @@
+#import "../types.jsligo" "T"
+#import "../views.jsligo" "V"
+#import "../helpers.jsligo" "H"
+#import "../../common/utils/address.jsligo" "A"
+
 // Confirm transfer of ownership
-const confirm_ownership = (kt1: contract_address, permit_opt: option<permit>, s1: storage): @return => {
+export const entrypoint = (kt1: T.Common.contract_address, permit_opt: option<T.Permit.permit>, s1: T.storage): T.@return => {
   let s = s1;
 
-  const sender : address = match(permit_opt, {
-    Some: permit => {
+  const sender : address = match(permit_opt) {
+    when(Some(permit)): do {
       const param_bytes : bytes = Bytes.pack(["%confirm_ownership", kt1]);
-      s = check_and_store_permit(permit, param_bytes, s);
-      return address_from_key(permit.signer);
-    },
-    None: () => Tezos.get_sender()
-  });
+      s = H.check_and_store_permit(permit, param_bytes, s);
+      return A.address_from_key(permit.signer);
+    };
+    when(None()): Tezos.get_sender();
+  };
 
-  const permissions: permissions = get_permissions_or_fail(kt1, s);
+  const permissions: T.permissions = H.get_permissions_or_fail(kt1, s);
 
   const pending_owner: address =
     Option.unopt_with_error(permissions.pending_owner, "FA2_NO_PENDING_OWNER");

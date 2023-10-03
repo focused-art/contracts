@@ -1,1 +1,3 @@
-const int_to_tez = (a: int): tez => nat_to_tez(abs(a));
+#import "nat.jsligo" "Nat"
+
+export const to_tez = (a: int): tez => Nat.to_tez(abs(a));

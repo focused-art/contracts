@@ -1,0 +1,39 @@
+#import "../types.jsligo" "T"
+#import "../views.jsligo" "V"
+#import "../helpers.jsligo" "H"
+
+// Mint owner main entrypoint
+export const entrypoint = (action: T.mint_owner_action, s1: T.storage): T.@return => {
+  let s = s1;
+
+  const mint_id: T.mint_id = match(action) {
+    when(Cancel(params)): params;
+    when(Mint_update_action(update_action)): match(update_action) {
+      when(Pause(params)): params[0];
+      when(Update_start_time(params)): params[0];
+      when(Update_duration(params)): params[0];
+      when(Update_max_per_block(params)): params[0];
+      when(Update_max_per_wallet(params)): params[0];
+      when(Update_recipients(params)): params[0];
+    };
+  };
+
+  assert_with_error(V.is_mint_owner([mint_id, Tezos.get_sender()], s), "FA_INVALID_MINT_OWNER_ACCESS");
+
+  const mint: T.mint = H.get_mint_or_fail(mint_id, s);
+
+  // Update storage
+  s.mints = Big_map.update(mint_id, match(action) {
+    when(Cancel(_params)): None();
+    when(Mint_update_action(update_action)): Some(match(update_action) {
+      when(Pause(params)): { ...mint, paused: params[1] };
+      when(Update_start_time(params)): { ...mint, start_time: params[1] };
+      when(Update_duration(params)): { ...mint, duration: params[1] };
+      when(Update_max_per_block(params)): { ...mint, max_per_block: params[1] };
+      when(Update_max_per_wallet(params)): { ...mint, max_per_wallet: params[1] };
+      when(Update_recipients(params)): { ...mint, recipients: params[1] };
+    });
+  }, s.mints);
+
+  return [T.Common.noop, s]
+};

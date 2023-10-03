@@ -1,18 +1,27 @@
+#import "../../types.jsligo" "T"
+#import "../../views.jsligo" "V"
+#import "../../helpers.jsligo" "H"
+#import "../../../common/utils/address.jsligo" "A"
+
 // Update token metadata
-const update_metadata = (input: update_token_metadata_params, permit_opt: option<permit>, s1: storage): @return => {
+export const entrypoint = (
+  input: T.update_token_metadata_params,
+  permit_opt: option<T.Permit.permit>,
+  s1: T.storage
+): T.@return => {
   let s = s1;
 
-  const sender : address = match(permit_opt, {
-    Some: permit => {
+  const sender : address = match(permit_opt) {
+    when(Some(permit)): do {
       const param_bytes : bytes = Bytes.pack(["%update_metadata", input]);
-      s = check_and_store_permit(permit, param_bytes, s);
-      return address_from_key(permit.signer);
-    },
-    None: () => Tezos.get_sender()
-  });
+      s = H.check_and_store_permit(permit, param_bytes, s);
+      return A.address_from_key(permit.signer);
+    };
+    when(None()): Tezos.get_sender();
+  };
 
   assert_with_error(
-    has_role([sender, Metadata_manager()], s),
+    V.has_role([sender, Metadata_manager()], s),
     "FA2_INVALID_METADATA_MANAGER_ACCESS"
   );
 
@@ -28,7 +37,7 @@ const update_metadata = (input: update_token_metadata_params, permit_opt: option
     );
 
     // Events
-    const token_metadata_update_event: token_metadata_update_event =
+    const token_metadata_update_event: T.token_metadata_update_event =
       { token_id: token_id; new_metadata: Some(token_info) };
 
     operations = list([
@@ -38,9 +47,9 @@ const update_metadata = (input: update_token_metadata_params, permit_opt: option
   };
 
   // Send hooks
-  for (const hook of get_hooks(Metadata_hook(), s)) {
+  for (const hook of V.get_hooks(Metadata_hook(), s)) {
     operations = list([
-      Tezos.transaction(input, (0 as mutez), get_update_metadata_hook(hook)),
+      Tezos.transaction(input, 0mutez, H.get_update_metadata_hook(hook)),
       ...operations
     ]);
   };

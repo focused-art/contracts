@@ -1,28 +1,24 @@
-const create_fa2: create_fa2 =
-  Michelson ` { UNPPAIIR ;
-              CREATE_CONTRACT 
-#include "../../../build/contracts/fa2-as-const.tz"
-        ;
-          PAIR }`
-  as create_fa2;
+#import "../types.jsligo" "T"
+#import "../helpers.jsligo" "H"
+#import "../../common/utils/address.jsligo" "A"
 
 // Init a new collection
-const init = (metadata: metadata, permit_opt: option<permit>, s1: storage): @return => {
+export const entrypoint = (metadata: T.Common.metadata, permit_opt: option<T.Permit.permit>, s1: T.storage): T.@return => {
   let s = s1;
 
-  const owner : address = match(permit_opt, {
-    Some: permit => {
+  const owner : address = match(permit_opt) {
+    when(Some(permit)): do {
       const param_bytes : bytes = Bytes.pack(["%init", metadata]);
-      s = check_and_store_permit(permit, param_bytes, s);
-      return address_from_key(permit.signer);
-    },
-    None: () => Tezos.get_sender()
-  });
+      s = H.check_and_store_permit(permit, param_bytes, s);
+      return A.address_from_key(permit.signer);
+    };
+    when(None()): Tezos.get_sender();
+  };
 
-  let fa2_storage: fa2_storage = {
+  let fa2_storage: T.fa2_storage = {
     metadata: Big_map.empty,
     protocol: Tezos.get_self_address(),
-    next_token_id: (0 as nat),
+    next_token_id: 0n,
     token_total_supply: Big_map.empty,
     ledger: Big_map.empty,
     operators: Big_map.empty,
@@ -31,10 +27,11 @@ const init = (metadata: metadata, permit_opt: option<permit>, s1: storage): @ret
     token_max_supply: Big_map.empty,
     created: Big_map.empty,
     default_royalties: {
-      total_shares: (0 as nat),
+      total_shares: 0n,
       shares: Map.empty
     },
-    permits: Big_map.empty
+    permits: Big_map.empty,
+    permits_expiry: Big_map.empty,
   };
 
   for (const entry of metadata) {
@@ -42,7 +39,9 @@ const init = (metadata: metadata, permit_opt: option<permit>, s1: storage): @ret
     fa2_storage.metadata = Big_map.add(key, value, fa2_storage.metadata);
   };
 
-  const [origination, kt1]: ([operation, address]) = create_fa2([None() as option<key_hash>, (0 as mutez), fa2_storage]);
+  const [origination, kt1]: [operation, address] =
+    (create_contract_of_file `../../../build/contracts/fa2-as-const.tz`)
+    (None() as option<key_hash>, 0mutez, fa2_storage);
 
   s.roles = Big_map.add(kt1,
     {

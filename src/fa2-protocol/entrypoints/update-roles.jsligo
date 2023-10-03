@@ -1,41 +1,46 @@
-const update_roles = (params: update_roles_params, permit_opt: option<permit>, s1: storage): @return => {
+#import "../types.jsligo" "T"
+#import "../helpers.jsligo" "H"
+#import "../views.jsligo" "V"
+#import "../../common/utils/address.jsligo" "A"
+
+export const entrypoint = (params: T.update_roles_params, permit_opt: option<T.Permit.permit>, s1: T.storage): T.@return => {
   let s = s1;
 
-  const sender : address = match(permit_opt, {
-    Some: permit => {
+  const sender : address = match(permit_opt) {
+    when(Some(permit)): do {
       const param_bytes : bytes = Bytes.pack(["%update_roles", params]);
-      s = check_and_store_permit(permit, param_bytes, s);
-      return address_from_key(permit.signer);
-    },
-    None: () => Tezos.get_sender()
-  });
+      s = H.check_and_store_permit(permit, param_bytes, s);
+      return A.address_from_key(permit.signer);
+    };
+    when(None()): Tezos.get_sender();
+  };
 
   for (const entry of params) {
     const [kt1, update_role_param] = entry;
-    assert_with_error(is_owner([kt1, sender], s), "FA2_INVALID_OWNER_ACCESS");
-    const permissions: permissions = get_permissions_or_fail(kt1, s);
-    s.roles = Big_map.update(kt1, Some(match(update_role_param, {
-      Add: ([role_type, user]) => match(role_type, {
-        Creator: () =>
-          { ...permissions, creator: Set.add(user, permissions.creator) },
-        Minter: () =>
-          { ...permissions, minter: Set.add(user, permissions.minter) },
-        Metadata_manager: () =>
-          { ...permissions, metadata_manager: Set.add(user, permissions.metadata_manager) },
-        Royalties_manager: () =>
-          { ...permissions, royalties_manager: Set.add(user, permissions.royalties_manager) }
-      }),
-      Remove: ([role_type, user]) => match(role_type, {
-        Creator: () =>
-          { ...permissions, creator: Set.remove(user, permissions.creator) },
-        Minter: () =>
-          { ...permissions, minter: Set.remove(user, permissions.minter) },
-        Metadata_manager: () =>
-          { ...permissions, metadata_manager: Set.remove(user, permissions.metadata_manager) },
-        Royalties_manager: () =>
-          { ...permissions, royalties_manager: Set.remove(user, permissions.royalties_manager) }
-      })
-    })), s.roles);
+    assert_with_error(V.is_owner([kt1, sender], s), "FA2_INVALID_OWNER_ACCESS");
+    const permissions: T.permissions = H.get_permissions_or_fail(kt1, s);
+    s.roles = Big_map.update(kt1, Some(match(update_role_param) {
+      when(Add([role_type, user])): match(role_type) {
+        when(Creator()):
+          { ...permissions, creator: Set.add(user, permissions.creator) };
+        when(Minter()):
+          { ...permissions, minter: Set.add(user, permissions.minter) };
+        when(Metadata_manager()):
+          { ...permissions, metadata_manager: Set.add(user, permissions.metadata_manager) };
+        when(Royalties_manager()):
+          { ...permissions, royalties_manager: Set.add(user, permissions.royalties_manager) };
+      };
+      when(Remove([role_type, user])): match(role_type) {
+        when(Creator()):
+          { ...permissions, creator: Set.remove(user, permissions.creator) };
+        when(Minter()):
+          { ...permissions, minter: Set.remove(user, permissions.minter) };
+        when(Metadata_manager()):
+          { ...permissions, metadata_manager: Set.remove(user, permissions.metadata_manager) };
+        when(Royalties_manager()):
+          { ...permissions, royalties_manager: Set.remove(user, permissions.royalties_manager) };
+      };
+    }), s.roles);
   };
 
   return [list([]), s]

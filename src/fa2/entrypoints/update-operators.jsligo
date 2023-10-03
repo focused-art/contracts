@@ -1,22 +1,31 @@
-const update_operators = (params: update_operator_params, permit_opt: option<permit>, s1: storage): @return => {
+#import "../types.jsligo" "T"
+#import "../views.jsligo" "V"
+#import "../helpers.jsligo" "H"
+#import "../../common/utils/address.jsligo" "A"
+
+export const entrypoint = (
+  params: T.update_operator_params,
+  permit_opt: option<T.Permit.permit>,
+  s1: T.storage
+): T.@return => {
   let s = s1;
 
-  const sender : address = match(permit_opt, {
-    Some: permit => {
+  const sender : address = match(permit_opt) {
+    when(Some(permit)): do {
       const param_bytes : bytes = Bytes.pack(["%update_operators", params]);
-      s = check_and_store_permit(permit, param_bytes, s);
-      return address_from_key(permit.signer);
-    },
-    None: () => Tezos.get_sender()
-  });
+      s = H.check_and_store_permit(permit, param_bytes, s);
+      return A.address_from_key(permit.signer);
+    };
+    when(None()): Tezos.get_sender();
+  };
 
   // Initialize operations
   let operations: list<operation> = list([]);
 
   for (const update_operator_param of params) {
-    const _ = match(update_operator_param, {
-      Add_operator: param => {
-        validate_token_id(param.token_id, s);
+    match(update_operator_param) {
+      when(Add_operator(param)): do {
+        H.validate_token_id(param.token_id, s);
         assert_with_error(param.owner == sender, "FA2_NOT_OWNER");
         s.operators = Big_map.update(
           [param.owner, [param.operator, param.token_id]],
@@ -24,7 +33,7 @@ const update_operators = (params: update_operator_params, permit_opt: option<per
           s.operators
         );
 
-        const operator_update_event: operator_update_event = {
+        const operator_update_event: T.operator_update_event = {
           owner: param.owner,
           operator: param.operator,
           token_id: param.token_id,
@@ -35,16 +44,16 @@ const update_operators = (params: update_operator_params, permit_opt: option<per
           Tezos.emit("%operator_update", operator_update_event),
           ...operations
         ]);
-      },
-      Remove_operator: param => {
-        validate_token_id(param.token_id, s);
+      };
+      when(Remove_operator(param)): do {
+        H.validate_token_id(param.token_id, s);
         assert_with_error(param.owner == sender, "FA2_NOT_OWNER");
         s.operators = Big_map.remove(
           [param.owner, [param.operator, param.token_id]],
           s.operators
         );
 
-        const operator_update_event: operator_update_event = {
+        const operator_update_event: T.operator_update_event = {
           owner: param.owner,
           operator: param.operator,
           token_id: param.token_id,
@@ -55,8 +64,8 @@ const update_operators = (params: update_operator_params, permit_opt: option<per
           Tezos.emit("%operator_update", operator_update_event),
           ...operations
         ]);
-      }
-    });
+      };
+    };
   };
 
   return [operations, s]

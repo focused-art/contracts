@@ -1,98 +1,115 @@
-#include "../../fa2/types.jsligo"
+#import "../types.jsligo" "Common"
+#import "../../fa2/types.jsligo" "Fa2"
 
-type fa2 =
-// @layout comb
-{
-  address;
-  token_id
+export type token_id = Fa2.token_id;
+export type owner = Fa2.owner;
+export type royalties = Fa2.royalties;
+export type royalty_shares = Fa2.royalty_shares;
+export type operator_param = Fa2.operator_param;
+export type transfer_params = Fa2.transfer_params;
+export type transfer_param = Fa2.transfer_param;
+export type mint_burn_params = Fa2.mint_burn_params;
+
+export type fa2 = {
+  address,
+  token_id,
 };
 
-type calc_royalties_params =
-// @layout comb
-{
-  price: nat;
-  royalties
+export type calc_royalties_params = {
+  price: nat,
+  royalties,
 };
 
-const calc_royalties = (p: calc_royalties_params): royalty_shares =>
-  (Tezos.constant("expru2hTf7Qe5QVb7UWdLKVedax3Snw3NyewjDX3aQYUQfD9xCR6YY") as (v: calc_royalties_params) => royalty_shares)(p);
+export const calc_royalties = (p: calc_royalties_params): royalty_shares =>
+  (Tezos.constant("expru2hTf7Qe5QVb7UWdLKVedax3Snw3NyewjDX3aQYUQfD9xCR6YY") as ((v: calc_royalties_params) => royalty_shares))(p);
 
-const get_royalty_shares = (token: fa2, price: nat): royalty_shares => {
+export const get_royalty_shares = (token: fa2, price: nat): royalty_shares => {
   const royalties: royalties = Option.unopt(
     Tezos.call_view("get_royalties", token.token_id, token.address) as option<royalties>
   );
   return calc_royalties({ price: price; royalties: royalties })
 };
 
-const get_total_supply = (token: fa2): nat =>
+export const get_total_supply = (token: fa2): nat =>
   Option.unopt(Tezos.call_view("total_supply", token.token_id, token.address) as option<nat>);
 
-const get_fa2_created = (token: fa2): timestamp =>
+export const get_fa2_created = (token: fa2): timestamp =>
   Option.unopt(Tezos.call_view("get_created", token.token_id, token.address) as option<timestamp>);
 
-const is_fa2_owner = (token: fa2, check: address): bool =>
-  match(Tezos.call_view("is_owner", check, token.address) as option<bool>,
-    { Some: response => response, None: () => false }
-  );
+export const is_fa2_owner = (token: fa2, check: address): bool =>
+  match(Tezos.call_view("is_owner", check, token.address) as option<bool>) {
+    when(Some(response)): response;
+    when(None()): false;
+  };
 
-const is_fa2_operator = (token: fa2, check: operator_param): bool =>
-  match(Tezos.call_view("is_operator", check, token.address) as option<bool>,
-    { Some: response => response, None: () => false }
-  );
+export const is_fa2_operator = (token: fa2, check: operator_param): bool =>
+  match(Tezos.call_view("is_operator", check, token.address) as option<bool>) {
+    when(Some(response)): response;
+    when(None()): false;
+  };
 
-const is_fa2_creator = (token: fa2, check: address): bool =>
-  match(Tezos.call_view("has_role", [check, Creator()], token.address) as option<bool>,
-    { Some: response => response, None: () => false }
-  );
+export const is_fa2_creator = (token: fa2, check: address): bool =>
+  match(Tezos.call_view("has_role", [check, Creator()], token.address) as option<bool>) {
+    when(Some(response)): response;
+    when(None()): false;
+  };
 
-const is_fa2_minter = (token: fa2, check: address): bool =>
-  match(Tezos.call_view("has_role", [check, Minter()], token.address) as option<bool>,
-    { Some: response => response, None: () => false }
-  );
+export const is_fa2_minter = (token: fa2, check: address): bool =>
+  match(Tezos.call_view("has_role", [check, Minter()], token.address) as option<bool>) {
+    when(Some(response)): response;
+    when(None()): false;
+  };
 
-const is_fa2_metadata_manager = (token: fa2, check: address): bool =>
-  match(Tezos.call_view("has_role", [check, Metadata_manager()], token.address) as option<bool>,
-    { Some: response => response, None: () => false }
-  );
+export const is_fa2_metadata_manager = (token: fa2, check: address): bool =>
+  match(Tezos.call_view("has_role", [check, Metadata_manager()], token.address) as option<bool>) {
+    when(Some(response)): response;
+    when(None()): false;
+  };
 
-const is_fa2_royalties_manager = (token: fa2, check: address): bool =>
-  match(Tezos.call_view("has_role", [check, Royalties_manager()], token.address) as option<bool>,
-    { Some: response => response, None: () => false }
-  );
+export const is_fa2_royalties_manager = (token: fa2, check: address): bool =>
+  match(Tezos.call_view("has_role", [check, Royalties_manager()], token.address) as option<bool>) {
+    when(Some(response)): response;
+    when(None()): false;
+  };
 
-const is_fa2_transfer_hook = (token: fa2, check: address): bool =>
-  match(Tezos.call_view("is_hook", [check, Transfer_hook()], token.address) as option<bool>,
-    { Some: response => response, None: () => false }
-  );
+export const is_fa2_transfer_hook = (token: fa2, check: address): bool =>
+  match(Tezos.call_view("is_hook", [check, Transfer_hook()], token.address) as option<bool>) {
+    when(Some(response)): response;
+    when(None()): false;
+  };
 
-const is_fa2_create_hook = (token: fa2, check: address): bool =>
-  match(Tezos.call_view("is_hook", [check, Create_hook()], token.address) as option<bool>,
-    { Some: response => response, None: () => false }
-  );
+export const is_fa2_create_hook = (token: fa2, check: address): bool =>
+  match(Tezos.call_view("is_hook", [check, Create_hook()], token.address) as option<bool>) {
+    when(Some(response)): response;
+    when(None()): false;
+  };
 
-const is_fa2_mint_hook = (token: fa2, check: address): bool =>
-  match(Tezos.call_view("is_hook", [check, Mint_hook()], token.address) as option<bool>,
-    { Some: response => response, None: () => false }
-  );
+export const is_fa2_mint_hook = (token: fa2, check: address): bool =>
+  match(Tezos.call_view("is_hook", [check, Mint_hook()], token.address) as option<bool>) {
+    when(Some(response)): response;
+    when(None()): false;
+  };
 
-const is_fa2_burn_hook = (token: fa2, check: address): bool =>
-  match(Tezos.call_view("is_hook", [check, Burn_hook()], token.address) as option<bool>,
-    { Some: response => response, None: () => false }
-  );
+export const is_fa2_burn_hook = (token: fa2, check: address): bool =>
+  match(Tezos.call_view("is_hook", [check, Burn_hook()], token.address) as option<bool>) {
+    when(Some(response)): response;
+    when(None()): false;
+  };
 
-const is_fa2_metadata_hook = (token: fa2, check: address): bool =>
-  match(Tezos.call_view("is_hook", [check, Metadata_hook()], token.address) as option<bool>,
-    { Some: response => response, None: () => false }
-  );
+export const is_fa2_metadata_hook = (token: fa2, check: address): bool =>
+  match(Tezos.call_view("is_hook", [check, Metadata_hook()], token.address) as option<bool>) {
+    when(Some(response)): response;
+    when(None()): false;
+  };
 
-const fa2_transfer = (token: fa2, from_: address, to_: address, amount: nat): operation => {
+export const fa2_transfer = (token: fa2, from_: address, to_: address, amount: nat): operation => {
   const transfer_entrypoint: contract<transfer_params> =
-    match(Tezos.get_entrypoint_opt("%transfer", token.address) as option<contract<transfer_params>>,
-      {
-        None: () => failwith("FA_CANNOT_INVOKE_FA2_TRANSFER"),
-        Some: entrypoint => entrypoint
-      }
-    );
+    match(
+      Tezos.get_entrypoint_opt("%transfer", token.address) as option<contract<transfer_params>>
+    ) {
+      when(Some(entrypoint)): entrypoint;
+      when(None()): failwith("FA_CANNOT_INVOKE_FA2_TRANSFER");
+    };
 
   const transfer: transfer_param = {
     from_: from_,
@@ -105,32 +122,32 @@ const fa2_transfer = (token: fa2, from_: address, to_: address, amount: nat): op
       ])
     };
 
-  return Tezos.transaction(list([transfer]), (0 as mutez), transfer_entrypoint);
+  return Tezos.transaction(list([transfer]), 0mutez, transfer_entrypoint);
 };
 
-const fa2_mint = (token: fa2, recipient: address, amount: nat): operation =>
-  match(Tezos.get_entrypoint_opt("%mint", token.address) as option<contract<mint_burn_params>>,
-    {
-      Some: entrypoint => Tezos.transaction(
-        { owner: recipient, token_id: token.token_id, amount },
-        (0 as mutez),
-        entrypoint
-      ),
-      None: () => failwith("FA_MINT_ENTRYPOINT_UNDEFINED")
-    }
-  );
+export const fa2_mint = (token: fa2, recipient: address, amount: nat): operation =>
+  match(
+    Tezos.get_entrypoint_opt("%mint", token.address) as option<contract<mint_burn_params>>
+  ) {
+    when(Some(entrypoint)): Tezos.transaction(
+      { owner: recipient, token_id: token.token_id, amount },
+      0mutez,
+      entrypoint
+    );
+    when(None()): failwith("FA_MINT_ENTRYPOINT_UNDEFINED");
+  };
 
-const fa2_burn = (token: fa2, owner: address, amount: nat): operation =>
-  match(Tezos.get_entrypoint_opt("%burn", token.address) as option<contract<mint_burn_params>>,
-    {
-      Some: entrypoint => Tezos.transaction(
-        { owner, token_id: token.token_id, amount },
-        (0 as mutez),
-        entrypoint
-      ),
-      None: () => fa2_transfer(token, owner, c_NULL_ADDRESS, amount)
-    }
-  );
+export const fa2_burn = (token: fa2, owner: address, amount: nat): operation =>
+  match(
+    Tezos.get_entrypoint_opt("%burn", token.address) as option<contract<mint_burn_params>>
+  ) {
+    when(Some(entrypoint)): Tezos.transaction(
+      { owner, token_id: token.token_id, amount },
+      0mutez,
+      entrypoint
+    );
+    when(None()): fa2_transfer(token, owner, Common.c_NULL_ADDRESS, amount);
+  };
 
-const fa2_freeze = (token: fa2, owner: address, amount: nat, _freeze_until: timestamp): operation =>
-  fa2_transfer(token, owner, c_NULL_ADDRESS, amount);
+export const fa2_freeze = (token: fa2, owner: address, amount: nat, _freeze_until: timestamp): operation =>
+  fa2_transfer(token, owner, Common.c_NULL_ADDRESS, amount);

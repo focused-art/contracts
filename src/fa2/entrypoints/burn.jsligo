@@ -1,20 +1,25 @@
+#import "../types.jsligo" "T"
+#import "../views.jsligo" "V"
+#import "../helpers.jsligo" "H"
+#import "../../common/utils/address.jsligo" "A"
+
 // Burn some tokens
-const burn = (input: mint_burn_params, permit_opt: option<permit>, s1: storage): @return => {
+export const entrypoint = (input: T.mint_burn_params, permit_opt: option<T.Permit.permit>, s1: T.storage): T.@return => {
   let s = s1;
 
-  const operator : operator = match(permit_opt, {
-    Some: permit => {
+  const operator : T.operator = match(permit_opt) {
+    when(Some(permit)): do {
       const param_bytes : bytes = Bytes.pack(["%burn", input]);
-      s = check_and_store_permit(permit, param_bytes, s);
-      return address_from_key(permit.signer);
-    },
-    None: () => Tezos.get_sender()
-  });
+      s = H.check_and_store_permit(permit, param_bytes, s);
+      return A.address_from_key(permit.signer);
+    };
+    when(None()): Tezos.get_sender();
+  };
 
-  validate_operator(input.owner, operator, input.token_id, s);
-  validate_token_id(input.token_id, s);
+  H.validate_operator(input.owner, operator, input.token_id, s);
+  H.validate_token_id(input.token_id, s);
 
-  const owner_bal: nat = internal_get_balance_of(input.owner, input.token_id, s);
+  const owner_bal: nat = H.internal_get_balance_of(input.owner, input.token_id, s);
 
   assert_with_error(owner_bal >= input.amount, "FA2_INSUFFICIENT_BALANCE");
 
@@ -23,7 +28,7 @@ const burn = (input: mint_burn_params, permit_opt: option<permit>, s1: storage):
   s.ledger = Big_map.update([input.owner, input.token_id], Some(new_owner_bal), s.ledger);
 
   const new_total_supply: nat = Option.unopt(
-    is_nat(internal_get_token_total_supply(input.token_id, s) - input.amount)
+    is_nat(H.internal_get_token_total_supply(input.token_id, s) - input.amount)
   );
 
   s.token_total_supply = Big_map.update(input.token_id, Some(new_total_supply), s.token_total_supply);
@@ -32,15 +37,15 @@ const burn = (input: mint_burn_params, permit_opt: option<permit>, s1: storage):
   let operations: list<operation> = list([]);
 
   // Send hooks
-  for (const hook of get_hooks(Burn_hook(), s)) {
+  for (const hook of V.get_hooks(Burn_hook(), s)) {
     operations = list([
-      Tezos.transaction(input, (0 as mutez), get_burn_hook(hook)),
+      Tezos.transaction(input, 0mutez, H.get_burn_hook(hook)),
       ...operations
     ]);
   };
 
   // Events
-  const total_supply_update_event: total_supply_update_event = {
+  const total_supply_update_event: T.total_supply_update_event = {
     owner_diffs: list([
       {
         owner: input.owner;
@@ -57,7 +62,7 @@ const burn = (input: mint_burn_params, permit_opt: option<permit>, s1: storage):
     ...operations
   ]);
 
-  const balance_update_event: balance_update_event = {
+  const balance_update_event: T.balance_update_event = {
     owner: input.owner,
     token_id: input.token_id,
     new_balance: new_owner_bal,

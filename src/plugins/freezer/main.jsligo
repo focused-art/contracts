@@ -4,19 +4,24 @@
 /*      Built by Codecrafting <♥> Labs      */
 /*                                          */
 
-#include "../../common/types.jsligo"
-#include "../../common/utils/fa2.jsligo"
-#include "../../common/utils/timestamp.jsligo"
-#include "types.jsligo"
-#include "views.jsligo"
-#include "entrypoints.jsligo"
+#import "types.jsligo" "T"
+#import "Views.jsligo" "V"
+#import "entrypoints/freeze.jsligo" "Freeze"
+#import "entrypoints/burn-hook.jsligo" "BurnHook"
+#import "entrypoints/transfer-hook.jsligo" "TransferHook"
 
 @entry
-const main = (action: entry_action, s: storage): @return => {
-  assert_with_error(Tezos.get_amount() == (0 as mutez), "FA_DONT_SEND_TEZ");
-  return match(action, {
-    Freeze: params          => freeze(params, s),
-    Transfer_hook: params   => transfer_hook(params, s),
-    Burn_hook: params       => burn_hook(params, s)
-  })
+const main = (action: T.entry_action, s: T.storage): T.@return => {
+  assert_with_error(Tezos.get_amount() == 0mutez, "FA_DONT_SEND_TEZ");
+  return match(action) {
+    when(Freeze(params)):           Freeze.entrypoint(params, s);
+    when(Transfer_hook(params)):    TransferHook.entrypoint(params, s);
+    when(Burn_hook(params)):        BurnHook.entrypoint(params, s);
+  };
 };
+
+@view
+const is_revocable = V.is_revocable;
+
+@view
+const is_frozen = V.is_frozen;

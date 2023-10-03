@@ -1,10 +1,14 @@
+#import "../types.jsligo" "T"
+#import "../views.jsligo" "V"
+#import "../../../common/utils/fa2.jsligo" "Fa2"
+
 // Burn hook
-const burn_hook = (params: mint_burn_params, s: storage): @return => {
-  const token: fa2 = {
+export const entrypoint = (params: Fa2.mint_burn_params, s: T.storage): T.@return => {
+  const token: Fa2.fa2 = {
     address: Tezos.get_sender();
     token_id: params.token_id
   };
-  assert_with_error(is_frozen([params.owner, token], s) == false, "FA_FROZEN_TOKEN_BURN_DENIED");
+  assert_with_error(V.is_frozen([params.owner, token], s) == false, "FA_FROZEN_TOKEN_BURN_DENIED");
 
-  return [noop, s]
+  return [T.Common.noop, s]
 };

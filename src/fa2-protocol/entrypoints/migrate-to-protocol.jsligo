@@ -1,28 +1,33 @@
+#import "../types.jsligo" "T"
+#import "../helpers.jsligo" "H"
+
 // Migrate contract to new protocol
-const migrate_to_protocol = (new_protocol: address, s1: storage): @return => {
+export const entrypoint = (new_protocol: address, s1: T.storage): T.@return => {
   let s = s1;
 
-  const kt1: contract_address = Tezos.get_sender();
+  const kt1: T.Common.contract_address = Tezos.get_sender();
 
   assert_with_error(Big_map.mem(kt1, s.roles) == true, "FA_INVALID_PROTCOL_MIGRATION");
 
-  const permissions: permissions = get_permissions_or_fail(kt1, s);
-  const hooks: hooks = internal_get_hooks(kt1, s);
+  const permissions: T.permissions = H.get_permissions_or_fail(kt1, s);
+  const hooks: T.hooks = H.internal_get_hooks(kt1, s);
 
-  const migrate_params : migrate_from_protocol_params = {
+  const migrate_params : T.migrate_from_protocol_params = {
     fa2_address: kt1,
     roles: permissions,
     hooks,
   };
 
-  const migrate_entrypoint : contract<migrate_from_protocol_params> =
+  const migrate_entrypoint : contract<T.migrate_from_protocol_params> =
     match(
-      Tezos.get_entrypoint_opt("%migrate_from_protocol", new_protocol) as option<contract<migrate_from_protocol_params>>,
-      { Some: entrypoint => entrypoint, None: () => failwith("FA_INVALID_PROTCOL_MIGRATION") }
-    );
+      Tezos.get_entrypoint_opt("%migrate_from_protocol", new_protocol) as option<contract<T.migrate_from_protocol_params>>
+    ) {
+      when(Some(entrypoint)): entrypoint;
+      when(None()): failwith("FA_INVALID_PROTCOL_MIGRATION");
+    };
 
   const operations: list<operation> = list([
-    Tezos.transaction(migrate_params, (0 as mutez), migrate_entrypoint)
+    Tezos.transaction(migrate_params, 0mutez, migrate_entrypoint)
   ]);
 
   return [operations, {

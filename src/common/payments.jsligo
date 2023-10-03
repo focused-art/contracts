@@ -1,17 +1,22 @@
+#import "types.jsligo" "T"
+#import "utils/fa2.jsligo" "Fa2"
+#import "utils/tez.jsligo" "Tez"
+#import "utils/nat.jsligo" "Nat"
+
 // Pay out royalties and recipients
-const pay_royalties_and_recipients = (token: fa2, recipients: recipients, price: tez, operations1: op_list): op_list => {
+export const pay_royalties_and_recipients = (token: Fa2.fa2, recipients: T.recipients, price: tez, operations1: T.op_list): T.op_list => {
   let operations = operations1;
   let tez_remaining: tez = price;
 
-  if (tez_remaining > (0 as mutez)) {
+  if (tez_remaining > 0mutez) {
     // Pay royalties
-    const royalty_shares: royalty_shares = get_royalty_shares(token, tez_to_nat(tez_remaining));
-    let total_royalties: tez = (0 as mutez);
+    const royalty_shares: Fa2.royalty_shares = Fa2.get_royalty_shares(token, Tez.to_nat(tez_remaining));
+    let total_royalties: tez = 0mutez;
     for (const generated of royalty_shares) {
       const [receiver, share] = generated;
-      if (share > (0 as nat) && tez_remaining > (0 as mutez)) {
-        const share_tez: tez = nat_to_tez(share);
-        operations = list([tez_transfer(receiver, share_tez), ...operations]);
+      if (share > 0n && tez_remaining > 0mutez) {
+        const share_tez: tez = Nat.to_tez(share);
+        operations = list([Tez.transfer(receiver, share_tez), ...operations]);
         total_royalties = total_royalties + share_tez
       };
     };
@@ -19,31 +24,31 @@ const pay_royalties_and_recipients = (token: fa2, recipients: recipients, price:
     // Sanity check royalties
     assert_with_error(tez_remaining >= total_royalties, "FA_INVALID_ROYALTIES");
 
-    if (total_royalties > (0 as mutez)) {
+    if (total_royalties > 0mutez) {
       tez_remaining = Option.unopt(tez_remaining - total_royalties)
     };
 
     // Transfer remaining tez to recipients
-    if (tez_remaining > (0 as mutez)) {
+    if (tez_remaining > 0mutez) {
       const num_recipients: nat = Map.size(recipients);
-      let count: nat = (1 as nat);
+      let count: nat = 1n;
       for (const generated of recipients) {
         const [recipient, pct] = generated;
-        if (tez_remaining > (0 as mutez)) {
-          let tez_amount: tez = (0 as mutez);
+        if (tez_remaining > 0mutez) {
+          let tez_amount: tez = 0mutez;
           if (count == num_recipients) {
             tez_amount = tez_remaining
           } else {
             tez_amount =
-              tez_remaining * pct / (10000 as nat)
+              tez_remaining * pct / 10000n
           };
-          if ((tez_amount > (0 as mutez))) {
-            tez_amount = tez_min(tez_remaining, tez_amount);
-            operations = list([tez_transfer(recipient, tez_amount), ...operations]);
+          if ((tez_amount > 0mutez)) {
+            tez_amount = Tez.min(tez_remaining, tez_amount);
+            operations = list([Tez.transfer(recipient, tez_amount), ...operations]);
             tez_remaining = Option.unopt(tez_remaining - tez_amount)
           };
         };
-        count = count + (1 as nat);
+        count = count + 1n;
       };
     };
   };

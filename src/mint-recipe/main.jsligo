@@ -4,21 +4,31 @@
 /*      Built by Codecrafting <♥> Labs      */
 /*                                          */
 
-#include "../common/types.jsligo"
-#include "../common/utils/fa2.jsligo"
-#include "../common/utils/tez.jsligo"
-#include "../common/utils/nat.jsligo"
-#include "../common/utils/int.jsligo"
-#include "../common/payments.jsligo"
-#include "types.jsligo"
-#include "helpers.jsligo"
-#include "views.jsligo"
-#include "entrypoints.jsligo"
+#import "types.jsligo" "T"
+#import "Views.jsligo" "V"
+#import "entrypoints/create.jsligo" "Create"
+#import "entrypoints/mint.jsligo" "Mint"
+#import "entrypoints/mint-owner.jsligo" "MintOwner"
 
 @entry
-const main = (action: entry_action, s: storage): @return =>
-  match(action, {
-    Mint_owner_action: params   => mint_owner_main(params, s),
-    Create: params              => create(params, s),
-    Mint: params                => mint(params, s)
-  });
+const main = (action: T.entry_action, s: T.storage): T.@return =>
+  match(action) {
+    when(Mint_owner_action(params)):  MintOwner.entrypoint(params, s);
+    when(Create(params)):             Create.entrypoint(params, s);
+    when(Mint(params)):               Mint.entrypoint(params, s);
+  };
+
+@view
+const get_mint_owner = V.get_mint_owner;
+
+@view
+const is_mint_owner = V.is_mint_owner;
+
+@view
+const get_mint_start_time = V.get_mint_start_time;
+
+@view
+const get_mint_duration = V.get_mint_duration;
+
+@view
+const get_num_minted = V.get_num_minted;

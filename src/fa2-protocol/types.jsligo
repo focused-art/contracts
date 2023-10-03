@@ -1,6 +1,13 @@
-type permissions =
-// @layout comb
-{
+#import "../common/types.jsligo" "Common"
+#import "../common/utils/fa2.jsligo" "Fa2"
+#import "../common/utils/permit.jsligo" "Permit"
+
+export type trusted = Common.trusted;
+export type token_id = Fa2.Fa2.token_id;
+export type role_type = Common.role_type;
+export type hook_type = Common.hook_type;
+
+export type permissions = {
   owner                 : trusted,
   pending_owner         : option<address>,
   creator               : set<trusted>,
@@ -9,11 +16,9 @@ type permissions =
   royalties_manager     : set<trusted>
 };
 
-type revocable = bool;
+export type revocable = bool;
 
-type hooks =
-// @layout comb
-{
+export type hooks = {
   transfer              : map<trusted, revocable>,
   create                : map<trusted, revocable>,
   mint                  : map<trusted, revocable>,
@@ -22,9 +27,7 @@ type hooks =
   update_royalties      : map<trusted, revocable>
 };
 
-type protocol_hooks =
-// @layout comb
-{
+export type protocol_hooks = {
   transfer              : set<trusted>,
   create                : set<trusted>,
   mint                  : set<trusted>,
@@ -33,83 +36,57 @@ type protocol_hooks =
   update_royalties      : set<trusted>
 };
 
-type fa2_storage =
-// @layout comb
-{
-  metadata              : big_map<string, bytes>,
-  protocol              : trusted,
-  next_token_id         : nat,
-  token_total_supply    : big_map<token_id, nat>,
-  ledger                : big_map<[owner, token_id], nat>,
-  operators             : big_map<[owner, ([operator, token_id])], unit>,
-  token_metadata        : big_map<token_id, token_metadata>,
-  royalties             : big_map<token_id, royalties>,
-  token_max_supply      : big_map<token_id, nat>,
-  created               : big_map<token_id, timestamp>,
-  default_royalties     : royalties,
-  permits               : used_permits
-};
-
-type create_fa2 =
-  (v: ([option<key_hash>, tez, fa2_storage])) => (
-    [operation, address]
-  );
+export type fa2_storage = Fa2.Fa2.storage;
 
 // contract storage
-type storage =
-// @layout comb
-{
+export type storage = {
   metadata              : big_map<string, bytes>,
-  roles                 : big_map<contract_address, permissions>,
-  hooks                 : big_map<contract_address, hooks>,
+  roles                 : big_map<Common.contract_address, permissions>,
+  hooks                 : big_map<Common.contract_address, hooks>,
   protocol_hooks        : protocol_hooks,
-  permits               : used_permits,
-  permits_expiry        : expiring_permits
+  permits               : Permit.used_permits,
+  permits_expiry        : Permit.expiring_permits,
 };
 
 // define return type for readability
-type @return = [op_list, storage];
+export type @return = [Common.op_list, storage];
 
-type update_role_param =
+export type update_role_param =
   | ["Add", role_type, trusted]
   | ["Remove", role_type, trusted];
 
-type update_roles_params =
-  list<(michelson_pair<[contract_address, "fa2_address", update_role_param, ""]>)>;
+export type update_roles_params =
+  list<(michelson_pair<[Common.contract_address, "fa2_address", update_role_param, ""]>)>;
 
-type renounce_role_params =
+export type renounce_role_params =
   | ["Ownership", unit]
   | ["Creator", unit]
   | ["Minter", unit]
   | ["Metadata_manager", unit]
   | ["Royalties_manager", unit];
 
-type renounce_roles_params =
-  list<(michelson_pair<[contract_address, "fa2_address", renounce_role_params, ""]>)>;
+export type renounce_roles_params =
+  list<(michelson_pair<[Common.contract_address, "fa2_address", renounce_role_params, ""]>)>;
 
-type update_hook_param =
+export type update_hook_param =
   | ["Add", hook_type, trusted]
   | ["Remove", hook_type, trusted];
 
-type update_hooks_params =
-  list<(michelson_pair<[contract_address, "fa2_address", update_hook_param, ""]>)>;
+export type update_hooks_params =
+  list<(michelson_pair<[Common.contract_address, "fa2_address", update_hook_param, ""]>)>;
 
-type transfer_ownership_params =
-// @layout comb
-{
-  fa2_address           : contract_address,
+export type transfer_ownership_params = {
+  fa2_address           : Common.contract_address,
   new_owner             : trusted,
 };
 
-type migrate_from_protocol_params =
-// @layout comb
-{
-  fa2_address           : contract_address,
+export type migrate_from_protocol_params = {
+  fa2_address           : Common.contract_address,
   roles                 : permissions,
   hooks                 : hooks
 };
 
-type permitted_action =
+export type permitted_action =
   | ["Init"]
   | ["Transfer_ownership"]
   | ["Update_roles"]
@@ -117,20 +94,18 @@ type permitted_action =
   | ["Update_hooks"]
   | ["Confirm_ownership"];
 
-type permitted_params =
-// @layout comb
-{
+export type permitted_params = {
   action                : permitted_action,
   packed_params         : bytes,
-  permit                : permit
+  permit                : Permit.permit
 };
 
-type entry_action =
+export type entry_action =
   | ["Permitted", permitted_params]
-  | ["Init", metadata]
+  | ["Init", Common.metadata]
   | ["Transfer_ownership", transfer_ownership_params]
   | ["Update_roles", update_roles_params]
   | ["Renounce_roles", renounce_roles_params]
   | ["Update_hooks", update_hooks_params]
-  | ["Confirm_ownership", contract_address]
+  | ["Confirm_ownership", Common.contract_address]
   | ["Migrate_to_protocol", trusted];

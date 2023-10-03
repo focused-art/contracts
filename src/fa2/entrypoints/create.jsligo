@@ -1,21 +1,28 @@
+#import "../types.jsligo" "T"
+#import "../views.jsligo" "V"
+#import "../helpers.jsligo" "H"
+#import "../../common/utils/address.jsligo" "A"
+#import "../../common/utils/nat.jsligo" "Nat"
+
 // Create new token
-const create = (input: create_params, permit_opt: option<permit>, s1: storage): @return => {
+export const entrypoint = (input: T.create_params, permit_opt: option<T.Permit.permit>, s1: T.storage): T.@return => {
   let s = s1;
 
-  const creator : address = match(permit_opt, {
-    Some: permit => {
+  const creator : address = match(permit_opt) {
+    when(Some(permit)): do {
       const param_bytes : bytes = Bytes.pack(["%create", input]);
-      s = check_and_store_permit(permit, param_bytes, s);
-      return address_from_key(permit.signer);
-    },
-    None: () => Tezos.get_sender()
-  });
+      s = H.check_and_store_permit(permit, param_bytes, s);
+      return A.address_from_key(permit.signer);
+    };
+    when(None()): Tezos.get_sender();
+  };
 
-  assert_with_error(has_role([creator, Creator()], s), "FA2_INVALID_CREATOR_ACCESS");
+  assert_with_error(V.has_role([creator, Creator()], s), "FA2_INVALID_CREATOR_ACCESS");
 
-  const token_id: token_id = match(input.token_id, {
-    Some: t => t, None: () => s.next_token_id
-  });
+  const token_id: T.token_id = match(input.token_id) {
+    when(Some(t)): t;
+    when(None()): s.next_token_id;
+  };
 
   assert_with_error(Big_map.mem(token_id, s.token_metadata) == false, "FA2_DUP_TOKEN_ID");
 
@@ -24,30 +31,30 @@ const create = (input: create_params, permit_opt: option<permit>, s1: storage): 
       token_info: input.token_metadata
     },
     s.token_metadata);
-  s.token_total_supply = Big_map.add(token_id, (0 as nat), s.token_total_supply);
+  s.token_total_supply = Big_map.add(token_id, 0n, s.token_total_supply);
   s.token_max_supply = Big_map.add(token_id, input.max_supply, s.token_max_supply);
 
-  const _ = match(input.royalties, {
-    Some: royalties => { s.royalties = Big_map.add(token_id, royalties, s.royalties) },
-    None: () => { return }
-  });
+  match(input.royalties) {
+    when(Some(royalties)): do { s.royalties = Big_map.add(token_id, royalties, s.royalties) };
+    when(None()): unit;
+  };
 
   s.created = Big_map.add(token_id, Tezos.get_now(), s.created);
-  s.next_token_id = nat_max(s.next_token_id, token_id) + (1 as nat);
+  s.next_token_id = Nat.max(s.next_token_id, token_id) + 1n;
 
   // initialize operations
   let operations: list<operation> = list([]);
 
   // Send hooks
-  for (const hook of get_hooks(Create_hook(), s)) {
+  for (const hook of V.get_hooks(Create_hook(), s)) {
     operations = list([
-      Tezos.transaction(input, (0 as mutez), get_create_hook(hook)),
+      Tezos.transaction(input, 0mutez, H.get_create_hook(hook)),
       ...operations
     ]);
   };
 
   // Events
-  const token_metadata_update_event: token_metadata_update_event = {
+  const token_metadata_update_event: T.token_metadata_update_event = {
     token_id: token_id;
     new_metadata: Some(input.token_metadata)
   };

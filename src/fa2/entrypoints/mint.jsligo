@@ -1,44 +1,49 @@
+#import "../types.jsligo" "T"
+#import "../views.jsligo" "V"
+#import "../helpers.jsligo" "H"
+#import "../../common/utils/address.jsligo" "A"
+
 // Mint some tokens
-const mint = (input: mint_burn_params, permit_opt: option<permit>, s1: storage): @return => {
+export const entrypoint = (input: T.mint_burn_params, permit_opt: option<T.Permit.permit>, s1: T.storage): T.@return => {
   let s = s1;
 
-  const minter : address = match(permit_opt, {
-    Some: permit => {
+  const minter : address = match(permit_opt) {
+    when(Some(permit)): do {
       const param_bytes : bytes = Bytes.pack(["%mint", input]);
-      s = check_and_store_permit(permit, param_bytes, s);
-      return address_from_key(permit.signer);
-    },
-    None: () => Tezos.get_sender()
-  });
+      s = H.check_and_store_permit(permit, param_bytes, s);
+      return A.address_from_key(permit.signer);
+    };
+    when(None()): Tezos.get_sender();
+  };
 
-  assert_with_error(has_role([minter, Minter()], s), "FA2_INVALID_MINTER_ACCESS");
-  validate_token_id(input.token_id, s);
+  assert_with_error(V.has_role([minter, Minter()], s), "FA2_INVALID_MINTER_ACCESS");
+  H.validate_token_id(input.token_id, s);
 
-  const new_owner_bal: nat = internal_get_balance_of(input.owner, input.token_id, s) + input.amount;
+  const new_owner_bal: nat = H.internal_get_balance_of(input.owner, input.token_id, s) + input.amount;
 
   s.ledger = Big_map.update([input.owner, input.token_id], Some(new_owner_bal), s.ledger);
 
-  const new_total_supply: nat = internal_get_token_total_supply(input.token_id, s) + input.amount;
+  const new_total_supply: nat = H.internal_get_token_total_supply(input.token_id, s) + input.amount;
 
   s.token_total_supply = Big_map.update(input.token_id, Some(new_total_supply), s.token_total_supply);
 
   // Cannot exceed mint caps
-  const max_supply: nat = get_max_supply(input.token_id, s);
-  if (max_supply > (0 as nat))
+  const max_supply: nat = V.get_max_supply(input.token_id, s);
+  if (max_supply > 0n)
     assert_with_error(new_total_supply <= max_supply, "FA2_MAX_SUPPLY_EXCEEDED");
 
   // initialize operations
   let operations: list<operation> = list([]);
 
-  for (const hook of get_hooks(Mint_hook(), s)) {
+  for (const hook of V.get_hooks(Mint_hook(), s)) {
     operations = list([
-      Tezos.transaction(input, (0 as mutez), get_mint_hook(hook)),
+      Tezos.transaction(input, 0mutez, H.get_mint_hook(hook)),
       ...operations
     ]);
   };
 
   // Events
-  const total_supply_update_event: total_supply_update_event = {
+  const total_supply_update_event: T.total_supply_update_event = {
     owner_diffs: list([
       {
         owner: input.owner;
@@ -55,7 +60,7 @@ const mint = (input: mint_burn_params, permit_opt: option<permit>, s1: storage):
     ...operations
   ]);
 
-  const balance_update_event: balance_update_event = {
+  const balance_update_event: T.balance_update_event = {
     owner: input.owner,
     token_id: input.token_id,
     new_balance: new_owner_bal,

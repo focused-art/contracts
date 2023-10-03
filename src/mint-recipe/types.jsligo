@@ -1,54 +1,48 @@
-type wallet_record =
-// @layout comb
-{
+#import "../common/types.jsligo" "Common"
+#import "../common/utils/fa2.jsligo" "Fa2"
+
+export type token_id = Fa2.Fa2.token_id;
+
+export type wallet_record = {
   minted: nat,
   last_block: nat,
   block_minted: nat
 };
 
-type fa2_with_amount =
-// @layout comb
-{
-  token: fa2;
+export type fa2_with_amount = {
+  token: Fa2.fa2;
   amount: nat
 };
 
-type token_id_opts =
+export type token_id_opts =
   | ["Token_id", token_id]
   | ["Range", token_id, token_id]
   | ["Set", set<token_id>]
   | ["Any", unit];
 
-type ingredient =
-// @layout comb
-{
+export type ingredient = {
   tokens: map<address, token_id_opts>;
   amount: nat
 };
 
-type instruction =
+export type instruction =
   | ["Burn", ingredient]
   | ["Hold", ingredient]
   | ["Freeze", ingredient, timestamp]
-  | ["Transfer", ingredient, recipient]
+  | ["Transfer", ingredient, Common.recipient]
   | ["Pay", tez];
 
-type recipe_step = nat;
+export type recipe_step = nat;
+export type recipe_id = nat;
+export type recipe = map<recipe_step, instruction>;
+export type products = set<fa2_with_amount>;
 
-type recipe_id = nat;
-
-type recipe = map<recipe_step, instruction>;
-
-type products = set<fa2_with_amount>;
-
-type mint =
-// @layout comb
-{
+export type mint = {
   owner: address,
   paused: bool,
   recipes: map<recipe_id, recipe>,
   products,
-  recipients,
+  recipients: Common.recipients,
   minted: nat,
   start_time: timestamp,
   duration: int,
@@ -57,11 +51,9 @@ type mint =
   max_per_wallet: nat
 };
 
-type mint_id = nat;
+export type mint_id = nat;
 
-type storage =
-// @layout comb
-{
+export type storage = {
   metadata: big_map<string, bytes>,
   mints: big_map<mint_id, mint>,
   next_mint_id: mint_id,
@@ -69,15 +61,13 @@ type storage =
 };
 
 // define return for readability
-type @return = [op_list, storage];
+export type @return = [Common.op_list, storage];
 
 // Entrypoint params
-type create_params =
-// @layout comb
-{
+export type create_params = {
   recipes: map<recipe_id, recipe>,
   products,
-  recipients,
+  recipients: Common.recipients,
   start_time: timestamp,
   duration: int,
   max_mint: nat,
@@ -85,29 +75,27 @@ type create_params =
   max_per_wallet: nat
 };
 
-type mint_params =
-// @layout comb
-{
+export type mint_params = {
   mint_id,
   recipe_id,
   recipe_steps: map<recipe_step, set<fa2_with_amount>>,
   mint_amount: nat,
-  recipient: option<recipient>
+  recipient: option<Common.recipient>
 };
 
-type mint_update_action =
+export type mint_update_action =
   | ["Pause", mint_id, bool]
   | ["Update_start_time", mint_id, timestamp]
   | ["Update_duration", mint_id, int]
   | ["Update_max_per_block", mint_id, nat]
   | ["Update_max_per_wallet", mint_id, nat]
-  | ["Update_recipients", mint_id, recipients];
+  | ["Update_recipients", mint_id, Common.recipients];
 
-type mint_owner_action =
+export type mint_owner_action =
   | ["Cancel", mint_id]
   | ["Mint_update_action", mint_update_action];
 
-type entry_action =
+export type entry_action =
   | ["Mint_owner_action", mint_owner_action]
   | ["Create", create_params]
   | ["Mint", mint_params];

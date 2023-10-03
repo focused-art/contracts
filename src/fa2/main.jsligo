@@ -4,26 +4,79 @@
 /*      Built by Codecrafting <♥> Labs      */
 /*                                          */
 
-#include "../common/types.jsligo"
-#include "../common/utils/nat.jsligo"
-#include "../common/utils/permit.jsligo"
-#include "types.jsligo"
-#include "helpers.jsligo"
-#include "views.jsligo"
-#include "entrypoints.jsligo"
+#import "types.jsligo" "T"
+#import "Views.jsligo" "V"
+#import "entrypoints/transfer.jsligo" "Transfer"
+#import "entrypoints/update-operators.jsligo" "UpdateOperators"
+#import "entrypoints/assert-balances.jsligo" "AssertBalances"
+#import "entrypoints/balance-of.jsligo" "BalanceOf"
+#import "entrypoints/burn.jsligo" "Burn"
+#import "entrypoints/create.jsligo" "Create"
+#import "entrypoints/mint.jsligo" "Mint"
+#import "entrypoints/privileged-main.jsligo" "Privileged"
+#import "entrypoints/permitted-main.jsligo" "Permitted"
 
 @entry
-const main = ([action, s]: [entry_action, storage]): @return => {
-  assert_with_error(Tezos.get_amount() == (0 as mutez), "FA2_DONT_SEND_TEZ");
-  return match(action, {
-    Privileged_action: params   => privileged_main(params, s),
-    Permitted: params           => permitted_main(params, s),
-    Transfer: params            => transfer(params, None(), s),
-    Update_operators: params    => update_operators(params, None(), s),
-    Assert_balances: params     => assert_balances(params, s),
-    Balance_of: params          => balance_of(params, s),
-    Create: params              => create(params, None(), s),
-    Mint: params                => mint(params, None(), s),
-    Burn: params                => burn(params, None(), s)
-  });
+const main = (action: T.entry_action, s: T.storage): T.@return => {
+  assert_with_error(Tezos.get_amount() == 0mutez, "FA2_DONT_SEND_TEZ");
+  return match(action) {
+    when(Privileged_action(params)): Privileged.entrypoint(params, s);
+    when(Permitted(params)):         Permitted.entrypoint(params, s);
+    when(Transfer(params)):          Transfer.entrypoint(params, None(), s);
+    when(Update_operators(params)):  UpdateOperators.entrypoint(params, None(), s);
+    when(Assert_balances(params)):   AssertBalances.entrypoint(params, s);
+    when(Balance_of(params)):        BalanceOf.entrypoint(params, s);
+    when(Create(params)):            Create.entrypoint(params, None(), s);
+    when(Mint(params)):              Mint.entrypoint(params, None(), s);
+    when(Burn(params)):              Burn.entrypoint(params, None(), s);
+  };
 };
+
+// Ligo can't compile the main entry as a constant, so we work around it
+const main_uncurried = ([action, s]: [T.entry_action, T.storage]): T.@return =>
+  main(action, s);
+
+@view
+const get_protocol = V.get_protocol;
+
+@view
+const get_owner = V.get_owner;
+
+@view
+const is_owner = V.is_owner;
+
+@view
+const has_role = V.has_role;
+
+@view
+const get_hooks = V.get_hooks;
+
+@view
+const is_hook = V.is_hook;
+
+@view
+const next_token_id = V.next_token_id;
+
+@view
+const get_balance = V.get_balance;
+
+@view
+const get_total_supply = V.get_total_supply;
+
+@view
+const get_max_supply = V.get_max_supply;
+
+@view
+const is_operator = V.is_operator;
+
+@view
+const get_token_metadata = V.get_token_metadata;
+
+@view
+const is_token = V.is_token;
+
+@view
+const get_royalties = V.get_royalties;
+
+@view
+const get_created = V.get_created;

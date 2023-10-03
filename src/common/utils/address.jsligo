@@ -1,9 +1,11 @@
-const get_account_tag = (input: address): bytes =>
-  Bytes.sub((6 as nat), (1 as nat), Bytes.pack(input));
+export const get_account_tag = (input: address): bytes =>
+  Bytes.sub(6n, 1n, Bytes.pack(input));
 
-const is_implicit_account = (input: address): bool =>
+export const is_implicit_account = (input: address): bool =>
   get_account_tag(input) == 0x00;
 
-const is_originated_account = (input: address): bool =>
+export const is_originated_account = (input: address): bool =>
   get_account_tag(input) == 0x01;
 
+export const address_from_key = (k: key): address =>
+  Tezos.address(Tezos.implicit_account(Crypto.hash_key(k)));

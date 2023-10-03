@@ -4,7 +4,7 @@
   "description": "focused.art smart contracts",
   "scripts": {
     "clean": "rm -rf ./build/contracts && mkdir -p ./build/contracts && mkdir -p ./build/contracts/plugins",
-    "ligo": "docker run --rm -v \"$PWD\":\"$PWD\" -w \"$PWD\" ligolang/ligo:0.73.0",
+    "ligo": "docker run --rm -v \"$PWD\":\"$PWD\" -w \"$PWD\" ligolang/ligo:1.0.0",
 
     "compile:clean": "pnpm clean && pnpm compile:all",
     "compile:all": "pnpm compile:fa2:all && pnpm compile:plugin:all && pnpm compile:mint-recipe",
@@ -21,8 +21,8 @@
     "compile:plugin:cement-metadata": "CONTRACT=plugins/cement-metadata pnpm compile:contract",
     "compile:plugin:freezer": "CONTRACT=plugins/freezer pnpm compile:contract",
 
-    "compile:const:fa2:json": "pnpm --silent ligo compile expression --michelson-format json --init-file src/fa2/main.jsligo jsligo main > ./build/constants/fa2.json",
-    "compile:const:fa2:raw": "pnpm --silent ligo compile constant --init-file src/fa2/main.jsligo jsligo main",
+    "compile:const:fa2:json": "pnpm --silent ligo compile expression --michelson-format json --init-file src/fa2/main.jsligo jsligo main_uncurried > ./build/constants/fa2.json",
+    "compile:const:fa2:raw": "pnpm --silent ligo compile constant --init-file src/fa2/main.jsligo jsligo main_uncurried",
 
     "testnet:deploy-constant": "pnpm exec dotenv -e .env.testnet node scripts/deploy-constant.js",
     "mainnet:deploy-constant": "pnpm exec dotenv -e .env node scripts/deploy-constant.js",

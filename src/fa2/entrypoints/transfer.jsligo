@@ -1,16 +1,21 @@
-const transfer = (params: transfer_params, permit_opt: option<permit>, s1: storage): @return => {
+#import "../types.jsligo" "T"
+#import "../views.jsligo" "V"
+#import "../helpers.jsligo" "H"
+#import "../../common/utils/address.jsligo" "A"
+
+export const entrypoint = (params: T.transfer_params, permit_opt: option<T.Permit.permit>, s1: T.storage): T.@return => {
   let s = s1;
 
-  const sender : address = match(permit_opt, {
-    Some: permit => {
+  const sender : address = match(permit_opt) {
+    when(Some(permit)): do {
       const param_bytes : bytes = Bytes.pack(["%transfer", params]);
-      s = check_and_store_permit(permit, param_bytes, s);
-      return address_from_key(permit.signer);
-    },
-    None: () => Tezos.get_sender()
-  });
+      s = H.check_and_store_permit(permit, param_bytes, s);
+      return A.address_from_key(permit.signer);
+    };
+    when(None()): Tezos.get_sender();
+  };
 
-  let balance_updates: map<[owner, token_id], nat> = Map.empty;
+  let balance_updates: map<[T.owner, T.token_id], nat> = Map.empty;
 
   // initialize operations
   let operations: list<operation> = list([]);
@@ -18,13 +23,13 @@ const transfer = (params: transfer_params, permit_opt: option<permit>, s1: stora
   for (const user_trx_params of params) {
     for (const transfer of user_trx_params.txs) {
       // Check permissions
-      validate_operator(user_trx_params.from_, sender, transfer.token_id, s);
+      H.validate_operator(user_trx_params.from_, sender, transfer.token_id, s);
 
       // Token id check
-      validate_token_id(transfer.token_id, s);
+      H.validate_token_id(transfer.token_id, s);
 
       // Balance check
-      const sender_bal: nat = internal_get_balance_of(user_trx_params.from_, transfer.token_id, s);
+      const sender_bal: nat = H.internal_get_balance_of(user_trx_params.from_, transfer.token_id, s);
       assert_with_error(sender_bal >= transfer.amount, "FA2_INSUFFICIENT_BALANCE");
 
       // Track initial balance for update events
@@ -44,7 +49,7 @@ const transfer = (params: transfer_params, permit_opt: option<permit>, s1: stora
       );
 
       // Get destination balance
-      let dest_bal: nat = internal_get_balance_of(transfer.to_, transfer.token_id, s);
+      let dest_bal: nat = H.internal_get_balance_of(transfer.to_, transfer.token_id, s);
 
       // Track initial balance for update events
       if (Map.mem([transfer.to_, transfer.token_id], balance_updates) == false) {
@@ -63,7 +68,7 @@ const transfer = (params: transfer_params, permit_opt: option<permit>, s1: stora
       );
 
       // Events
-      const transfer_event: transfer_event = {
+      const transfer_event: T.transfer_event = {
         from_: user_trx_params.from_,
         to_: transfer.to_,
         token_id: transfer.token_id,
@@ -78,9 +83,9 @@ const transfer = (params: transfer_params, permit_opt: option<permit>, s1: stora
   };
 
   // Send hooks
-  for (const hook of get_hooks(Transfer_hook(), s)) {
+  for (const hook of V.get_hooks(Transfer_hook(), s)) {
     operations = list([
-      Tezos.transaction(params, (0 as mutez), get_transfer_hook(hook)),
+      Tezos.transaction(params, 0mutez, H.get_transfer_hook(hook)),
       ...operations
     ]);
   };
@@ -88,8 +93,8 @@ const transfer = (params: transfer_params, permit_opt: option<permit>, s1: stora
   // Balance update events
   for (const generated of balance_updates) {
     const [[owner, token_id], old_balance] = generated;
-    const new_balance: nat = internal_get_balance_of(owner, token_id, s);
-    const balance_update_event: balance_update_event = {
+    const new_balance: nat = H.internal_get_balance_of(owner, token_id, s);
+    const balance_update_event: T.balance_update_event = {
       owner,
       token_id,
       new_balance: new_balance,

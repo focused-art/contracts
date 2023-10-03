@@ -1,86 +1,95 @@
-@view
-const get_owner = (k: contract_address, s: storage): trusted =>
-  match(Big_map.find_opt(k, s.roles), {
-    Some: entry => entry.owner,
-    None: () => c_NULL_ADDRESS
-  });
+#import "types.jsligo" "T"
+#import "helpers.jsligo" "H"
+#import "../common/types.jsligo" "Common"
 
-@view
-const is_owner = ([contract_address, owner]: [contract_address, address], s: storage): bool =>
-  match(Big_map.find_opt(contract_address, s.roles), {
-    Some: entry => entry.owner == owner,
-    None: () => false
-  });
+export const get_owner = (k: Common.contract_address, s: T.storage): T.trusted =>
+  match(Big_map.find_opt(k, s.roles)) {
+    when(Some(entry)): entry.owner;
+    when(None()): Common.c_NULL_ADDRESS;
+  };
 
-@view
-const has_role = (
-  [contract_address, user, role_type]: [contract_address, address, role_type],
-  s: storage
+export const is_owner = ([contract_address, owner]: [Common.contract_address, address], s: T.storage): bool =>
+  match(Big_map.find_opt(contract_address, s.roles)) {
+    when(Some(entry)): entry.owner == owner;
+    when(None()): false;
+  };
+
+export const has_role = (
+  [contract_address, user, role_type]: [Common.contract_address, address, T.role_type],
+  s: T.storage
 ): bool =>
-  match(Big_map.find_opt(contract_address, s.roles), {
-    Some: roles => match(role_type, {
-      Creator: () => Set.mem(user, roles.creator),
-      Minter: () => Set.mem(user, roles.minter),
-      Metadata_manager: () => Set.mem(user, roles.metadata_manager),
-      Royalties_manager: () => Set.mem(user, roles.royalties_manager)
-    }),
-    None: () => false
-  });
+  match(Big_map.find_opt(contract_address, s.roles)) {
+    when(Some(roles)): match(role_type) {
+      when(Creator()): Set.mem(user, roles.creator);
+      when(Minter()): Set.mem(user, roles.minter);
+      when(Metadata_manager()): Set.mem(user, roles.metadata_manager);
+      when(Royalties_manager()): Set.mem(user, roles.royalties_manager);
+    };
+    when(None()): false;
+  };
 
-@view
-const get_hooks = (
-  [contract_address, hook_type]: [contract_address, hook_type],
-  s: storage
-): set<trusted> => {
-  const revocable_hooks: hooks = (internal_get_hooks(contract_address, s));
-  return match(hook_type, {
-    Transfer_hook: () => {
-      let hooks: set<trusted> = s.protocol_hooks.transfer;
+export const is_revocable = (
+  [contract_address, hook_type]: [Common.contract_address, T.hook_type],
+  _s: T.storage
+): bool =>
+  match(Tezos.call_view("is_revocable", hook_type, contract_address) as option<bool>) {
+    when(Some(response)): response;
+    when(None()): true;
+  };
+
+export const get_hooks = (
+  [contract_address, hook_type]: [Common.contract_address, T.hook_type],
+  s: T.storage
+): set<T.trusted> => {
+  const revocable_hooks: T.hooks = (H.internal_get_hooks(contract_address, s));
+  return match(hook_type) {
+    when(Transfer_hook()): do {
+      let hooks: set<T.trusted> = s.protocol_hooks.transfer;
       for (const h of revocable_hooks.transfer) {
         const [hook, _revocable] = h;
         hooks = Set.add(hook, hooks)
       };
       return hooks
-    },
-    Create_hook: () => {
-      let hooks: set<trusted> = s.protocol_hooks.create;
+    };
+    when(Create_hook()): do {
+      let hooks: set<T.trusted> = s.protocol_hooks.create;
       for (const h of revocable_hooks.create) {
         const [hook, _revocable] = h;
         hooks = Set.add(hook, hooks)
       };
       return hooks
-    },
-    Mint_hook: () => {
-      let hooks: set<trusted> = s.protocol_hooks.mint;
+    };
+    when(Mint_hook()): do {
+      let hooks: set<T.trusted> = s.protocol_hooks.mint;
       for (const h of revocable_hooks.mint) {
         const [hook, _revocable] = h;
         hooks = Set.add(hook, hooks)
       };
       return hooks
-    },
-    Burn_hook: () => {
-      let hooks: set<trusted> = s.protocol_hooks.burn;
+    };
+    when(Burn_hook()): do {
+      let hooks: set<T.trusted> = s.protocol_hooks.burn;
       for (const h of revocable_hooks.burn) {
         const [hook, _revocable] = h;
         hooks = Set.add(hook, hooks)
       };
       return hooks
-    },
-    Metadata_hook: () => {
-      let hooks: set<trusted> = s.protocol_hooks.update_metadata;
+    };
+    when(Metadata_hook()): do {
+      let hooks: set<T.trusted> = s.protocol_hooks.update_metadata;
       for (const h of revocable_hooks.update_metadata) {
         const [hook, _revocable] = h;
         hooks = Set.add(hook, hooks)
       };
       return hooks
-    },
-    Royalties_hook: () => {
-      let hooks: set<trusted> = s.protocol_hooks.update_royalties;
+    };
+    when(Royalties_hook()): do {
+      let hooks: set<T.trusted> = s.protocol_hooks.update_royalties;
       for (const h of revocable_hooks.update_royalties) {
         const [hook, _revocable] = h;
         hooks = Set.add(hook, hooks)
       };
       return hooks
-    }
-  });
+    };
+  };
 }

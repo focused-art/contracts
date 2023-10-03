@@ -1,12 +1,16 @@
+#import "../types.jsligo" "T"
+#import "../../../common/types.jsligo" "Common"
+#import "../../../common/utils/fa2.jsligo" "Fa2"
+
 // Set cementing defaults for an fa2 contract
-const update_defaults = (fa2_address: contract_address, delay: delay, s1: storage): @return => {
+export const entrypoint = (fa2_address: Common.contract_address, delay: T.delay, s1: T.storage): T.@return => {
   let s = s1;
 
   // Only fa2 owner can call
-  assert_with_error(is_fa2_owner({ address: fa2_address, token_id: (0 as nat)}, Tezos.get_sender()), "FA_NOT_FA2_OWNER");
+  assert_with_error(Fa2.is_fa2_owner({ address: fa2_address, token_id: 0n}, Tezos.get_sender()), "FA_NOT_FA2_OWNER");
 
   // Update storage
   s.defaults = Big_map.update(fa2_address, Some(delay), s.defaults);
 
-  return [noop, s]
+  return [Common.noop, s]
 };
