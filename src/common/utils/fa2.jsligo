@@ -132,5 +132,5 @@ const fa2_burn = (token: fa2, owner: address, amount: nat): operation =>
     }
   );
 
-const fa2_freeze = (token: fa2, owner: address, amount: nat, freeze_until: timestamp): operation =>
+const fa2_freeze = (token: fa2, owner: address, amount: nat, _freeze_until: timestamp): operation =>
   fa2_transfer(token, owner, c_NULL_ADDRESS, amount);

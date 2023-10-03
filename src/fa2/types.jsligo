@@ -116,7 +116,8 @@ type storage =
   token_max_supply      : big_map<token_id, nat>,
   created               : big_map<token_id, timestamp>,
   default_royalties     : royalties,
-  permits               : used_permits
+  permits               : used_permits,
+  permits_expiry        : expiring_permits
 };
 
 type operator_update_event =
@@ -187,20 +188,28 @@ type privileged_action =
   | ["Update_protocol", trusted];
 
 type permitted_action =
-  | ["Permit_create", michelson_pair<[create_params, "params", permit, "permit"]>]
-  | ["Permit_mint", michelson_pair<[mint_burn_params, "params", permit, "permit"]>]
-  | ["Permit_burn", michelson_pair<[mint_burn_params, "params", permit, "permit"]>]
-  | ["Permit_transfer", michelson_pair<[transfer_params, "params", permit, "permit"]>]
-  | ["Permit_update_operators", michelson_pair<[update_operator_params, "params", permit, "permit"]>]
-  | ["Permit_update_contract_metadata", michelson_pair<[metadata, "params", permit, "permit"]>]
-  | ["Permit_update_metadata", michelson_pair<[update_token_metadata_params, "params", permit, "permit"]>]
-  | ["Permit_update_royalties", michelson_pair<[update_royalties_params, "params", permit, "permit"]>]
-  | ["Permit_update_default_royalties", michelson_pair<[royalties, "params", permit, "permit"]>]
-  | ["Permit_update_protocol", michelson_pair<[trusted, "params", permit, "permit"]>];
+  | ["Create"]
+  | ["Mint"]
+  | ["Burn"]
+  | ["Transfer"]
+  | ["Update_operators"]
+  | ["Update_contract_metadata"]
+  | ["Update_metadata"]
+  | ["Update_royalties"]
+  | ["Update_default_royalties"]
+  | ["Update_protocol"];
+
+type permitted_params =
+// @layout comb
+{
+  action                : permitted_action,
+  packed_params         : bytes,
+  permit                : permit
+};
 
 type entry_action =
   | ["Privileged_action", privileged_action]
-  | ["Permitted_action", permitted_action]
+  | ["Permitted", permitted_params]
   | ["Transfer", transfer_params]
   | ["Balance_of", balance_params]
   | ["Update_operators", update_operator_params]

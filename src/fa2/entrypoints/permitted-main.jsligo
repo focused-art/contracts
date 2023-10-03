@@ -1,13 +1,73 @@
-const permitted_main = (action: permitted_action, s: storage): @return =>
-  match(action, {
-    Permit_create: params                   => create(params[0], Some(params[1]), s),
-    Permit_mint: params                     => mint(params[0], Some(params[1]), s),
-    Permit_burn: params                     => burn(params[0], Some(params[1]), s),
-    Permit_transfer: params                 => transfer(params[0], Some(params[1]), s),
-    Permit_update_operators: params         => update_operators(params[0], Some(params[1]), s),
-    Permit_update_contract_metadata: params => update_contract_metadata(params[0], Some(params[1]), s),
-    Permit_update_metadata: params          => update_metadata(params[0], Some(params[1]), s),
-    Permit_update_royalties: params         => update_royalties(params[0], Some(params[1]), s),
-    Permit_update_default_royalties: params => update_default_royalties(params[0], Some(params[1]), s),
-    Permit_update_protocol: params          => update_protocol(params[0], Some(params[1]), s)
+const permitted_main = (input: permitted_params, s: storage): @return =>
+  match(input.action, {
+    Create: () => {
+      const params: create_params = Option.unopt_with_error(
+        Bytes.unpack(input.packed_params),
+        "FA_INVALID_PACKED_PARAMS"
+      );
+      return create(params, Some(input.permit), s);
+    },
+    Mint: () => {
+      const params: mint_burn_params = Option.unopt_with_error(
+        Bytes.unpack(input.packed_params),
+        "FA_INVALID_PACKED_PARAMS"
+      );
+      return mint(params, Some(input.permit), s);
+    },
+    Burn: () => {
+      const params: mint_burn_params = Option.unopt_with_error(
+        Bytes.unpack(input.packed_params),
+        "FA_INVALID_PACKED_PARAMS"
+      );
+      return burn(params, Some(input.permit), s);
+    },
+    Transfer: () => {
+      const params: transfer_params = Option.unopt_with_error(
+        Bytes.unpack(input.packed_params),
+        "FA_INVALID_PACKED_PARAMS"
+      );
+      return transfer(params, Some(input.permit), s);
+    },
+    Update_operators: () => {
+      const params: update_operator_params = Option.unopt_with_error(
+        Bytes.unpack(input.packed_params),
+        "FA_INVALID_PACKED_PARAMS"
+      );
+      return update_operators(params, Some(input.permit), s);
+    },
+    Update_contract_metadata: () => {
+      const params: metadata = Option.unopt_with_error(
+        Bytes.unpack(input.packed_params),
+        "FA_INVALID_PACKED_PARAMS"
+      );
+      return update_contract_metadata(params, Some(input.permit), s);
+    },
+    Update_metadata: () => {
+      const params: update_token_metadata_params = Option.unopt_with_error(
+        Bytes.unpack(input.packed_params),
+        "FA_INVALID_PACKED_PARAMS"
+      );
+      return update_metadata(params, Some(input.permit), s);
+    },
+    Update_royalties: () => {
+      const params: update_royalties_params = Option.unopt_with_error(
+        Bytes.unpack(input.packed_params),
+        "FA_INVALID_PACKED_PARAMS"
+      );
+      return update_royalties(params, Some(input.permit), s);
+    },
+    Update_default_royalties: () => {
+      const params: royalties = Option.unopt_with_error(
+        Bytes.unpack(input.packed_params),
+        "FA_INVALID_PACKED_PARAMS"
+      );
+      return update_default_royalties(params, Some(input.permit), s);
+    },
+    Update_protocol: () => {
+      const params: trusted = Option.unopt_with_error(
+        Bytes.unpack(input.packed_params),
+        "FA_INVALID_PACKED_PARAMS"
+      );
+      return update_protocol(params, Some(input.permit), s);
+    },
   });

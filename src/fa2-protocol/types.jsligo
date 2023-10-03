@@ -63,7 +63,8 @@ type storage =
   roles                 : big_map<contract_address, permissions>,
   hooks                 : big_map<contract_address, hooks>,
   protocol_hooks        : protocol_hooks,
-  permits               : used_permits
+  permits               : used_permits,
+  permits_expiry        : expiring_permits
 };
 
 // define return type for readability
@@ -109,15 +110,23 @@ type migrate_from_protocol_params =
 };
 
 type permitted_action =
-  | ["Permit_init", michelson_pair<[metadata, "params", permit, "permit"]>]
-  | ["Permit_transfer_ownership", michelson_pair<[transfer_ownership_params, "params", permit, "permit"]>]
-  | ["Permit_update_roles", michelson_pair<[update_roles_params, "params", permit, "permit"]>]
-  | ["Permit_renounce_roles", michelson_pair<[renounce_roles_params, "params", permit, "permit"]>]
-  | ["Permit_update_hooks", michelson_pair<[update_hooks_params, "params", permit, "permit"]>]
-  | ["Permit_confirm_ownership", michelson_pair<[contract_address, "params", permit, "permit"]>];
+  | ["Init"]
+  | ["Transfer_ownership"]
+  | ["Update_roles"]
+  | ["Renounce_roles"]
+  | ["Update_hooks"]
+  | ["Confirm_ownership"];
+
+type permitted_params =
+// @layout comb
+{
+  action                : permitted_action,
+  packed_params         : bytes,
+  permit                : permit
+};
 
 type entry_action =
-  | ["Permitted_action", permitted_action]
+  | ["Permitted", permitted_params]
   | ["Init", metadata]
   | ["Transfer_ownership", transfer_ownership_params]
   | ["Update_roles", update_roles_params]

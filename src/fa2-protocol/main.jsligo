@@ -16,7 +16,7 @@
 const main = (action: entry_action, s: storage): @return => {
   assert_with_error(Tezos.get_amount() == (0 as mutez), "FA2_DONT_SEND_TEZ");
   return match(action, {
-    Permitted_action: params    => permitted_main(params, s),
+    Permitted: params           => permitted_main(params, s),
     Init: params                => init(params, None(), s),
     Transfer_ownership: params  => transfer_ownership(params, None(), s),
     Update_roles: params        => update_roles(params, None(), s),
