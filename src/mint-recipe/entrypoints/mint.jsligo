@@ -50,6 +50,24 @@ export const entrypoint = (params: T.mint_params, s1: T.storage): T.@return => {
   // Initialize operations
   let operations: list<operation> = list([]);
 
+  // Mint callback
+  match(params.callback) {
+    when(Some(callback)): do {
+      const mint_callback_params: T.mint_callback_params = {
+        mint_id: params.mint_id,
+        recipe_id: params.recipe_id,
+        mint_amount: params.mint_amount,
+        tez_paid: Tezos.get_amount(),
+        recipient,
+      };
+      operations = list([
+        Tezos.transaction(mint_callback_params, 0mutez, callback),
+        ...operations
+      ]);
+    };
+    when(None()): unit;
+  };
+
   // Get mint recipe instructions
   const recipe: T.recipe = match(Map.find_opt(params.recipe_id, mint.recipes)) {
     when(Some(recipe)): recipe;

@@ -37,6 +37,16 @@ export type recipe_id = nat;
 export type recipe = map<recipe_step, instruction>;
 export type products = set<fa2_with_amount>;
 
+export type mint_id = nat;
+
+export type mint_callback_params = {
+  mint_id,
+  recipe_id,
+  mint_amount: nat,
+  tez_paid: tez,
+  recipient: Common.recipient,
+};
+
 export type mint = {
   owner: address,
   paused: bool,
@@ -48,10 +58,8 @@ export type mint = {
   duration: int,
   max_mint: nat,
   max_per_block: nat,
-  max_per_wallet: nat
+  max_per_wallet: nat,
 };
-
-export type mint_id = nat;
 
 export type storage = {
   metadata: big_map<string, bytes>,
@@ -72,7 +80,7 @@ export type create_params = {
   duration: int,
   max_mint: nat,
   max_per_block: nat,
-  max_per_wallet: nat
+  max_per_wallet: nat,
 };
 
 export type mint_params = {
@@ -80,7 +88,8 @@ export type mint_params = {
   recipe_id,
   recipe_steps: map<recipe_step, set<fa2_with_amount>>,
   mint_amount: nat,
-  recipient: option<Common.recipient>
+  recipient: option<Common.recipient>,
+  callback: option<contract<mint_callback_params>>,
 };
 
 export type mint_update_action =

@@ -44,17 +44,17 @@ export const entrypoint = (params: T.create_params, s1: T.storage): T.@return =>
 
   // Create mint
   s.mints = Big_map.add(s.next_mint_id, {
-    owner: Tezos.get_sender();
-    paused: false;
-    recipes: params.recipes;
-    products: params.products;
-    recipients: recipients;
-    minted: 0n;
-    start_time: params.start_time;
-    duration: params.duration;
-    max_mint: params.max_mint;
-    max_per_block: params.max_per_block;
-    max_per_wallet: params.max_per_wallet
+    owner: Tezos.get_sender(),
+    paused: false,
+    recipes: params.recipes,
+    products: params.products,
+    recipients: recipients,
+    minted: 0n,
+    start_time: params.start_time,
+    duration: params.duration,
+    max_mint: params.max_mint,
+    max_per_block: params.max_per_block,
+    max_per_wallet: params.max_per_wallet,
   }, s.mints);
 
   s.next_mint_id = s.next_mint_id + 1n;
