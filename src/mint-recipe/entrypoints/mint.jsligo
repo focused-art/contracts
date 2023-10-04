@@ -47,25 +47,22 @@ export const entrypoint = (params: T.mint_params, s1: T.storage): T.@return => {
   if (mint.max_per_block > 0n && wallet_record.block_minted + params.mint_amount > mint.max_per_block)
     failwith("FA_MAX_MINT_PER_BLOCK_EXCEEDED");
 
-  // Initialize operations
-  let operations: list<operation> = list([]);
+  // Mint callback params
+  const mint_callback_params: T.mint_callback_params = {
+    mint_id: params.mint_id,
+    recipe_id: params.recipe_id,
+    mint_amount: params.mint_amount,
+    tez_paid: Tezos.get_amount(),
+    sender: Tezos.get_sender(),
+    recipient,
+  };
 
-  // Mint callback
-  match(params.callback) {
-    when(Some(callback)): do {
-      const mint_callback_params: T.mint_callback_params = {
-        mint_id: params.mint_id,
-        recipe_id: params.recipe_id,
-        mint_amount: params.mint_amount,
-        tez_paid: Tezos.get_amount(),
-        recipient,
-      };
-      operations = list([
-        Tezos.transaction(mint_callback_params, 0mutez, callback),
-        ...operations
+  // Initialize operations
+  let operations: T.Common.op_list = match(params.callback) {
+    when(Some(callback)): list([
+        Tezos.transaction(mint_callback_params, 0mutez, callback)
       ]);
-    };
-    when(None()): unit;
+    when(None()): list([]);
   };
 
   // Get mint recipe instructions
@@ -113,6 +110,15 @@ export const entrypoint = (params: T.mint_params, s1: T.storage): T.@return => {
             ...operations
           ]);
         }
+      };
+      when(View(contract_address)): do {
+        assert_with_error(Set.size(step_input) == 0n, "FA_INVALID_RECIPE_STEP");
+        match(
+          Tezos.call_view("check_mint", mint_callback_params, contract_address) as option<bool>
+        ) {
+          when(Some(response)): assert_with_error(response == true, "FA_RECIPE_STEP_FAILED");
+          when(None()): unit;
+        };
       };
       when(Pay(amount)): do {
         assert_with_error(Set.size(step_input) == 0n, "FA_INVALID_RECIPE_STEP");

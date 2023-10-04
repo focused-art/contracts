@@ -30,6 +30,7 @@ export type instruction =
   | ["Hold", ingredient]
   | ["Freeze", ingredient, timestamp]
   | ["Transfer", ingredient, Common.recipient]
+  | ["View", Common.contract_address]
   | ["Pay", tez];
 
 export type recipe_step = nat;
@@ -44,6 +45,7 @@ export type mint_callback_params = {
   recipe_id,
   mint_amount: nat,
   tez_paid: tez,
+  sender: address,
   recipient: Common.recipient,
 };
 

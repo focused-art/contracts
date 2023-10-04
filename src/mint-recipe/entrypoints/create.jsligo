@@ -24,6 +24,7 @@ export const entrypoint = (params: T.create_params, s1: T.storage): T.@return =>
         when(Hold(_a)): unit;
         when(Freeze(_a)): unit;
         when(Transfer(_a)): unit;
+        when(View(_a)): unit;
         when(Pay(_a)): do {
           has_price = true;
         };
