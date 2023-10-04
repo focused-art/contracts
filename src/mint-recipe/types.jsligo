@@ -31,6 +31,7 @@ export type instruction =
   | ["Freeze", ingredient, timestamp]
   | ["Transfer", ingredient, Common.recipient]
   | ["View", Common.contract_address]
+  | ["Call", Common.contract_address]
   | ["Pay", tez];
 
 export type recipe_step = nat;

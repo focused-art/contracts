@@ -120,6 +120,19 @@ export const entrypoint = (params: T.mint_params, s1: T.storage): T.@return => {
           when(None()): unit;
         };
       };
+      when(Call(contract_address)): do {
+        assert_with_error(Set.size(step_input) == 0n, "FA_INVALID_RECIPE_STEP");
+        const entrypoint: contract<T.mint_callback_params> = match(
+          Tezos.get_entrypoint_opt("%mint_callback", contract_address) as option<contract<T.mint_callback_params>>
+        ) {
+          when(None()): failwith("FA_INVALID_RECIPE_STEP");
+          when(Some(entrypoint)): entrypoint;
+        };
+        operations = list([
+          Tezos.transaction(mint_callback_params, 0mutez, entrypoint),
+          ...operations
+        ]);
+      };
       when(Pay(amount)): do {
         assert_with_error(Set.size(step_input) == 0n, "FA_INVALID_RECIPE_STEP");
         required_tez = required_tez + (amount * params.mint_amount);
