@@ -32,7 +32,6 @@ export const entrypoint = (params: T.create_params, s1: T.storage): T.@return =>
     };
   };
 
-  let recipients: T.Common.recipients = Map.empty;
   if (has_price == true) {
     let total: nat = 0n;
     for (const r of params.recipients) {
@@ -40,7 +39,6 @@ export const entrypoint = (params: T.create_params, s1: T.storage): T.@return =>
       total = total + pct
     };
     assert_with_error(total == 10000n, "FA_INVALID_RECIPIENT_PCTS");
-    recipients = params.recipients
   };
 
   // Create mint
@@ -49,7 +47,7 @@ export const entrypoint = (params: T.create_params, s1: T.storage): T.@return =>
     paused: false,
     recipes: params.recipes,
     products: params.products,
-    recipients: recipients,
+    recipients: params.recipients,
     minted: 0n,
     start_time: params.start_time,
     duration: params.duration,
