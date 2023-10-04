@@ -55,12 +55,13 @@ export const entrypoint = (params: T.mint_params, s1: T.storage): T.@return => {
     tez_paid: Tezos.get_amount(),
     sender: Tezos.get_sender(),
     recipient,
+    data: None(),
   };
 
   // Initialize operations
   let operations: T.Common.op_list = match(params.callback) {
-    when(Some(callback)): list([
-        Tezos.transaction(mint_callback_params, 0mutez, callback)
+    when(Some(callback, custom_data)): list([
+        Tezos.transaction({ ...mint_callback_params, data: custom_data }, 0mutez, callback)
       ]);
     when(None()): list([]);
   };
@@ -111,16 +112,16 @@ export const entrypoint = (params: T.mint_params, s1: T.storage): T.@return => {
           ]);
         }
       };
-      when(View(contract_address)): do {
+      when(View(contract_address, custom_data)): do {
         assert_with_error(Set.size(step_input) == 0n, "FA_INVALID_RECIPE_STEP");
         match(
-          Tezos.call_view("check_mint", mint_callback_params, contract_address) as option<bool>
+          Tezos.call_view("check_mint", {...mint_callback_params, data: custom_data}, contract_address) as option<bool>
         ) {
           when(Some(response)): assert_with_error(response == true, "FA_RECIPE_STEP_FAILED");
           when(None()): unit;
         };
       };
-      when(Call(contract_address)): do {
+      when(Call(contract_address, custom_data)): do {
         assert_with_error(Set.size(step_input) == 0n, "FA_INVALID_RECIPE_STEP");
         const entrypoint: contract<T.mint_callback_params> = match(
           Tezos.get_entrypoint_opt("%mint_callback", contract_address) as option<contract<T.mint_callback_params>>
@@ -129,7 +130,7 @@ export const entrypoint = (params: T.mint_params, s1: T.storage): T.@return => {
           when(Some(entrypoint)): entrypoint;
         };
         operations = list([
-          Tezos.transaction(mint_callback_params, 0mutez, entrypoint),
+          Tezos.transaction({...mint_callback_params, data: custom_data}, 0mutez, entrypoint),
           ...operations
         ]);
       };

@@ -30,8 +30,8 @@ export type instruction =
   | ["Hold", ingredient]
   | ["Freeze", ingredient, timestamp]
   | ["Transfer", ingredient, Common.recipient]
-  | ["View", Common.contract_address]
-  | ["Call", Common.contract_address]
+  | ["View", Common.contract_address, option<bytes>]
+  | ["Call", Common.contract_address, option<bytes>]
   | ["Pay", tez];
 
 export type recipe_step = nat;
@@ -48,6 +48,7 @@ export type mint_callback_params = {
   tez_paid: tez,
   sender: address,
   recipient: Common.recipient,
+  data: option<bytes>,
 };
 
 export type mint = {
@@ -92,7 +93,7 @@ export type mint_params = {
   recipe_steps: map<recipe_step, set<fa2_with_amount>>,
   mint_amount: nat,
   recipient: option<Common.recipient>,
-  callback: option<contract<mint_callback_params>>,
+  callback: option<[contract<mint_callback_params>, option<bytes>]>,
 };
 
 export type mint_update_action =
