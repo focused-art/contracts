@@ -23,8 +23,10 @@ export const entrypoint = (params: T.mint_params, s1: T.storage): T.@return => {
   assert_with_error(Tezos.get_now() >= mint.start_time, "FA_MINT_NOT_STARTED");
 
   // Mint ended?
-  if (mint.duration > 0)
-    assert_with_error(Tezos.get_now() < (mint.start_time + mint.duration), "FA_MINT_ENDED");
+  if (mint.duration > 0) {
+    let end_time : timestamp = mint.start_time + mint.duration - (mint.minted * mint.degradation);
+    assert_with_error(Tezos.get_now() < end_time, "FA_MINT_ENDED");
+  }
 
   // Max mint reached
   if (mint.max_mint > 0n && mint.minted + params.mint_amount > mint.max_mint)

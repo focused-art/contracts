@@ -12,6 +12,7 @@ export const entrypoint = (action: T.mint_owner_action, s1: T.storage): T.@retur
       when(Pause(params)): params[0];
       when(Update_start_time(params)): params[0];
       when(Update_duration(params)): params[0];
+      when(Update_degradation(params)): params[0];
       when(Update_max_per_block(params)): params[0];
       when(Update_max_per_wallet(params)): params[0];
       when(Update_recipients(params)): params[0];
@@ -29,6 +30,7 @@ export const entrypoint = (action: T.mint_owner_action, s1: T.storage): T.@retur
       when(Pause(params)): { ...mint, paused: params[1] };
       when(Update_start_time(params)): { ...mint, start_time: params[1] };
       when(Update_duration(params)): { ...mint, duration: params[1] };
+      when(Update_degradation(params)): { ...mint, degradation: params[1] };
       when(Update_max_per_block(params)): { ...mint, max_per_block: params[1] };
       when(Update_max_per_wallet(params)): { ...mint, max_per_wallet: params[1] };
       when(Update_recipients(params)): { ...mint, recipients: params[1] };

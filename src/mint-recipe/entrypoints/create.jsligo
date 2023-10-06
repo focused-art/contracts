@@ -52,6 +52,7 @@ export const entrypoint = (params: T.create_params, s1: T.storage): T.@return =>
     minted: 0n,
     start_time: params.start_time,
     duration: params.duration,
+    degradation: params.degradation,
     max_mint: params.max_mint,
     max_per_block: params.max_per_block,
     max_per_wallet: params.max_per_wallet,

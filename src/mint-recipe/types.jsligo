@@ -60,6 +60,7 @@ export type mint = {
   minted: nat,
   start_time: timestamp,
   duration: int,
+  degradation: int,
   max_mint: nat,
   max_per_block: nat,
   max_per_wallet: nat,
@@ -82,6 +83,7 @@ export type create_params = {
   recipients: Common.recipients,
   start_time: timestamp,
   duration: int,
+  degradation: int,
   max_mint: nat,
   max_per_block: nat,
   max_per_wallet: nat,
@@ -100,6 +102,7 @@ export type mint_update_action =
   | ["Pause", mint_id, bool]
   | ["Update_start_time", mint_id, timestamp]
   | ["Update_duration", mint_id, int]
+  | ["Update_degradation", mint_id, int]
   | ["Update_max_per_block", mint_id, nat]
   | ["Update_max_per_wallet", mint_id, nat]
   | ["Update_recipients", mint_id, Common.recipients];
