@@ -2,6 +2,16 @@
 #import "../../common/types.jsligo" "Common"
 #import "../../common/utils/fa2.jsligo" "Fa2"
 
+export const implements_hook = (k: Common.hook_type, _: T.storage): bool =>
+  match(k) {
+    when(Transfer_hook()):  true;
+    when(Create_hook()):    false;
+    when(Mint_hook()):      false;
+    when(Burn_hook()):      false;
+    when(Metadata_hook()):  false;
+    when(Royalties_hook()): false;
+  };
+
 export const is_revocable = (k: Common.hook_type, _: T.storage): bool =>
   match(k) {
     when(Transfer_hook()):  false;
